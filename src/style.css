@@ -1,3 +1,15 @@
+body, html { height: 100%; }
+body {
+    background-image: url("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/a69cd076-4094-4504-aa20-cf2c5e9226b7/df52yly-ba55cfe4-f97c-48c1-a4ec-162eb78fa6dc.png/v1/fill/w_1192,h_670,q_70,strp/time_machine_by_gann4life_df52yly-pre.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MTA4MCIsInBhdGgiOiJcL2ZcL2E2OWNkMDc2LTQwOTQtNDUwNC1hYTIwLWNmMmM1ZTkyMjZiN1wvZGY1MnlseS1iYTU1Y2ZlNC1mOTdjLTQ4YzEtYTRlYy0xNjJlYjc4ZmE2ZGMucG5nIiwid2lkdGgiOiI8PTE5MjAifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.R5O84OvyyUqMyLFeyHv7UcTPUaqDblAWZ9rojWk1brs");
+    background-size: cover;
+    background-position: center;
+}
+
+.app {
+    backdrop-filter: blur(5px);
+    background-color: rgba(0, 0, 0, 0.75);
+}
+
 .portfolio {
     flex-wrap: wrap;
 }
@@ -5,13 +17,14 @@
 .project {
     flex: 0 0 33%;
     border-radius: 10px;
-    transition: transform .1s;
 }
-.project:hover{
-    transform: scale(1.01)
-}
-.project:active{
-    transform: scale(0.99)
+
+.interactable { transition: transform .1s; }
+.interactable:hover { transform: scale(1.02); }
+.interactable:active{ transform: scale(0.99); }
+
+.project-tech>p {
+    margin: auto 0;
 }
 
 .noselect {

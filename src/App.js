@@ -21,16 +21,17 @@ const App = () => {
   }
 
   return (
-    <div className="container-fluent text-center">
-        <div className="container my-5">
-          <h1>Portfolio</h1>
-          <input placeholder="Search..."></input>
-          {projects.length > 0 
-          ? <Portfolio projects={projects}/>
-          : ""
-          }
-        </div>
-    </div>
+      <div className="app container-fluid py-5 text-center">
+          <div className="container my-5">
+            <h1 className="text-white">Portfolio</h1>
+            <input placeholder="Search..."></input>
+            <hr></hr>
+            {projects.length > 0 
+            ? <Portfolio projects={projects}/>
+            : ""
+            }
+          </div>
+      </div>
   );
 }
 
