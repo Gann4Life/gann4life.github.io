@@ -1,24 +1,35 @@
-import logo from './logo.svg';
-import './App.css';
-import React from "react";
+import React, { useState, useEffect } from "react";
+import Portfolio from "./components/Portfolio"
 
-function App() {
+const App = () => {
+  const [projects, setProjects] = useState([])
+  
+  useEffect(() => {
+    const getProjects = async () => {
+      const projectsFromServer = await fetchProjects()
+      setProjects(projectsFromServer)
+    }
+    getProjects()
+  }, [])
+
+  // Fetch projects from CodersRank
+  const fetchProjects = async() => {
+    const url = "https://api.codersrank.io/v2/users/gann4life/projects?get_by=username"
+    const res = await fetch(url)
+    const data = await res.json()
+    return data.projects
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="container-fluent text-center">
+        <div className="container my-5">
+          <h1>Portfolio</h1>
+          <input placeholder="Search..."></input>
+          {projects.length > 0 
+          ? <Portfolio projects={projects}/>
+          : ""
+          }
+        </div>
     </div>
   );
 }
