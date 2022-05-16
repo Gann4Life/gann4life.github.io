@@ -3,7 +3,7 @@
 }
 
 .project {
-    flex: 1;
+    flex: 0 0 33%;
     border-radius: 10px;
     transition: transform .1s;
 }

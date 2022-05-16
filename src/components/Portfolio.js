@@ -7,7 +7,7 @@ const Portfolio = (props) => {
     }, [])
 
     return(
-        <div className="portfolio d-lg-flex">
+        <div className="portfolio d-lg-flex justify-content-center">
             {props.projects.map((project, index) => (
                 <Project key={index} data={project}/>
             ))}
