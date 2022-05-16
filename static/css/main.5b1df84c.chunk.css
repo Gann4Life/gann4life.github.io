@@ -1,0 +1,2 @@
+.portfolio{flex-wrap:wrap}.project{flex:0 0 33%;border-radius:10px;transition:-webkit-transform .1s;transition:transform .1s;transition:transform .1s,-webkit-transform .1s}.project:hover{-webkit-transform:scale(1.01);transform:scale(1.01)}.project:active{-webkit-transform:scale(.99);transform:scale(.99)}.noselect{-webkit-touch-callout:none;-webkit-user-select:none;-ms-user-select:none;user-select:none}
+/*# sourceMappingURL=main.5b1df84c.chunk.css.map */
