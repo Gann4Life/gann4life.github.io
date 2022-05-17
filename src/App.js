@@ -26,10 +26,7 @@ const App = () => {
             <h1 className="text-white">Portfolio</h1>
             <input placeholder="Search..."></input>
             <hr></hr>
-            {projects.length > 0 
-            ? <Portfolio projects={projects}/>
-            : ""
-            }
+            {projects.length > 0 ? <Portfolio projects={projects}/> : ""}
           </div>
       </div>
   );

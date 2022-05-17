@@ -4,14 +4,13 @@ import Technology from "./Technology"
 const HighlightedTechnologies = (props) => {
     return (
         <div>
-            <div className="d-flex justify-content-evenly">
+            <div className="d-lg-flex justify-content-evenly">
+                <p className="my-2">Learned about:</p>
                 {props.main_tech.map(tech => (<Technology tech={tech}/>))}
             </div>
             {
                 props.other_tech.length > 0 
-                ?<div className="d-flex justify-content-evenly text-muted">
-                    {props.other_tech.map(tech => (<p>{tech}</p>))}
-                </div>
+                ?<p className="text-muted">and {props.other_tech.join(", ")}</p>
                 : ""
             }
         </div>

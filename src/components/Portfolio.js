@@ -1,11 +1,7 @@
-import React, { useEffect } from "react"
+import React from "react"
 import Project from "./Project"
 
 const Portfolio = (props) => {
-
-    useEffect(()=>{
-    }, [])
-
     return(
         <div className="portfolio d-lg-flex justify-content-center">
             {props.projects.map((project, index) => (
