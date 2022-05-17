@@ -10,6 +10,11 @@ body {
     background: rgba(0, 0, 0, 0.75);
 }
 
+#avatar {
+    height: 64px;
+    width: 64px;
+}
+
 .portfolio {
     flex-wrap: wrap;
 }
@@ -20,8 +25,8 @@ body {
 }
 
 .interactable { transition: transform .1s; }
-.interactable:hover { transform: scale(1.02); }
-.interactable:active{ transform: scale(0.99); }
+.interactable:hover { transform: scale(1.1); }
+.interactable:active{ transform: scale(0.9); }
 
 .project-tech>p {
     margin: auto 0;
