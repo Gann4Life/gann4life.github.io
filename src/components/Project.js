@@ -3,7 +3,7 @@ import HighlightedTechnologies from "./HighightedTechnologies"
 
 const Project = ({ data }) => {
     return (
-        <div href={data.link_to_project} className="project shadow text-decoration-none bg-dark text-white m-2 p-2">
+        <div href={data.link_to_project} className="col-lg-5 project shadow text-decoration-none bg-dark text-white m-2 p-2">
             <div className="noselect py-2">
                 <div className="d-flex justify-content-around">
                     <div>
