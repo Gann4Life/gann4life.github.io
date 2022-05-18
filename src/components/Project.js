@@ -30,7 +30,7 @@ const Project = ({ data }) => {
                     </a>:""}
                 </div>
 
-                {<img src={data.image} className="project img-fluid p-2"></img>}
+                {data.image ? <img alt="Project thumbnail" src={data.image} className="project img-fluid p-2"/> : ""}
 
                 {<p>{data.description}</p>}
 
