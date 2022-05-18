@@ -9,7 +9,7 @@ const Header = ({ data }) => {
 
     return (
         <div className="container px-auto text-white">
-            <img alt="Avatar" id="avatar" className="rounded-circle" src={data.avatar_url}></img>
+            <img id="avatar" className="rounded-circle" src={data.avatar_url}></img>
             <h1 className="mx-auto my-5">Hi! I'm {data.first_name}! - Also known as Gann4Life.</h1>
 
             <span style={{whiteSpace: "pre-line"}}>{data.intro}</span>
