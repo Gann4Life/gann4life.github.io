@@ -14,7 +14,6 @@ const Project = ({ data }) => {
                         {data.start_date === data.end_date ?
                         <p>{data.end_date}</p>
                         :<p>{data.start_date} - {data.is_current ? "Present" : data.end_date}</p>}
-                        {/* {data.start_date} - {data.is_current?"Present":data.end_date} */}
                     </i></p>
                 </div>
                 
