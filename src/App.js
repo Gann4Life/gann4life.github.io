@@ -37,13 +37,13 @@ const App = () => {
 	}
 
 	return (
-			<div className="app container-fluid py-1 text-center">
-					<div className="container my-5">
-						<Header data={information}/>
-						<hr></hr>
-						{projects.length > 0 ? <Portfolio projects={projects}/> : ""}
-					</div>
+		<div className="app container-fluid py-1 text-center">
+			<div className="container my-5">
+				<Header data={information}/>
+				<hr></hr>
+				{projects.length > 0 ? <Portfolio projects={projects}/> : ""}
 			</div>
+		</div>
 	);
 }
 
