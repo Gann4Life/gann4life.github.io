@@ -22,7 +22,9 @@ const Portfolio = (props) => {
                 return noSearchQuery || foundSearchQuery ? project : ""
             }).map((project, index) => (
                 <Project key={index} data={project}/>
-            ))}
+            )).sort((a, b) => {
+                return -a.props.data.start_date.localeCompare(b.props.data.start_date)
+            })}
         </div>
     )
 }
