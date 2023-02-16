@@ -7,11 +7,19 @@ const Portfolio = (props) => {
         <div className="row portfolio justify-content-center">
             <input class="rounded-pill bg-dark text-white border-0 fs-4" type="text" placeholder="Search..." onChange={(event) => setSearchTerm(event.target.value)}/>
             {props.projects.filter((project) => {
-                const noSearchField = getSearchTerm === ""
-                const titleMatch = project.project_title.toLowerCase().includes(getSearchTerm.toLowerCase())
-                const descriptionMatch = project.description.toLowerCase().includes(getSearchTerm.toLowerCase())
-                const anythingMatches = noSearchField || titleMatch || descriptionMatch
-                return anythingMatches ? project : ""
+
+                // If no search query defined, it has to display all elements.
+                const noSearchQuery = getSearchTerm === ""
+
+                // Stores all data that can be searched in a single place
+                var searchableData = project.project_title
+                    + project.description
+                    + project.highlighted_technologies.join()
+                    + project.other_technologies.join()
+
+                const foundSearchQuery = searchableData.toLowerCase().includes(getSearchTerm.toLowerCase())
+
+                return noSearchQuery || foundSearchQuery ? project : ""
             }).map((project, index) => (
                 <Project key={index} data={project}/>
             ))}
