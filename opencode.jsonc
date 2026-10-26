@@ -1,0 +1,9 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  // The design doc is the project spec, so keep it in context.
+  "instructions": ["AGENTS.md", "DESIGN.md"],
+  "permissions": [
+    // Local commits only. Remote writes are done by hand.
+    { "action": "shell", "resource": "git push*", "effect": "deny" }
+  ]
+}
