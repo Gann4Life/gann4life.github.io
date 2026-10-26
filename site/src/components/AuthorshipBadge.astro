@@ -1,0 +1,19 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+type Authorship = CollectionEntry<'work'>['data']['authorship'];
+
+interface Props {
+  authorship?: Authorship | null;
+}
+
+const { authorship } = Astro.props;
+
+const LABELS: Record<Authorship, string> = {
+  'hand-made': 'Hand-made',
+  'ai-assisted': 'AI-assisted',
+  'ai-built': 'AI-built',
+};
+---
+
+{authorship && <span class="authorship-badge" data-authorship={authorship}>{LABELS[authorship] ?? authorship}</span>}

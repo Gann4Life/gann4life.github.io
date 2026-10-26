@@ -1,0 +1,50 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AuthorshipBadge from '../components/AuthorshipBadge.astro';
+
+// Phase 1 scaffold: proves the `work` collection → page pipeline.
+// The real home page (hero, featured strip, filterable grid) is Phase 2.
+const entries = (await getCollection('work')).sort(
+  (a, b) => b.data.started.getTime() - a.data.started.getTime(),
+);
+
+const count = entries.length;
+---
+
+<BaseLayout
+  title="Portfolio v3 — Phase 1 scaffold"
+  description="Phase 1 build scaffold for the portfolio rebuild."
+>
+  <main class="page">
+    <h1>Portfolio v3 — Phase 1 scaffold</h1>
+    <p class="lede">
+      Rendering {count} placeholder {count === 1 ? 'entry' : 'entries'} from the
+      <code>work</code> collection. This page exists to prove the content pipeline;
+      it is not the real design.
+    </p>
+
+    {count === 0 ? (
+      <p class="lede">No work entries yet. Add Markdown files to <code>src/content/work/</code>.</p>
+    ) : (
+      <ul class="work-list">
+        {entries.map((entry) => (
+          <li class="work-card">
+            <h2 class="work-card__title">{entry.data.title}</h2>
+            <p class="work-card__meta">
+              <span class="pill">{entry.data.kind}</span>
+              <span class="pill">{entry.data.status}</span>
+              {/* Dates are stored as UTC midnight, so read the year in UTC. */}
+              <span class="pill">{entry.data.started.getUTCFullYear()}</span>
+              {entry.data.featured && <span class="pill">featured</span>}
+            </p>
+            <AuthorshipBadge authorship={entry.data.authorship} />
+            {entry.data.roles.length > 0 && (
+              <p class="work-card__roles">Roles: {entry.data.roles.join(', ')}</p>
+            )}
+          </li>
+        ))}
+      </ul>
+    )}
+  </main>
+</BaseLayout>
