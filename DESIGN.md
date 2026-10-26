@@ -9,16 +9,17 @@ Static, git-based, no backend to maintain or patch.
 
 | Layer | Choice | Notes |
 |---|---|---|
-| Framework | **Astro** | Static output, content collections with typed schemas, islands for interactive bits |
-| Interactive islands | React or Svelte | Only for 3D viewer, audio player, filters |
-| Admin panel | **Keystatic** or **Sveltia CMS** | Git-based: edits commit Markdown/JSON to the repo. Decide in Phase 1 |
-| Hosting | Cloudflare Pages | Free, auto-deploy on push. Supports the server route Keystatic's GitHub mode needs |
-| Images | Cloudflare R2 or Cloudinary | Keep binaries out of git; auto-resize / WebP |
-| Video | YouTube / Vimeo / Bunny Stream | Embed only |
+| Framework | **Astro** | Static output, content collections with typed schemas |
+| Interactive islands | None by default | Viewers/players are framework-agnostic web components (`<model-viewer>`, wavesurfer.js, Spine Web Player). Add an island only if a component genuinely needs one |
+| Admin panel | **Keystatic** (local mode) | `npm run dev` → `localhost:4321/keystatic`, commits Markdown to the repo. Remote editing falls back to `github.dev` |
+| Hosting | **GitHub Pages** | Free user site at `gann4life.github.io`, deployed from Actions on push |
+| Images | In-repo, `astro:assets` + sharp | WebP/AVIF generated at build; stays inside the ~1 GB published-site budget, no CDN |
+| Video | YouTube / Vimeo / itch.io | Embed only |
 
 **Admin decision notes**
-- Keystatic: tight Astro integration, nice UI. GitHub mode needs an Astro adapter (server route for OAuth).
-- Sveltia CMS: framework-agnostic, Decap-compatible config, works on a fully static site.
+- Keystatic local mode needs no OAuth proxy and no server adapter, so the site stays fully static and free.
+- Local mode means no browser editing away from the dev machine; `github.dev` covers that for free.
+- The CMS is additive: plain Markdown files stay the source of truth, so the CMS can be swapped or removed without touching content.
 
 ---
 
@@ -89,7 +90,7 @@ Long description / devlog in Markdown.
 - `/` — hero (who I am, roles), featured strip, filterable grid (by role and kind), contact/socials.
 - `/work/<slug>` — detail page; layout adapts to `kind`.
 - `/about` — optional, could live on home.
-- `/admin` — CMS (not linked publicly).
+- `/keystatic` — CMS (not linked publicly).
 
 ---
 
@@ -109,10 +110,10 @@ Long description / devlog in Markdown.
 ## 5. Phases
 
 ### Phase 1 — Skeleton
-- [ ] Create Astro project + repo
+- [ ] Create the Astro project on the `portfolio-v3` branch, keeping v2 deployable until cutover
 - [ ] Define `work` collection schema (Zod) matching section 2
-- [ ] Pick admin (Keystatic vs Sveltia), configure `/admin`
-- [ ] Deploy to Cloudflare Pages, auto-deploy on push
+- [ ] Configure Keystatic in local mode at `/keystatic`
+- [ ] Deploy to GitHub Pages from Actions, auto-deploy on push to `main` after cutover
 
 ### Phase 2 — Core pages
 - [ ] Home: hero, featured strip, grid
@@ -128,7 +129,7 @@ Long description / devlog in Markdown.
 - [ ] 3D viewer
 - [ ] Spine player
 - [ ] Video/WebGL embeds
-- [ ] Image CDN setup (R2 or Cloudinary)
+- [ ] Image pipeline: `astro:assets` with WebP/AVIF output
 
 ### Phase 4 — Content migration
 - [ ] Re-export original art (old site hotlinked expiring CDN URLs)
@@ -143,7 +144,7 @@ Long description / devlog in Markdown.
 - [ ] SEO: meta tags, Open Graph images per entry, sitemap
 - [ ] Privacy-friendly analytics (optional)
 - [ ] Lighthouse pass (performance, accessibility)
-- [ ] Custom domain
+- [ ] Custom domain (optional, deferred)
 
 ### Later (optional)
 - [ ] `buy` links to a storefront (Gumroad / Ko-fi / Lemon Squeezy / itch) for asset packs
@@ -173,8 +174,5 @@ Long description / devlog in Markdown.
 
 ## 8. Open decisions
 
-- Keystatic vs Sveltia CMS
-- React vs Svelte for islands
-- R2 vs Cloudinary for images
 - Single-page home vs separate sections
-- Domain name
+- Domain name (only worth it to decouple the URL from the repo name)

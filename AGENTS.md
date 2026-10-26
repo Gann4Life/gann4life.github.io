@@ -17,10 +17,6 @@ Project instructions for OpenCode. Read this and `DESIGN.md` before changing any
 5. **Honesty outranks polish.** Authorship, roles, credits, and fork attribution follow `DESIGN.md` section 6. A thinner truthful entry beats a fuller invented one.
 6. **No hotlinked media.** Old CDN URLs expire; media must live in the repo.
 
-## Known spec deviations
-
-`DESIGN.md` section 1 still names Cloudflare Pages, R2/Cloudinary image hosting, and a React-or-Svelte island choice. Those were reviewed and dropped: hosting is **GitHub Pages via Actions**, the CMS is **Keystatic local mode**, images are **in-repo via `astro:assets`**, and there is no CDN and no paid service. Follow this section over DESIGN.md section 1 until the doc is amended, and do not re-introduce Cloudflare.
-
 ## Workflow
 
 1. Confirm the branch: `git branch --show-current` must be `portfolio-v3` for v3 work.
