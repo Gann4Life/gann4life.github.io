@@ -10,6 +10,9 @@ permissions:
   - action: shell
     resource: "git push*"
     effect: deny
+  - action: shell
+    resource: "git commit*"
+    effect: deny
 ---
 
 You look at media and describe it factually. You do not edit files; you return text the lead can paste into an entry.

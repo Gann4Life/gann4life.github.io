@@ -14,13 +14,25 @@ permissions:
     resource: "src/App.js"
     effect: deny
   - action: edit
-    resource: "src/components/**"
-    effect: deny
-  - action: edit
     resource: "src/index.js"
     effect: deny
   - action: edit
+    resource: "src/reportWebVitals.js"
+    effect: deny
+  - action: edit
+    resource: "src/setupTests.js"
+    effect: deny
+  - action: edit
+    resource: "src/style.css"
+    effect: deny
+  - action: edit
+    resource: "src/components/*.js"
+    effect: deny
+  - action: edit
     resource: "public/index.html"
+    effect: deny
+  - action: edit
+    resource: "public/manifest.json"
     effect: deny
   - action: shell
     resource: "git push*"

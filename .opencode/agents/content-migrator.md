@@ -5,8 +5,20 @@ model: opencode/glm-5.3-flash-free#max
 steps: 30
 permissions:
   - action: edit
-    resource: "DESIGN.md"
+    resource: "*"
     effect: deny
+  - action: edit
+    resource: "src/content/**"
+    effect: allow
+  - action: edit
+    resource: "content/**"
+    effect: allow
+  - action: edit
+    resource: "legacy/**"
+    effect: allow
+  - action: edit
+    resource: "public/media/**"
+    effect: allow
   - action: shell
     resource: "git push*"
     effect: deny
