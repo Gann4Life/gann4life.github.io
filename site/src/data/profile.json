@@ -1,0 +1,13 @@
+{
+  "name": "gann4life",
+  "tagline": "",
+  "bio": "",
+  "links": [
+    { "label": "GitHub", "url": "https://github.com/gann4life" },
+    { "label": "itch.io", "url": "https://gann4life.itch.io" },
+    { "label": "SoundCloud", "url": "https://soundcloud.com/gann4life" },
+    { "label": "Bandcamp", "url": "https://gann4life.bandcamp.com" },
+    { "label": "DeviantArt", "url": "https://gann4life.deviantart.com" },
+    { "label": "YouTube", "url": "https://www.youtube.com/@gann4life" }
+  ]
+}

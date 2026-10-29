@@ -1,28 +1,33 @@
-import { config, collection, fields } from '@keystatic/core';
+import { config, collection, fields, singleton } from '@keystatic/core';
+import {
+  AUTHORSHIP,
+  CONTEXTS,
+  KINDS,
+  LINK_LABELS,
+  LINK_TYPES,
+  MEDIA_TYPES,
+  ORIGINS,
+  ROLES,
+  STATUSES,
+  TEAMS,
+} from './src/vocab';
 
 /*
- * Keystatic admin for the `work` collection — docs/1-stack.md (local mode).
- * Fields mirror src/content.config.ts; that Zod schema stays the source of
- * truth and still validates whatever Keystatic writes at build time.
+ * Keystatic admin — docs/1-stack.md (local mode).
+ * `work` fields mirror src/content.config.ts; that Zod schema stays the source
+ * of truth and still validates whatever Keystatic writes at build time.
  */
 
 const options = (values: readonly string[]) => values.map((value) => ({ label: value, value }));
 
-const KINDS = ['software', 'game', 'art2d', 'art3d', 'animation', 'music'] as const;
-const ROLES = [
-  'programmer',
-  'animator',
-  'designer',
-  'spec-author',
-  'technical-direction',
-  'maintainer',
-  'musician',
-] as const;
-const MEDIA_TYPES = ['image', 'video', 'model3d', 'spine', 'audio', 'webgl'] as const;
-const LINK_TYPES = ['source', 'play', 'download', 'watch', 'listen', 'docs', 'buy'] as const;
+// Images land in src/assets/<slug>/... and are stored as paths relative to the
+// entry file, which is what astro:assets reads.
+const entryImage = (label: string) =>
+  fields.image({ label, directory: 'src/assets', publicPath: '../../assets/' });
 
 export default config({
   storage: { kind: 'local' },
+  ui: { brand: { name: 'Portfolio' } },
   collections: {
     work: collection({
       label: 'Work',
@@ -30,24 +35,35 @@ export default config({
       // `slug` is written to frontmatter and also names the file.
       slugField: 'slug',
       format: { contentField: 'body' },
-      columns: ['title', 'kind', 'status'],
+      columns: ['title', 'kind', 'context', 'status'],
       schema: {
         title: fields.text({ label: 'Title', validation: { isRequired: true } }),
         slug: fields.text({
           label: 'Slug',
+          description: 'URL of the page: /work/<slug>. kebab-case.',
           validation: { isRequired: true, pattern: { regex: /^[a-z0-9]+(?:-[a-z0-9]+)*$/, message: 'kebab-case' } },
         }),
-        kind: fields.select({ label: 'Kind', options: options(KINDS), defaultValue: 'software' }),
-        roles: fields.multiselect({ label: 'Roles', options: options(ROLES) }),
+        kind: fields.select({ label: 'Kind', description: 'What it is.', options: options(KINDS), defaultValue: 'software' }),
+        context: fields.select({
+          label: 'Context',
+          description: 'Who it was for.',
+          options: options(CONTEXTS),
+          defaultValue: 'personal',
+        }),
+        position: fields.text({
+          label: 'Position',
+          description: 'Optional. Title actually held, e.g. "Unity Game Developer" on someone else\'s project.',
+        }),
+        roles: fields.multiselect({ label: 'Roles', description: 'Drives the filters.', options: options(ROLES) }),
         authorship: fields.select({
           label: 'Authorship',
-          description: 'docs/2-content-model.md: ai-built entries take designer/spec roles, not programmer.',
-          options: options(['hand-made', 'ai-assisted', 'ai-built']),
+          description: 'ai-built entries take designer/spec roles, not programmer (docs/2-content-model.md).',
+          options: options(AUTHORSHIP),
           defaultValue: 'hand-made',
         }),
-        origin: fields.select({ label: 'Origin', options: options(['original', 'fork']), defaultValue: 'original' }),
+        origin: fields.select({ label: 'Origin', options: options(ORIGINS), defaultValue: 'original' }),
         upstream: fields.url({ label: 'Upstream', description: 'Required for forks.' }),
-        team: fields.select({ label: 'Team', options: options(['solo', 'team']), defaultValue: 'solo' }),
+        team: fields.select({ label: 'Team', options: options(TEAMS), defaultValue: 'solo' }),
         credits: fields.array(
           fields.object({
             name: fields.text({ label: 'Name', validation: { isRequired: true } }),
@@ -56,44 +72,80 @@ export default config({
           }),
           { label: 'Credits', itemLabel: (props) => props.fields.name.value || 'Credit' },
         ),
-        contribution: fields.text({ label: 'Contribution', multiline: true, validation: { isRequired: true } }),
-        status: fields.select({
-          label: 'Status',
-          options: options(['released', 'in-development', 'archived']),
-          defaultValue: 'in-development',
+        contribution: fields.text({
+          label: 'Contribution',
+          description: 'Exactly what I built/made. On team projects, only my part.',
+          multiline: true,
+          validation: { isRequired: true },
         }),
+        status: fields.select({ label: 'Status', options: options(STATUSES), defaultValue: 'in-development' }),
         started: fields.date({ label: 'Started', validation: { isRequired: true } }),
         featured: fields.checkbox({ label: 'Featured' }),
         tools: fields.array(fields.text({ label: 'Tool' }), {
           label: 'Tools',
           itemLabel: (props) => props.value || 'Tool',
         }),
-        // Stored as ../../assets/<slug>/cover.<ext>, the in-repo path astro:assets reads.
-        cover: fields.image({ label: 'Cover', directory: 'src/assets', publicPath: '../../assets/' }),
+        cover: entryImage('Cover (thumbnail)'),
+        gallery: fields.array(
+          fields.object({
+            image: entryImage('Image'),
+            caption: fields.text({ label: 'Caption' }),
+          }),
+          { label: 'Gallery', itemLabel: (props) => props.fields.caption.value || 'Image' },
+        ),
         media: fields.array(
           fields.object({
-            type: fields.select({ label: 'Type', options: options(MEDIA_TYPES), defaultValue: 'image' }),
+            type: fields.select({ label: 'Type', options: options(MEDIA_TYPES), defaultValue: 'video' }),
             src: fields.text({
               label: 'Source',
-              description: 'Images: in-repo path (../../assets/...). Embeds: URL. No hotlinked media.',
+              description: 'Embed URL (YouTube, SoundCloud, itch...) or an in-repo path. No hotlinked media.',
               validation: { isRequired: true },
             }),
             caption: fields.text({ label: 'Caption' }),
           }),
-          { label: 'Media', itemLabel: (props) => `${props.fields.type.value}: ${props.fields.src.value}` },
+          { label: 'Media (embeds)', itemLabel: (props) => `${props.fields.type.value}: ${props.fields.src.value}` },
         ),
         links: fields.array(
           fields.object({
-            type: fields.select({ label: 'Type', options: options(LINK_TYPES), defaultValue: 'source' }),
+            label: fields.text({ label: 'Label', description: 'Button text. Empty uses the type default.' }),
+            type: fields.select({
+              label: 'Type',
+              description: 'Icon and default label.',
+              options: LINK_TYPES.map((value) => ({ label: `${value} (${LINK_LABELS[value]})`, value })),
+              defaultValue: 'other',
+            }),
             url: fields.url({ label: 'URL', validation: { isRequired: true } }),
           }),
-          { label: 'Links', itemLabel: (props) => `${props.fields.type.value}: ${props.fields.url.value ?? ''}` },
+          {
+            label: 'Links',
+            itemLabel: (props) =>
+              `${props.fields.label.value || LINK_LABELS[props.fields.type.value]}: ${props.fields.url.value ?? ''}`,
+          },
         ),
         usedIn: fields.array(fields.text({ label: 'Slug' }), {
           label: 'Used in',
           itemLabel: (props) => props.value || 'Slug',
         }),
         body: fields.markdoc({ label: 'Body', extension: 'md' }),
+      },
+    }),
+  },
+  singletons: {
+    profile: singleton({
+      label: 'Profile',
+      path: 'src/data/profile',
+      format: { data: 'json' },
+      schema: {
+        name: fields.text({ label: 'Name', validation: { isRequired: true } }),
+        tagline: fields.text({ label: 'Tagline' }),
+        bio: fields.text({ label: 'Bio', multiline: true }),
+        links: fields.array(
+          fields.object({
+            label: fields.text({ label: 'Label', validation: { isRequired: true } }),
+            url: fields.url({ label: 'URL', validation: { isRequired: true } }),
+          }),
+          { label: 'Profile links', itemLabel: (props) => props.fields.label.value || 'Link' },
+        ),
       },
     }),
   },

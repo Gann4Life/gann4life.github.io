@@ -1,5 +1,5 @@
 ---
-description: Migrates legacy v2 content (CodersRank JSON, project cards, SoundCloud links) into v3 Markdown entries with honest roles, authorship, and fork credit.
+description: Migrates legacy v2 content (project cards, SoundCloud links; CodersRank is dropped) into v3 Markdown entries with honest roles, authorship, and fork credit.
 mode: subagent
 model: opencode/glm-5.3-flash-free#max
 steps: 30

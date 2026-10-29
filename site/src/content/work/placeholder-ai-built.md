@@ -16,16 +16,19 @@ started: 2026-02-01
 featured: true
 tools: [Placeholder engine, Placeholder language]
 cover: ../../assets/placeholder-cover.png
-media:
-  - type: image
-    src: ../../assets/placeholder-shot.png
+gallery:
+  - image: ../../assets/placeholder-shot.png
     caption: "Placeholder image, not a screenshot of anything."
+media:
   - type: video
     src: "https://example.com/placeholder-video"
     caption: ""
 links:
   - type: docs
     url: "https://example.com/placeholder-spec"
+  - label: "Play the placeholder demo"
+    type: play
+    url: "https://example.com/placeholder-demo"
 usedIn: []
 ---
 

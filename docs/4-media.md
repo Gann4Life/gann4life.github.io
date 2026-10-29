@@ -2,7 +2,7 @@
 
 | Kind | Component |
 |---|---|
-| Images (2D, screenshots) | Gallery + lightbox |
+| Images (2D, screenshots) | `cover` + `gallery` → gallery + lightbox |
 | 3D | `<model-viewer>` with GLB |
 | Spine | Spine Web Player (live, not GIF) |
 | Music | SoundCloud/Bandcamp embed or own audio + wavesurfer.js |
