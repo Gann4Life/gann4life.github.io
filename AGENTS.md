@@ -33,7 +33,7 @@ OpenCode launches its set from `.opencode/agents/` through the `subagent` tool. 
 
 ### Claude Code: tiered by model
 
-Subagents cannot launch subagents, so the main session (the lead) orchestrates. Flow: `/next` picks an issue → `architect` first if the spec must change → executor implements the issue → `doc-writer` syncs docs → `design-auditor` reviews → the lead commits.
+Subagents cannot launch subagents, so the main session (the lead) orchestrates. Flow: `/next` picks an issue → `architect` first if the spec must change → executor implements the issue → `doc-writer` syncs docs → `design-auditor` reviews, and the lead runs `/code-review` on non-trivial diffs → the lead commits. Before publishing the lead also runs `/security-review` with `security-auditor`; at the end of a phase, `/simplify`. Skills that fan out to agents run in the main session, never inside a subagent; `astro-builder`, `ux-reviewer` and `perf-auditor` preload `/run`.
 
 | Tier | Agent | Use when | Writes? |
 |---|---|---|---|
