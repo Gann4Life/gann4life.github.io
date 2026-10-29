@@ -27,8 +27,42 @@ Project instructions for OpenCode. Read this and `DESIGN.md` (the index) before 
 
 ## Subagent routing
 
-Launch these through the `subagent` tool. Each has its own fixed model and permissions.
-OpenCode reads them from `.opencode/agents/`; Claude Code has the same four in `.claude/agents/` (Agent tool). Keep both sets in sync when a brief changes.
+OpenCode launches its set from `.opencode/agents/` through the `subagent` tool. Claude Code launches the tiered set below from `.claude/agents/` through the Agent tool.
+
+### Claude Code: tiered by model
+
+Subagents cannot launch subagents, so the main session (the lead) orchestrates: it asks `planner` for orders, hands each order to an executor, and sends the result to `design-auditor`.
+
+| Tier | Agent | Use when | Writes? |
+|---|---|---|---|
+| Opus — decides | `planner` | Any non-trivial change: makes the choices, writes work orders | No |
+| Opus — decides | `design-auditor` | After executors finish, before committing: drift against the spec | No |
+| Sonnet — executes | `astro-builder` | One work order for Astro code in `site/` | Yes, only the files the order lists |
+| Sonnet — executes | `content-migrator` | One work order for `work` entries | Yes, only the files the order lists |
+| Haiku — reads | `reader` | Lookups: where something is, what a file holds, which entries use a field | No — returns excerpts |
+| Haiku — reads | `media-inspector` | Images with no alt text or caption | No — returns text |
+
+Executors never decide. A prompt without a work order gets `NEEDS ORDER`; an incomplete one gets `BLOCKED` with the open question, which goes back to `planner` (or the user, if it is theirs to decide).
+
+### Work orders
+
+Every order for an executor uses this format:
+
+```
+WORK ORDER <short-id> — <agent>
+Goal: <one sentence>
+Read first: <paths>
+Files: <every path to create or change; nothing else may be touched>
+Steps:
+  1. <concrete action with exact names, fields, props, structure>
+  2. ...
+Empty cases: <what renders or is omitted when data is missing>
+Do not: <explicit exclusions>
+Acceptance: <command> → <expected result>
+Report: <what to return>
+```
+
+### OpenCode set
 
 | Agent | Use when | Writes? |
 |---|---|---|
