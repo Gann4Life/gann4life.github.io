@@ -1,5 +1,5 @@
 import { defineCollection } from 'astro:content';
-import { glob } from 'astro/loaders';
+import { glob, type Loader } from 'astro/loaders';
 import { z } from 'astro/zod';
 import {
   AUTHORSHIP,
@@ -19,8 +19,28 @@ import {
  * Enums are closed (src/vocab.ts): filtering depends on a fixed vocabulary.
  */
 
+/*
+ * Production builds drop drafts from the content store. Astro bundles every
+ * image an entry in the store references, so filtering drafts only in
+ * getWork()/getPosts() still shipped their images. The dev server keeps them.
+ */
+const keepDrafts = import.meta.env.DEV;
+function withoutDrafts(loader: Loader): Loader {
+  return {
+    ...loader,
+    name: `${loader.name}-without-drafts`,
+    load: async (context) => {
+      await loader.load(context);
+      if (keepDrafts) return;
+      for (const [id, entry] of context.store.entries()) {
+        if (entry.data.draft === true) context.store.delete(id);
+      }
+    },
+  };
+}
+
 const work = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/work' }),
+  loader: withoutDrafts(glob({ pattern: '**/*.md', base: './src/content/work' })),
   schema: ({ image }) =>
     z
       .object({
@@ -146,7 +166,7 @@ const work = defineCollection({
  * One file per post: src/content/blog/<slug>.md.
  */
 const blog = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/blog' }),
+  loader: withoutDrafts(glob({ pattern: '**/*.md', base: './src/content/blog' })),
   schema: ({ image }) =>
     z.object({
       title: z.string().min(1),
