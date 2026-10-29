@@ -1,10 +1,11 @@
 # 5. Phases
 
 ### Phase 1 — Skeleton
-- [x] Create the Astro project (`site/`) on the `astro-rewrite` branch, keeping v2 deployable until cutover
+- [x] Create the Astro project (`site/`) on the `astro-rewrite` branch (now `dev`), keeping v2 deployable until cutover
 - [x] Define `work` collection schema (Zod) matching [section 2](2-content-model.md)
 - [x] Configure Keystatic in local mode at `/keystatic`
-- [ ] Deploy to GitHub Pages from Actions, auto-deploy on push to `main` after cutover
+- [ ] Deploy to GitHub Pages from Actions: one workflow, production from `main` at `/`, staging from `dev` at `/dev/` (noindex), v2 built for the root until cutover ([section 1](1-stack.md) "Branches, environments and deploys")
+- [ ] Base-path-safe links: every internal URL through `withBase` ([section 3](3-pages.md) "Base-path rule")
 
 ### Phase 2 — Core pages
 - [x] Home: full-size category tiles; one page per category with overlay thumbnails and cascade animation

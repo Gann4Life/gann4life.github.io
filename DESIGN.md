@@ -8,9 +8,9 @@ sections the task needs; "section N" anywhere in the repo means `docs/N-*.md`.
 
 | § | File | Read when |
 |---|---|---|
-| 1 | [Stack](docs/1-stack.md) | Choosing tools, hosting, image pipeline, CMS |
+| 1 | [Stack](docs/1-stack.md) | Choosing tools, hosting, image pipeline, CMS; branches, environments, deploys |
 | 2 | [Content model](docs/2-content-model.md) | Schema, frontmatter, AI-built and fork rules |
-| 3 | [Pages](docs/3-pages.md) | Adding or changing routes |
+| 3 | [Pages](docs/3-pages.md) | Adding or changing routes; writing any internal link or asset URL (base-path rule) |
 | 4 | [Media rendering](docs/4-media.md) | Viewers, players, embeds per `kind` |
 | 5 | [Phases](docs/5-phases.md) | Picking the next step, checking progress |
 | 6 | [Content rules](docs/6-content-rules.md) | Before writing any claim, credit, or NDA-adjacent entry |
