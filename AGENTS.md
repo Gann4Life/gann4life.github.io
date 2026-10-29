@@ -79,7 +79,7 @@ Executors never decide. A prompt without a work order gets `NEEDS ORDER`; an inc
 
 Rules of thumb
 
-- Never have two writing agents touch the same files at once.
+- Run one subagent at a time; launch the next only when the previous one reports.
 - The lead integrates and commits; subagents do not commit or push.
 - Send `design-auditor` the diff summary, not the whole repo, so the audit stays focused.
 - If a subagent reports a spec gap, resolve it in the relevant `docs/` file with the user before coding around it.
