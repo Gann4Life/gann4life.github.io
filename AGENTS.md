@@ -31,36 +31,34 @@ OpenCode launches its set from `.opencode/agents/` through the `subagent` tool. 
 
 ### Claude Code: tiered by model
 
-Subagents cannot launch subagents, so the main session (the lead) orchestrates: it asks `planner` for orders, hands each order to an executor, and sends the result to `design-auditor`.
+Subagents cannot launch subagents, so the main session (the lead) orchestrates. Flow: `/next` picks an issue → `architect` first if the spec must change → executor implements the issue → `doc-writer` syncs docs → `design-auditor` reviews → the lead commits.
 
 | Tier | Agent | Use when | Writes? |
 |---|---|---|---|
-| Opus — decides | `planner` | Any non-trivial change: makes the choices, writes work orders | No |
+| Opus — decides | `planner` | Turning work into GitHub issues that double as work orders; backlog grooming | No — issues only |
+| Opus — decides | `architect` | Spec changes, data formats, module boundaries, code/spec disagreements | Spec, architecture and decision docs only |
 | Opus — decides | `design-auditor` | After executors finish, before committing: drift against the spec | No |
-| Sonnet — executes | `astro-builder` | One work order for Astro code in `site/` | Yes, only the files the order lists |
-| Sonnet — executes | `content-migrator` | One work order for `work` entries | Yes, only the files the order lists |
+| Sonnet — executes | `astro-builder` | One issue for Astro code in `site/` | Yes, only the files the issue lists |
+| Sonnet — executes | `content-migrator` | One issue for `work` entries | Yes, only the files the issue lists |
+| Sonnet — executes | `doc-writer` | After implementation: README, docs, CHANGELOG/TODO in sync with the code | Docs only |
 | Haiku — reads | `reader` | Lookups: where something is, what a file holds, which entries use a field | No — returns excerpts |
 | Haiku — reads | `media-inspector` | Images with no alt text or caption | No — returns text |
 
 Executors never decide. A prompt without a work order gets `NEEDS ORDER`; an incomplete one gets `BLOCKED` with the open question, which goes back to `planner` (or the user, if it is theirs to decide).
 
-### Work orders
+`planner`, `architect`, `doc-writer` and the `/next` skill are generic: their conventions (issue format = work order, labels, branches, commits, versioning, remote-write policy) live in `.claude/github-workflow.md`, and they read this project's values from the table below.
 
-Every order for an executor uses this format:
+### Project facts for the generic agents
 
-```
-WORK ORDER <short-id> — <agent>
-Goal: <one sentence>
-Read first: <paths>
-Files: <every path to create or change; nothing else may be touched>
-Steps:
-  1. <concrete action with exact names, fields, props, structure>
-  2. ...
-Empty cases: <what renders or is omitted when data is missing>
-Do not: <explicit exclusions>
-Acceptance: <command> → <expected result>
-Report: <what to return>
-```
+| Fact | Value |
+|---|---|
+| Spec | `DESIGN.md` (index) + `docs/` |
+| Roadmap phases | `docs/5-phases.md` (one milestone per phase) |
+| Decision log | `docs/8-open-decisions.md` |
+| Base branch | `astro-rewrite` until cutover, then `main` |
+| Scopes | `site`, `content`, `docs`, `ci`, `agents` |
+| Remote writes allowed | **No** (hard rule 1): agents return `gh` / push commands for the lead |
+| Agents may commit | **No**: the lead commits |
 
 ### OpenCode set
 
