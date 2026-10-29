@@ -1,0 +1,33 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Tile from '../../components/Tile.astro';
+import { profile } from '../../profile';
+import { formatDate, getPosts } from '../../lib/blog';
+
+const posts = await getPosts();
+---
+
+<BaseLayout title="Blog" description={`Devlogs and posts by ${profile.name}.`}>
+  <main class="home">
+    <header class="hero hero--compact">
+      <p class="hero__kicker"><a href="/">{profile.name}</a> / Blog</p>
+      <h1 class="hero__name">Blog</h1>
+    </header>
+    {posts.length === 0 ? (
+      <p class="muted">No posts yet.</p>
+    ) : (
+      <div class="grid">
+        {posts.map((post, i) => (
+          <Tile
+            href={`/blog/${post.data.slug}/`}
+            title={post.data.title}
+            eyebrow={formatDate(post.data.date)}
+            subtitle={[post.data.summary, post.data.draft ? 'Draft' : ''].filter(Boolean).join(' · ') || undefined}
+            image={post.data.cover}
+            index={i}
+          />
+        ))}
+      </div>
+    )}
+  </main>
+</BaseLayout>

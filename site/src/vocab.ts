@@ -42,7 +42,7 @@ export const TEAMS = ['solo', 'team'] as const;
 
 export const STATUSES = ['released', 'in-development', 'archived'] as const;
 
-export const MEDIA_TYPES = ['video', 'spine', 'audio', 'webgl'] as const;
+export const MEDIA_TYPES = ['video', 'audio', 'webgl'] as const;
 
 export const LINK_TYPES = [
   'source',

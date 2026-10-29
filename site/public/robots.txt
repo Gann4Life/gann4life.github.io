@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://gann4life.github.io/sitemap.xml

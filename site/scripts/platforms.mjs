@@ -200,6 +200,47 @@ export function readerFor(url) {
 
 const EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif', 'image/avif': 'avif' };
 
+/*
+ * Entries without a cover get one from what they already link to:
+ * YouTube thumbnail, GitHub social card, or the itch/Bandcamp page image.
+ */
+export async function backfillCovers() {
+  const done = [];
+  for (const file of await readdir(WORK_DIR)) {
+    if (!file.endsWith('.md')) continue;
+    const path = join(WORK_DIR, file);
+    const text = await readFile(path, 'utf8');
+    const head = text.split(/^---$/m)[1] ?? '';
+    if (/^cover:/m.test(head)) continue;
+    const slug = file.slice(0, -3);
+    const urls = [...head.matchAll(/https?:\/\/[^\s"')]+/g)].map((m) => m[0]);
+    const candidates = [];
+    for (const u of urls) {
+      const host = new URL(u).hostname.replace(/^www\./, '');
+      const yt = u.match(/(?:v=|youtu\.be\/)([\w-]{11})/)?.[1];
+      if (yt) candidates.push(`https://i.ytimg.com/vi/${yt}/maxresdefault.jpg`, `https://i.ytimg.com/vi/${yt}/hqdefault.jpg`);
+      else if (host === 'github.com') {
+        const [, owner, repo] = new URL(u).pathname.split('/');
+        if (owner && repo) candidates.push(`https://opengraph.githubassets.com/1/${owner}/${repo}`);
+      } else if (host.endsWith('itch.io') && !u.includes('/embed')) candidates.push(async () => meta(await get(u), 'og:image'));
+      else if (host.endsWith('bandcamp.com') && !u.includes('EmbeddedPlayer')) candidates.push(async () => meta(await get(u), 'og:image'));
+    }
+    for (const c of candidates) {
+      try {
+        const src = typeof c === 'function' ? await c() : c;
+        const cover = await downloadCover(src, slug);
+        if (!cover) continue;
+        await writeFile(path, text.replace(/^gallery:/m, `cover: ${cover}\ngallery:`));
+        done.push(`cover ${slug}`);
+        break;
+      } catch {
+        // try the next source
+      }
+    }
+  }
+  return done;
+}
+
 async function downloadCover(src, slug) {
   if (!src) return null;
   const res = await get(src, 'raw');

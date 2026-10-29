@@ -19,7 +19,10 @@ started: 2026-10-14
 featured: true
 tools: [JavaScript, PIXI.js, LiquidFun, Node.js]
 gallery: []
-media: []
+media:
+  - type: webgl
+    src: "https://gann4life.github.io/RagAssembler2D/"
+    caption: "The live editor. Open it full screen from the link below for the best experience."
 links:
   - label: "Open the editor"
     type: play

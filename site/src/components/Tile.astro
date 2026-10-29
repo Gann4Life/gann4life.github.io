@@ -3,8 +3,8 @@ import { Picture } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 
 /*
- * 4:3 image tile with the text laid over it. Used for categories and works.
- * The image is cropped to fill (never stretched). `index` staggers the
+ * 4:3 tile with the text laid over it. The image is cropped to fill (never
+ * stretched); without one the tile is typographic. `index` staggers the
  * cascade animation.
  */
 interface Props {
@@ -20,8 +20,8 @@ interface Props {
 const { href, title, image, eyebrow, subtitle, index = 0, size = 'normal' } = Astro.props;
 ---
 
-<a class:list={['tile', `tile--${size}`]} href={href} style={`--i: ${index}`}>
-  {image ? (
+<a class:list={['tile', `tile--${size}`, { 'tile--plain': !image }]} href={href} style={`--i: ${index}`}>
+  {image && (
     <Picture
       class="tile__image"
       src={image}
@@ -31,8 +31,6 @@ const { href, title, image, eyebrow, subtitle, index = 0, size = 'normal' } = As
       alt=""
       loading={index < 6 ? 'eager' : 'lazy'}
     />
-  ) : (
-    <div class="tile__image tile__image--empty" aria-hidden="true"></div>
   )}
   <div class="tile__text">
     {eyebrow && <p class="tile__eyebrow">{eyebrow}</p>}

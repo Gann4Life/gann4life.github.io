@@ -11,6 +11,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
   ROOT,
+  backfillCovers,
   bandcampItem,
   decode,
   deviantartArt,
@@ -183,6 +184,12 @@ for (const [platform, url] of sources) {
     failed++;
     log.push(`fail  ${platform} listing ${url}: ${err.message}`);
   }
+}
+
+try {
+  log.push(...(await backfillCovers()));
+} catch (err) {
+  log.push(`fail  covers: ${err.message}`);
 }
 
 console.log(log.length ? log.join('\n') : 'Nothing new.');

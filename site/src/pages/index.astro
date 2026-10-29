@@ -2,32 +2,64 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Tile from '../components/Tile.astro';
 import { profile } from '../profile';
-import { getWork, groupByCategory, skills, tileMeta } from '../lib/work';
+import { embedUrl, getWork, groupByCategory, skills, tileMeta } from '../lib/work';
 
 const entries = await getWork();
 const groups = groupByCategory(entries);
-const work = groups.filter((g) => !g.category.hobby);
-const hobbies = groups.filter((g) => g.category.hobby);
-const featured = entries.filter((e) => e.data.featured);
+const bands = [
+  { id: 'work', title: 'Work', items: groups.filter((g) => !g.category.hobby) },
+  { id: 'hobbies', title: 'Hobbies', items: groups.filter((g) => g.category.hobby) },
+].filter((band) => band.items.length > 0);
+
+// The reel is the banner, so its entry is not repeated under Featured.
+const reel = profile.reel ? embedUrl('video', profile.reel) : null;
+const isReel = (e: (typeof entries)[number]) => e.data.media.some((m) => m.src === profile.reel);
+const featured = entries.filter((e) => e.data.featured && !isReel(e));
 const latest = entries.filter((e) => !e.data.featured).slice(0, 8);
 const skillList = skills(entries).slice(0, 12);
 ---
 
 <BaseLayout title={profile.name}>
   <main class="home">
-    <section class="hero">
-      <p class="hero__kicker">Portfolio</p>
-      <h1 class="hero__name">{profile.name}</h1>
-      {profile.tagline && <p class="hero__roles">{profile.tagline}</p>}
-      {profile.bio && <p class="hero__bio">{profile.bio}</p>}
-      {profile.links.length > 0 && (
-        <ul class="pills" aria-label="Profiles">
-          {profile.links.map((link) => (
-            <li><a href={link.url} rel="me noopener" target="_blank">{link.label}</a></li>
-          ))}
-        </ul>
+    <section class:list={['hero', { 'hero--reel': reel }]}>
+      <div class="hero__text">
+        <p class="hero__kicker">Portfolio</p>
+        <h1 class="hero__name">{profile.name}</h1>
+        {profile.tagline && <p class="hero__roles">{profile.tagline}</p>}
+        {profile.bio && <p class="hero__bio">{profile.bio}</p>}
+        {profile.links.length > 0 && (
+          <ul class="pills" aria-label="Profiles">
+            {profile.links.map((link) => (
+              <li><a href={link.url} rel="me noopener" target="_blank">{link.label}</a></li>
+            ))}
+          </ul>
+        )}
+      </div>
+      {reel && (
+        <div class="hero__reel">
+          <iframe
+            src={reel}
+            title={`${profile.name} demo reel`}
+            allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+            allowfullscreen
+          />
+        </div>
       )}
     </section>
+
+    {bands.map((band) => (
+      <section class="band" aria-labelledby={`${band.id}-title`}>
+        <h2 class="band__title" id={`${band.id}-title`}>{band.title}</h2>
+        <nav class="category-links" aria-label={band.title}>
+          {band.items.map(({ category, entries: items }, i) => (
+            <a href={`/work/c/${category.key}/`} style={`--i: ${i}`}>
+              <span class="category-links__label">{category.label}</span>
+              <span class="category-links__count">{items.length}</span>
+            </a>
+          ))}
+        </nav>
+      </section>
+    ))}
 
     {featured.length > 0 && (
       <section class="band" aria-labelledby="featured-title">
@@ -39,28 +71,6 @@ const skillList = skills(entries).slice(0, 12);
         </div>
       </section>
     )}
-
-    {[
-      { id: 'work', title: 'Work', items: work },
-      { id: 'hobbies', title: 'Hobbies', items: hobbies },
-    ]
-      .filter((band) => band.items.length > 0)
-      .map((band) => (
-        <section class="band" aria-labelledby={`${band.id}-title`}>
-          <h2 class="band__title" id={`${band.id}-title`}>{band.title}</h2>
-          <nav class="grid" aria-label={band.title}>
-            {band.items.map(({ category, entries: items }, i) => (
-              <Tile
-                href={`/work/c/${category.key}/`}
-                title={category.label}
-                subtitle={`${items.length} ${items.length === 1 ? 'project' : 'projects'}`}
-                image={items.find((e) => e.data.cover)?.data.cover}
-                index={i}
-              />
-            ))}
-          </nav>
-        </section>
-      ))}
 
     {latest.length > 0 && (
       <section class="band" aria-labelledby="latest-title">

@@ -69,7 +69,7 @@ const work = defineCollection({
           .array(
             z.object({
               type: z.enum(MEDIA_TYPES),
-              // Embed URL or a local path in public/ (e.g. a Spine skeleton).
+              // Embed URL or a local path in public/ (e.g. an MP4).
               src: z.string().min(1),
               caption: z.string().default(''),
             }),
@@ -136,4 +136,23 @@ const work = defineCollection({
       }),
 });
 
-export const collections = { work };
+/*
+ * `blog` collection — devlogs and posts, written in /keystatic.
+ * One file per post: src/content/blog/<slug>.md.
+ */
+const blog = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/blog' }),
+  schema: ({ image }) =>
+    z.object({
+      title: z.string().min(1),
+      slug: z.string().min(1),
+      date: z.coerce.date(),
+      summary: z.string().default(''),
+      cover: image().optional(),
+      // Slugs of related `work` entries, linked at the end of the post.
+      work: z.array(z.string()).default([]),
+      draft: z.boolean().default(false),
+    }),
+});
+
+export const collections = { work, blog };

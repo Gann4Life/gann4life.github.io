@@ -4,6 +4,7 @@ import '@fontsource-variable/space-grotesk';
 import '../styles/global.css';
 import { profile } from '../profile';
 import { getWork, groupByCategory } from '../lib/work';
+import { getPosts } from '../lib/blog';
 
 interface Props {
   title: string;
@@ -16,6 +17,7 @@ const pageTitle = title === profile.name ? title : `${title} — ${profile.name}
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = image ? new URL(image, Astro.site).href : undefined;
 const categories = groupByCategory(await getWork()).map((g) => g.category);
+const hasBlog = (await getPosts()).length > 0;
 const path = Astro.url.pathname;
 ---
 
@@ -26,6 +28,9 @@ const path = Astro.url.pathname;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap.xml" />
+    <meta name="theme-color" content="#08080b" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
@@ -37,13 +42,16 @@ const path = Astro.url.pathname;
   <body>
     <header class="site-header">
       <a class="site-header__name" href="/">{profile.name}</a>
-      {categories.length > 0 && (
-        <nav class="site-header__nav" aria-label="Categories">
+      {(categories.length > 0 || hasBlog) && (
+        <nav class="site-header__nav" aria-label="Site">
           {categories.map((c) => (
             <a href={`/work/c/${c.key}/`} aria-current={path.startsWith(`/work/c/${c.key}/`) ? 'page' : undefined}>
               {c.label}
             </a>
           ))}
+          {hasBlog && (
+            <a href="/blog/" aria-current={path.startsWith('/blog/') ? 'page' : undefined}>Blog</a>
+          )}
         </nav>
       )}
     </header>

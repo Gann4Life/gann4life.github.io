@@ -10,6 +10,8 @@ const schema = z.object({
   name: z.string().min(1),
   tagline: z.string().default(''),
   bio: z.string().default(''),
+  // YouTube/Vimeo URL shown as the home page banner.
+  reel: z.union([z.url(), z.literal('')]).default(''),
   links: z
     .array(
       z.object({

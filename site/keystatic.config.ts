@@ -134,6 +134,34 @@ export default config({
         body: fields.markdoc({ label: 'Body', extension: 'md' }),
       },
     }),
+    blog: collection({
+      label: 'Blog',
+      path: 'src/content/blog/*',
+      slugField: 'slug',
+      format: { contentField: 'body' },
+      columns: ['title', 'date', 'draft'],
+      schema: {
+        title: fields.text({ label: 'Title', validation: { isRequired: true } }),
+        slug: fields.text({
+          label: 'Slug',
+          description: 'URL of the post: /blog/<slug>. kebab-case.',
+          validation: { isRequired: true, pattern: { regex: /^[a-z0-9]+(?:-[a-z0-9]+)*$/, message: 'kebab-case' } },
+        }),
+        date: fields.date({ label: 'Date', defaultValue: { kind: 'today' }, validation: { isRequired: true } }),
+        summary: fields.text({ label: 'Summary', description: 'One line, shown on the blog list.' }),
+        cover: fields.image({ label: 'Cover', directory: 'src/assets/blog', publicPath: '../../assets/blog/' }),
+        work: fields.array(fields.text({ label: 'Work slug' }), {
+          label: 'Related work',
+          itemLabel: (props) => props.value || 'Slug',
+        }),
+        draft: fields.checkbox({ label: 'Draft', description: 'Untick to publish.', defaultValue: true }),
+        body: fields.markdoc({
+          label: 'Post',
+          extension: 'md',
+          options: { image: { directory: 'src/assets/blog', publicPath: '../../assets/blog/' } },
+        }),
+      },
+    }),
   },
   singletons: {
     profile: singleton({
@@ -144,6 +172,7 @@ export default config({
         name: fields.text({ label: 'Name', validation: { isRequired: true } }),
         tagline: fields.text({ label: 'Tagline' }),
         bio: fields.text({ label: 'Bio', multiline: true }),
+        reel: fields.url({ label: 'Demo reel', description: 'YouTube or Vimeo URL, shown as the home page banner.' }),
         links: fields.array(
           fields.object({
             label: fields.text({ label: 'Label', validation: { isRequired: true } }),

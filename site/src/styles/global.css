@@ -201,23 +201,121 @@ h2 {
 }
 
 .hero {
-  position: relative;
-  padding-block: clamp(3rem, 10vw, 8rem) clamp(2rem, 5vw, 4rem);
-  isolation: isolate;
+  padding-block: clamp(2.5rem, 8vw, 6rem) clamp(1.5rem, 4vw, 3rem);
 }
 
-/* Soft colour glow behind the name. */
-.hero::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: -20% 30% 10% -10%;
-  background:
-    radial-gradient(closest-side, color-mix(in srgb, var(--accent) 35%, transparent), transparent),
-    radial-gradient(closest-side at 80% 60%, color-mix(in srgb, var(--accent-2) 22%, transparent), transparent);
-  filter: blur(40px);
-  opacity: 0.8;
-  pointer-events: none;
+/* Name on the left, demo reel as the banner on the right; stacked on small screens. */
+.hero--reel {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: center;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+}
+
+.hero--reel .hero__name {
+  font-size: clamp(3rem, 1rem + 6vw, 7rem);
+}
+
+.hero__reel {
+  animation: rise 0.9s 0.2s var(--ease) both;
+}
+
+.hero__reel iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: var(--radius);
+  background: #000;
+  box-shadow: 0 0 0 1px var(--line), 0 30px 80px -30px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+@media (max-width: 60rem) {
+  .hero--reel {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Categories: collections, not items — typographic buttons, no thumbnails. */
+.category-links {
+  display: grid;
+  gap: clamp(0.5rem, 1vw, 0.75rem);
+  grid-template-columns: repeat(auto-fill, minmax(min(15rem, 100%), 1fr));
+}
+
+.category-links a {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: clamp(1rem, 2vw, 1.5rem) clamp(1.1rem, 2vw, 1.6rem);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  text-decoration: none;
+  animation: rise 0.6s var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+  transition: border-color 0.25s, transform 0.3s var(--ease), background 0.25s;
+}
+
+.category-links a:hover,
+.category-links a:focus-visible {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--card));
+  transform: translateY(-3px);
+}
+
+.category-links__label {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 1.1rem + 1vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.category-links__count {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Music category: compact players, playable in place. */
+.players {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 clamp(1.5rem, 3vw, 2.5rem);
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(26rem, 100%), 1fr));
+}
+
+.players li {
+  animation: rise 0.6s var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+
+.players__title {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.players__title .muted {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+.players iframe {
+  width: 100%;
+  height: 120px;
+  border: 0;
+  border-radius: var(--radius);
+}
+
+.players iframe[src*="soundcloud.com"] {
+  height: 166px;
 }
 
 .hero--compact {
@@ -260,12 +358,6 @@ h2 {
   color: var(--muted);
   margin: 0 0 1rem;
   animation: rise 0.8s 0.08s var(--ease) both;
-}
-
-.hero__tagline {
-  font-size: clamp(1.05rem, 1rem + 0.4vw, 1.3rem);
-  max-width: 44rem;
-  margin: 0 0 0.75rem;
 }
 
 .hero__bio {
@@ -353,11 +445,32 @@ h2 {
   transition: transform 0.7s var(--ease), filter 0.4s;
 }
 
-.tile__image--empty {
-  background:
-    radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--accent) 60%, transparent), transparent 60%),
-    radial-gradient(circle at 80% 90%, color-mix(in srgb, var(--accent-2) 40%, transparent), transparent 55%),
-    var(--bg-2);
+/* No image: a quiet card with the title set large, no overlay gradient. */
+.tile--plain {
+  color: var(--fg);
+  background: var(--card);
+}
+
+.tile--plain::after {
+  display: none;
+}
+
+.tile--plain .tile__text {
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  transform: none;
+}
+
+.tile--plain .tile__title {
+  font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2.2rem);
+}
+
+.tile--plain .tile__eyebrow,
+.tile--plain .tile__subtitle {
+  color: var(--muted);
+  opacity: 1;
 }
 
 .tile::after {
@@ -602,10 +715,6 @@ h2 {
   margin: 0.4rem 0 0;
 }
 
-.spine-player {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-}
 
 /* Gallery + CSS-only lightbox */
 

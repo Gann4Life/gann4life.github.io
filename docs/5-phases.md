@@ -18,7 +18,7 @@
 - [x] Gallery/lightbox (CSS only, no JS)
 - [x] Audio player (SoundCloud/Bandcamp embeds, native `<audio>`)
 - [x] ~~3D viewer~~ — dropped: 3D work is shown as screenshots ([section 4](4-media.md))
-- [ ] Spine player — built, not yet tested with a real skeleton
+- [x] ~~Spine player~~ — dropped: published rigs can be ripped; Spine work is shown as video
 - [x] Video/WebGL embeds
 - [x] Image pipeline: `astro:assets` with WebP/AVIF output
 
@@ -32,11 +32,11 @@ v2 held no project data of its own (everything came from CodersRank, now dropped
 - [ ] Add forked projects with upstream credit and contribution list (update their READMEs first) — Pixeler pending its contribution list
 
 ### Phase 5 — Polish
-- [ ] SEO: meta tags, Open Graph images per entry, sitemap
+- [x] SEO: meta tags, Open Graph images per entry, sitemap, robots.txt, 404, favicon
 - [ ] Privacy-friendly analytics (optional)
 - [ ] Lighthouse pass (performance, accessibility)
 - [ ] Custom domain (optional, deferred)
 
 ### Later (optional)
 - [ ] `buy` links to a storefront (Gumroad / Ko-fi / Lemon Squeezy / itch) for asset packs
-- [ ] Devlog / blog collection
+- [x] Devlog / blog collection (`/blog/`, written in `/keystatic`)
