@@ -56,6 +56,8 @@ feature | bug | chore | docs | spike
 ## General rules
 
 - **No AI attribution** in commits, trailers (`Co-Authored-By`), PR bodies, file headers, docs or changelog. If the project's content rules require disclosing how published work was made, those rules govern that content.
+- **No code comments.** Code explains itself through naming and structure: no line or block comments (CSS and markup included), no commented-out code, no TODO comments (pending work goes in issues).
+- **Docstrings only:** exported functions, classes, types and components get a short docstring in the language's standard format (e.g. JSDoc/TSDoc): contract, units, side effects. Anything longer belongs in the docs.
 - **English** for code, docs, commits and issues, unless the project instructions say otherwise.
 - **Confidentiality:** no client names, credentials, tokens or private data in the repo, issues or commits. Use generic terms and placeholders.
 

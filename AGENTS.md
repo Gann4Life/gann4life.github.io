@@ -19,13 +19,13 @@ Project instructions for OpenCode. Read this and `DESIGN.md` (the index) before 
 
 ## Workflow
 
-1. Confirm the branch: `git branch --show-current` must be `astro-rewrite` for v3 work.
+1. One issue, one branch: a Conventional Branch (`<type>/issue-<n>-<slug>`) cut from the base branch (`astro-rewrite` for v3 work). `/next` creates it.
 2. Read `docs/1-stack.md` and `docs/2-content-model.md` before writing code or content; read `docs/6-content-rules.md` before writing claims.
-3. Keep changes small and single-purpose. One commit per coherent step, imperative subject line.
+3. Keep changes small and single-purpose. One Conventional Commit per coherent step (`<type>(<scope>): <description>`, scopes from the table below).
 4. Verify before committing: run the build script that exists (`npm run build` for v2 today; `npx astro build` once Astro is installed) and, when content changed, validate frontmatter against the schema.
 5. Commit locally. Then report what changed, what was verified, and what is still unproven.
 
-The lead also follows `.claude/github-workflow.md`: a `TODO` or `ISSUE` in a user message goes to `planner` as a new issue, and so does new work found mid-task.
+The lead and every agent follow `.claude/github-workflow.md`: branch and commit conventions, the no-comments rule, and `TODO` / `ISSUE` in a user message (or new work found mid-task) going to `planner` as a new issue.
 
 ## Subagent routing
 
