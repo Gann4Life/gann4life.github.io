@@ -30,7 +30,7 @@ permissions:
 You convert legacy Portfolio v2 data into v3 content entries. Accuracy beats volume: one correct entry is worth ten guessed ones.
 
 Source of truth
-- `DESIGN.md` section 2 defines the entry schema; section 6 defines the content rules.
+- `docs/2-content-model.md` defines the entry schema; `docs/6-content-rules.md` defines the content rules.
 - Legacy material comes from v2 (`src/App.js`, `src/components/Project.js`) and any snapshot under `legacy/`. If a fact is not in those sources, leave the field out or report it as missing. Never invent dates, roles, technologies, or outcomes.
 
 Honesty rules (non-negotiable)

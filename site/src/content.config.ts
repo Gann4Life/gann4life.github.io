@@ -3,7 +3,7 @@ import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
 /*
- * `work` collection schema — DESIGN.md section 2, field-for-field.
+ * `work` collection schema — docs/2-content-model.md, field-for-field.
  * Enums are closed: filtering by role and kind depends on a fixed vocabulary.
  */
 
@@ -59,7 +59,7 @@ const work = defineCollection({
         started: z.coerce.date(),
         featured: z.boolean(),
         tools: z.array(z.string()).default([]),
-        // Local image only: DESIGN.md section 1 keeps images in the repo and
+        // Local image only: docs/1-stack.md keeps images in the repo and
         // rule 6 forbids hotlinked media.
         cover: image().optional(),
         media: z
@@ -90,7 +90,7 @@ const work = defineCollection({
         usedIn: z.array(z.string()).default([]),
       })
       .superRefine((entry, ctx) => {
-        // DESIGN.md section 2, "Forks": upstream link plus credit to the
+        // docs/2-content-model.md, "Forks": upstream link plus credit to the
         // original authors. Both are honesty requirements, not new fields.
         if (entry.origin === 'fork') {
           if (!entry.upstream) {

@@ -27,5 +27,5 @@ usedIn: []
 ---
 
 **Placeholder entry — not a real project.** It shows the fork shape required by
-DESIGN.md section 2: `origin: fork`, an `upstream` link, and the original
+docs/2-content-model.md: `origin: fork`, an `upstream` link, and the original
 authors credited. The upstream URL is `example.com` on purpose.

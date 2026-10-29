@@ -1,6 +1,6 @@
 # Portfolio v3 — Astro site
 
-Static rebuild of the portfolio. `DESIGN.md` at the repo root is the spec; this
+Static rebuild of the portfolio. `DESIGN.md` at the repo root indexes the spec in `docs/`; this
 README only covers running the app.
 
 The v2 Create React App still lives at the repo root and is still what deploys
@@ -40,7 +40,7 @@ Requires Node `>=22.23.4` (Astro 7).
 
 Entries are hand-written Markdown; the schema in `src/content.config.ts` is the
 only gate. Rules for claims, credits, forks, and AI-built work live in
-`DESIGN.md` sections 2 and 6 — follow those, not this file.
+`docs/2-content-model.md` and `docs/6-content-rules.md` — follow those, not this file.
 
 Images must live in the repo (`src/assets/` referenced relatively from the
 Markdown file, or `public/` for unprocessed files). No hotlinked media.

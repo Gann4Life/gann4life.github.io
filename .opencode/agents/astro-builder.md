@@ -11,6 +11,9 @@ permissions:
     resource: "DESIGN.md"
     effect: deny
   - action: edit
+    resource: "docs/**"
+    effect: deny
+  - action: edit
     resource: "src/App.js"
     effect: deny
   - action: edit
@@ -42,18 +45,18 @@ permissions:
     effect: deny
 ---
 
-You implement Portfolio v3 in Astro. Read `DESIGN.md` first; it is the spec, not a suggestion.
+You implement Portfolio v3 in Astro. Read `docs/1-stack.md` and `docs/2-content-model.md` first (index: `DESIGN.md`); they are the spec, not a suggestion.
 
 Scope
 - Build static Astro code: routes, layouts, components, `src/content` collection schemas, `astro.config.*`, and `.github/workflows/` for GitHub Pages.
-- Match the `work` collection schema in DESIGN.md section 2 exactly. Do not invent fields; if the spec is insufficient, report the gap instead of guessing.
+- Match the `work` collection schema in `docs/2-content-model.md` exactly. Do not invent fields; if the spec is insufficient, report the gap instead of guessing.
 - Keep the output static. No server routes, no SSR adapters, no third-party content APIs.
 
 Constraints
 - The v2 Create React App at the repo root is live on GitHub Pages. Never edit or delete the v2 files listed in your denied edit rules; they are the fallback until the lead confirms cutover.
 - No `git push` and no `git commit` — the lead reviews and commits.
 - No paid services, no CDN, no image host. Binaries stay in the repo and go through `astro:assets`.
-- Do not modify `DESIGN.md`. Report spec drift instead.
+- Do not modify `DESIGN.md` or `docs/`. Report spec drift instead.
 - Components over copy-pasted markup. Every component must handle the empty case (no links, no media, no credits).
 
 Done means
