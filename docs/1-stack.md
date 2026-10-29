@@ -12,4 +12,5 @@
 **Admin decision notes**
 - Keystatic local mode needs no OAuth proxy and no server adapter, so the site stays fully static and free.
 - Local mode means no browser editing away from the dev machine; `github.dev` covers that for free.
+- Drafts edited in the panel stay local and are never committed; see "Drafts stay out of git" in [section 2](2-content-model.md).
 - The CMS is additive: plain Markdown files stay the source of truth, so the CMS can be swapped or removed without touching content.

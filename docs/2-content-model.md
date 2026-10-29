@@ -27,7 +27,7 @@ contribution: >
 status: released      # released | in-development | archived
 started: 2025-06-01   # creation/start date — used for sorting and year filters
 featured: true
-draft: false          # true = dev server only, never published
+draft: false          # true = local only: dev server, never committed, never published (see "Drafts stay out of git")
 tools: [Unity, C#, Spine]
 cover: "../../assets/project-name/cover.png"   # thumbnail, in-repo, see section 1
 gallery:              # any number of extra images, in-repo
@@ -55,6 +55,25 @@ Long description / devlog in Markdown.
 - `npm run sync` (in `site/`) pulls every work from the profiles in `src/data/profile.json` (itch.io, Bandcamp, DeviantArt, GitHub, YouTube) as drafts. Re-running only adds what is new; edited entries are never touched. A GitHub repo whose homepage is an itch.io game becomes that game's source link.
 - `npm run add -- <url>` imports a single work, e.g. a SoundCloud track (SoundCloud has no public listing). It imports from itch.io, Bandcamp, SoundCloud, YouTube, DeviantArt or GitHub: title, date, cover downloaded into the repo, and the resolved embed. The platform is read once and snapshotted; the site never calls it at build time.
 - Imported entries are `draft: true` with an empty `contribution`. Fill in contribution, roles and authorship in `/keystatic`, then untick Draft. Published entries must have a `contribution`.
+
+**Drafts stay out of git**
+
+A `draft: true` entry and its assets live only on the dev machine until published. They are never committed, so they never reach the public repo or the Pages build.
+
+- One content folder, no drafts folder, no second repo: entries stay in `site/src/content/work/` and `site/src/content/blog/`, assets in `site/src/assets/<folder>/`, so Keystatic keeps working unchanged.
+- Draft status is read exactly as the schema reads it: `draft: true` in frontmatter; a missing `draft` means published.
+- **Exclude script** (`site/scripts/`, Node, no new dependency unless approved): reads the frontmatter of every `.md` in `work` and `blog` and rewrites a marked block (begin/end marker lines) of the local `.git/info/exclude`. Lines outside the block are never touched. The block lists every draft entry file and every asset folder excluded by the rule below. The exclude file is located with `git rev-parse --git-path info/exclude` (works in worktrees); if there is no git repo (e.g. a tarball build), the script does nothing and exits 0.
+- It runs automatically before `npm run dev` and `npm run build` (npm `predev` / `prebuild` scripts) and from the pre-commit hook. In CI it finds no drafts and is harmless.
+- **Asset folder rule**: a folder `site/src/assets/<folder>/` is excluded unless something non-draft references it. An entry references a folder when the folder name equals its slug (file name, or explicit `slug:`) or when its file text contains `assets/<folder>/`. Any file under `site/src/` that is not a draft entry (published entries, components, layouts, data) and contains `assets/<folder>/` also counts. So:
+  - a folder used only by drafts is excluded;
+  - a folder shared by a draft and a published entry is committed (the published entry needs it);
+  - a folder referenced by nothing is excluded too, and the script lists it as unreferenced so it can be deleted or linked.
+  - Loose files directly in `site/src/assets/` are outside the rule and are committed normally.
+- **Pre-commit hook** (`.githooks/pre-commit`, committed; enabled per clone with `git config core.hooksPath .githooks`, documented in the README setup): re-runs the script, then blocks the commit if any staged added/copied/modified/renamed file is a draft entry or lies inside an excluded asset folder. This covers files already tracked and `git add -f`. Staged deletions are always allowed, so `git rm --cached` of a draft goes through. The error names each blocked file and how to unstage it.
+- **Windows constraint**: the hook runs under Git for Windows `sh`. It is a POSIX `sh` script that only calls `git` and `node`, has LF line endings (pinned in `.gitattributes`) and the executable bit set in the index.
+- **Publishing** = set `draft: false` (untick Draft). On the next commit the script drops the entry and its folder from the exclude block, and they are committed together.
+- **Unpublishing** a committed entry (back to `draft: true`) does not untrack it: `.git/info/exclude` never applies to tracked files. The hook then blocks further changes to it until it is removed with `git rm --cached`; the script reports tracked drafts.
+- `git commit --no-verify` and clones without `core.hooksPath` bypass the hook. The build-time draft filter (drafts are dropped from production builds) stays as a second guard.
 
 **Rules**
 - Buttons render only for links that exist. No link type is required: an entry may have only a demo, only a store page, only a download, or nothing.
