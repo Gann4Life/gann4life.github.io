@@ -17,9 +17,11 @@ interface Props {
   index?: number;
   size?: 'large' | 'normal';
   edit?: string;
+  headingLevel?: 2 | 3;
 }
 
-const { href, title, image, eyebrow, subtitle, index = 0, size = 'normal', edit } = Astro.props;
+const { href, title, image, eyebrow, subtitle, index = 0, size = 'normal', edit, headingLevel = 3 } = Astro.props;
+const Heading = headingLevel === 2 ? 'h2' : 'h3';
 ---
 
 <div class="tile-wrap">
@@ -37,7 +39,7 @@ const { href, title, image, eyebrow, subtitle, index = 0, size = 'normal', edit 
     )}
     <div class="tile__text">
       {eyebrow && <p class="tile__eyebrow">{eyebrow}</p>}
-      <h3 class="tile__title">{title}</h3>
+      <Heading class="tile__title">{title}</Heading>
       {subtitle && <p class="tile__subtitle">{subtitle}</p>}
     </div>
   </a>

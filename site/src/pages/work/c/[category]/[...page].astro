@@ -74,6 +74,7 @@ const title = page.currentPage > 1 ? `${category.label} — page ${page.currentP
             subtitle={[entry.data.position, entry.data.draft ? 'Draft' : ''].filter(Boolean).join(' · ') || undefined}
             image={entry.data.cover}
             index={i}
+            headingLevel={2}
             edit={`work/item/${entry.id}`}
           />
         ))}
