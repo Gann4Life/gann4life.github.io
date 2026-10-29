@@ -7,7 +7,7 @@ Shared by the lead (main session), the `planner`, `architect` and `doc-writer` a
 | Fact | Where | Default if unstated |
 |---|---|---|
 | Spec / design doc | project instructions, else `DESIGN.md` | none: report that there is no spec |
-| Roadmap phases | spec's roadmap / phases section | one milestone per phase |
+| Roadmap phases | spec's roadmap / phases section | one milestone per phase, unless the project says it uses none |
 | Decision log | project instructions | `docs/decisions/` |
 | Base branch | project instructions | `gh repo view --json defaultBranchRef` |
 | Scopes | project instructions | top-level areas of the repo |
@@ -67,7 +67,7 @@ feature | bug | chore | docs | spike
 - Scope: `scope:<area>` from the project's scopes.
 - Priority: `priority:high` (bugs, spikes, anything that unblocks others or reduces risk), `priority:medium` (roadmap work), `priority:low` (polish).
 - Status: `status:blocked` while any dependency is open, otherwise `status:ready`.
-- Milestone: the roadmap phase.
+- Milestone: the roadmap phase, only if the project uses milestones.
 - Each issue has exactly one type, one scope, one priority and one status label.
 
 ## Branches, commits, PRs

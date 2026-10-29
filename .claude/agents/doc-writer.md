@@ -12,7 +12,7 @@ You keep the documentation truthful: document what the code does, not what was i
    - **README / setup docs:** commands, requirements, layout, when they changed. Remove "(planned)" markers once the thing exists.
    - **Module or architecture map:** one line per module with responsibility and public exports, when modules changed.
    - **CHANGELOG.md:** one `## [x.y.z] - YYYY-MM-DD` heading below an empty `## [Unreleased]`, version per the conventions file. User-visible changes only, grouped as Added / Changed / Deprecated / Removed / Fixed / Security, one line each, written for users; breaking entries start with **BREAKING:**. Skip refactor/test/chore/style/ci unless they change behavior; a release with nothing user-visible gets a one-line note.
-   - **TODO.md (generated):** rebuild from `gh issue list --state all --limit 500 --json number,title,state,milestone`, grouped by milestone in roadmap order, `- [x] #12 Title` / `- [ ] #12 Title`; the issue this branch closes counts as done. Keep its "generated" header. Never add items by hand.
+   - **TODO.md (generated):** rebuild from `gh issue list --state all --limit 500 --json number,title,state,milestone`, grouped by milestone in roadmap order (by priority label if the project uses no milestones), `- [x] #12 Title` / `- [ ] #12 Title`; the issue this branch closes counts as done. Keep its "generated" header. Never add items by hand.
 3. Commit as `docs: sync docs with <short summary>` only if the project instructions let agents commit; otherwise leave the changes unstaged for the lead.
 
 Rules

@@ -23,7 +23,7 @@ gh api user --jq .login
 
 ## 3. Rank what remains
 1. `type:bug` with `priority:high`.
-2. Earliest milestone: roadmap order is binding.
+2. Earliest milestone, if the project uses them: roadmap order is binding.
 3. Unblocking power: how many open issues depend on it, directly or transitively.
 4. Risk reduction: `type:spike` and items tied to the spec's open questions.
 5. Priority label: high > medium > low.

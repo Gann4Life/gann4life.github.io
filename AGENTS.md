@@ -58,7 +58,7 @@ Executors never decide. A prompt without a work order gets `NEEDS ORDER`; an inc
 | Fact | Value |
 |---|---|
 | Spec | `DESIGN.md` (index) + `docs/` |
-| Roadmap phases | `docs/5-phases.md` (one milestone per phase) |
+| Roadmap phases | `docs/5-phases.md`; no milestones (continuous backlog, ranked by priority labels) |
 | Decision log | `docs/8-open-decisions.md` |
 | Base branch | `astro-rewrite` until cutover, then `main` |
 | Scopes | `site`, `content`, `docs`, `ci`, `agents` |
