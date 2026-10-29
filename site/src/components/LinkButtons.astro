@@ -1,0 +1,27 @@
+---
+import { linkText, type Work } from '../lib/work';
+
+interface Props {
+  links: Work['data']['links'];
+}
+
+const { links } = Astro.props;
+---
+
+{links.length > 0 && (
+  <ul class="link-buttons">
+    {links.map((link, i) => (
+      <li>
+        <a
+          class:list={['button', { 'button--primary': i === 0 }]}
+          data-type={link.type}
+          href={link.url}
+          target="_blank"
+          rel="noopener"
+        >
+          {linkText(link)}
+        </a>
+      </li>
+    ))}
+  </ul>
+)}

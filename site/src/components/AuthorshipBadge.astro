@@ -5,15 +5,23 @@ type Authorship = CollectionEntry<'work'>['data']['authorship'];
 
 interface Props {
   authorship?: Authorship | null;
+  // Detail pages add the one-line explanation from docs/2-content-model.md.
+  explain?: boolean;
 }
 
-const { authorship } = Astro.props;
+const { authorship, explain = false } = Astro.props;
 
 const LABELS: Record<Authorship, string> = {
   'hand-made': 'Hand-made',
   'ai-assisted': 'AI-assisted',
   'ai-built': 'AI-built',
 };
+
+const NOTES: Partial<Record<Authorship, string>> = {
+  'ai-assisted': 'Written by me with AI assistance; I reviewed and own every part.',
+  'ai-built': 'Directed, designed and specified by me, implemented with AI.',
+};
 ---
 
-{authorship && <span class="authorship-badge" data-authorship={authorship}>{LABELS[authorship] ?? authorship}</span>}
+{authorship && <span class="badge" data-authorship={authorship}>{LABELS[authorship] ?? authorship}</span>}
+{explain && authorship && NOTES[authorship] && <p class="authorship-note">{NOTES[authorship]}</p>}

@@ -1,0 +1,50 @@
+---
+import { Picture, getImage } from 'astro:assets';
+import type { Work } from '../lib/work';
+
+interface Props {
+  slug: string;
+  items: Work['data']['gallery'];
+}
+
+const { slug, items } = Astro.props;
+
+// Lightbox without JS: each thumbnail targets an overlay by #id (CSS :target).
+const full = await Promise.all(
+  items.map((item) => getImage({ src: item.image, format: 'webp', width: Math.min(item.image.width, 1920) })),
+);
+---
+
+{items.length > 0 && (
+  <section class="gallery" id="gallery" aria-label="Gallery">
+    <ul class="gallery__grid">
+      {items.map((item, i) => (
+        <li>
+          <a href={`#${slug}-img-${i}`}>
+            <Picture
+              src={item.image}
+              formats={['avif', 'webp']}
+              widths={[320, 640]}
+              sizes="(max-width: 40rem) 50vw, 20rem"
+              alt={item.caption}
+            />
+          </a>
+          {item.caption && <p class="gallery__caption">{item.caption}</p>}
+        </li>
+      ))}
+    </ul>
+    {items.map((item, i) => (
+      <div class="lightbox" id={`${slug}-img-${i}`}>
+        <a class="lightbox__close" href="#gallery" aria-label="Close" />
+        <figure>
+          <img src={full[i].src} alt={item.caption} loading="lazy" decoding="async" />
+          {item.caption && <figcaption>{item.caption}</figcaption>}
+        </figure>
+        <nav class="lightbox__nav">
+          {i > 0 && <a class="lightbox__prev" href={`#${slug}-img-${i - 1}`} aria-label="Previous">‹</a>}
+          {i < items.length - 1 && <a class="lightbox__next" href={`#${slug}-img-${i + 1}`} aria-label="Next">›</a>}
+        </nav>
+      </div>
+    ))}
+  </section>
+)}

@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@astrojs/react": "^7.1.2",
+    "@esotericsoftware/spine-player": "^4.3.13",
     "@keystatic/astro": "^6.0.0",
     "@keystatic/core": "^0.6.9",
     "astro": "^7.4.2",

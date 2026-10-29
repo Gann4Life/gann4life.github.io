@@ -7,29 +7,29 @@
 - [ ] Deploy to GitHub Pages from Actions, auto-deploy on push to `main` after cutover
 
 ### Phase 2 — Core pages
-- [ ] Home: hero, featured strip, grid
-- [ ] Filters by role and kind
-- [ ] Detail page with conditional sections (contribution, credits, links, usedIn)
-- [ ] Authorship badge + fork/upstream block
-- [ ] Skills list generated from `hand-made` entries only
-- [ ] Responsive + dark/light
+- [x] Home: hero, featured strip, grid
+- [x] Filters by kind, context and role
+- [x] Detail page with conditional sections (contribution, credits, links, usedIn)
+- [x] Authorship badge + fork/upstream block
+- [x] Skills list generated from `hand-made` and `ai-assisted` entries only
+- [x] Responsive + dark/light (follows the system setting)
 
 ### Phase 3 — Media components
-- [ ] Gallery/lightbox
-- [ ] Audio player
-- [ ] 3D viewer
-- [ ] Spine player
-- [ ] Video/WebGL embeds
-- [ ] Image pipeline: `astro:assets` with WebP/AVIF output
+- [x] Gallery/lightbox (CSS only, no JS)
+- [x] Audio player (SoundCloud/Bandcamp embeds, native `<audio>`)
+- [x] ~~3D viewer~~ — dropped: 3D work is shown as screenshots ([section 4](4-media.md))
+- [ ] Spine player — built, not yet tested with a real skeleton
+- [x] Video/WebGL embeds
+- [x] Image pipeline: `astro:assets` with WebP/AVIF output
 
 ### Phase 4 — Content migration
+v2 held no project data of its own (everything came from CodersRank, now dropped), so content is entered fresh through the panel.
 - [ ] Re-export original art (old site hotlinked expiring CDN URLs)
-- [ ] Collect SoundCloud track IDs from old site
-- [ ] Rebuild software entries from old project-card data
+- [ ] Add music entries (SoundCloud/Bandcamp embeds) + `usedIn` relations
+- [ ] Add software entries
 - [ ] Add game entries with roles and contribution text
-- [ ] Add music entries + `usedIn` relations
-- [ ] Add AI-built projects with authorship badge, design-focused roles and `docs` links
-- [ ] Add forked projects with upstream credit and contribution list (update their READMEs first)
+- [ ] Add AI-built projects with authorship badge, design-focused roles and `docs` links — RagAssembler2D done
+- [ ] Add forked projects with upstream credit and contribution list (update their READMEs first) — Pixeler pending its contribution list
 
 ### Phase 5 — Polish
 - [ ] SEO: meta tags, Open Graph images per entry, sitemap

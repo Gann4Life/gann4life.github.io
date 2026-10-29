@@ -1,0 +1,41 @@
+---
+import SpinePlayer from './SpinePlayer.astro';
+import { embedUrl, type Work } from '../lib/work';
+
+interface Props {
+  items: Work['data']['media'];
+  title: string;
+}
+
+const { items, title } = Astro.props;
+const isLocal = (src: string) => src.startsWith('/');
+---
+
+{items.length > 0 && (
+  <section class="media-list" aria-label="Media">
+    {items.map((item) => {
+      if (item.type === 'spine') return <SpinePlayer src={item.src} caption={item.caption} />;
+      const embed = embedUrl(item.type, item.src);
+      return (
+        <figure class:list={['media', `media--${item.type}`]}>
+          {embed ? (
+            <iframe
+              src={embed}
+              title={item.caption || title}
+              loading="lazy"
+              allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+              allowfullscreen
+            />
+          ) : isLocal(item.src) && item.type === 'video' ? (
+            <video src={item.src} controls preload="metadata" />
+          ) : isLocal(item.src) && item.type === 'audio' ? (
+            <audio src={item.src} controls preload="metadata" />
+          ) : (
+            <a class="button" href={item.src} target="_blank" rel="noopener">Open {item.type}</a>
+          )}
+          {item.caption && <figcaption>{item.caption}</figcaption>}
+        </figure>
+      );
+    })}
+  </section>
+)}

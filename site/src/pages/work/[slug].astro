@@ -1,0 +1,136 @@
+---
+import { Picture, getImage } from 'astro:assets';
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AuthorshipBadge from '../../components/AuthorshipBadge.astro';
+import LinkButtons from '../../components/LinkButtons.astro';
+import Media from '../../components/Media.astro';
+import Gallery from '../../components/Gallery.astro';
+import {
+  CONTEXT_LABELS,
+  KIND_LABELS,
+  ROLE_LABELS,
+  STATUS_LABELS,
+  getWork,
+  year,
+  type Work,
+} from '../../lib/work';
+
+export async function getStaticPaths() {
+  const entries = await getWork();
+  return entries.map((entry) => ({
+    params: { slug: entry.data.slug },
+    props: { entry, all: entries },
+  }));
+}
+
+interface Props {
+  entry: Work;
+  all: Work[];
+}
+
+const { entry, all } = Astro.props;
+const { data } = entry;
+const { Content } = await render(entry);
+
+// usedIn works both ways (docs/2-content-model.md).
+const bySlug = new Map(all.map((e) => [e.data.slug, e]));
+const usedIn = data.usedIn.map((slug) => bySlug.get(slug)).filter((e): e is Work => Boolean(e));
+const features = all.filter((e) => e.data.usedIn.includes(data.slug));
+
+const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', width: 1200 })).src : undefined;
+---
+
+<BaseLayout title={data.title} description={data.contribution} image={ogImage}>
+  <main class="page detail">
+    <header class="detail__header">
+      <p class="detail__meta">
+        <span>{KIND_LABELS[data.kind]}</span>
+        <span>{CONTEXT_LABELS[data.context]}</span>
+        <span>{year(entry)}</span>
+        <span>{STATUS_LABELS[data.status]}</span>
+        <span>{data.team === 'solo' ? 'Solo' : 'Team'}</span>
+      </p>
+      <h1>{data.title}</h1>
+      {data.position && <p class="detail__position">{data.position}</p>}
+      <AuthorshipBadge authorship={data.authorship} explain />
+      <LinkButtons links={data.links} />
+    </header>
+
+    {data.cover && (
+      <Picture
+        class="detail__cover"
+        src={data.cover}
+        formats={['avif', 'webp']}
+        widths={[640, 1280, 1920]}
+        sizes="(max-width: 64rem) 100vw, 60rem"
+        alt=""
+      />
+    )}
+
+    <section class="detail__section">
+      <h2>What I did</h2>
+      <p>{data.contribution}</p>
+      {data.roles.length > 0 && (
+        <ul class="tags" aria-label="Roles">
+          {data.roles.map((role) => <li>{ROLE_LABELS[role]}</li>)}
+        </ul>
+      )}
+    </section>
+
+    <Media items={data.media} title={data.title} />
+    <Gallery slug={data.slug} items={data.gallery} />
+
+    <article class="detail__body prose">
+      <Content />
+    </article>
+
+    {data.origin === 'fork' && (
+      <section class="detail__section fork">
+        <h2>Fork</h2>
+        <p>
+          Fork of <a href={data.upstream} target="_blank" rel="noopener">{data.upstream.replace(/^https?:\/\//, '')}</a>.
+          The original project and its license belong to its authors; this entry covers only my changes.
+        </p>
+      </section>
+    )}
+
+    {data.credits.length > 0 && (
+      <section class="detail__section">
+        <h2>Credits</h2>
+        <ul class="credits">
+          {data.credits.map((c) => (
+            <li>
+              {c.url ? <a href={c.url} target="_blank" rel="noopener">{c.name}</a> : c.name}
+              <span> — {c.role}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {data.tools.length > 0 && (
+      <section class="detail__section">
+        <h2>Tools</h2>
+        <ul class="tags">{data.tools.map((tool) => <li>{tool}</li>)}</ul>
+      </section>
+    )}
+
+    {(usedIn.length > 0 || features.length > 0) && (
+      <section class="detail__section">
+        <h2>Related</h2>
+        <ul class="related">
+          {usedIn.map((e) => <li>Used in <a href={`/work/${e.data.slug}/`}>{e.data.title}</a></li>)}
+          {features.map((e) => (
+            <li>
+              {e.data.kind === 'music' ? 'Music' : KIND_LABELS[e.data.kind]}:{' '}
+              <a href={`/work/${e.data.slug}/`}>{e.data.title}</a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <p><a href="/#work">← All work</a></p>
+  </main>
+</BaseLayout>

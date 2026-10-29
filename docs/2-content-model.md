@@ -33,7 +33,7 @@ gallery:              # any number of extra images, in-repo
   - image: "../../assets/project-name/shot-1.png"
     caption: ""
 media:                # embeds and players, see section 4
-  - type: video       # video | model3d | spine | audio | webgl
+  - type: video       # video | spine | audio | webgl
     src: "https://..."
     caption: ""
 links:                # all optional, any mix, any order

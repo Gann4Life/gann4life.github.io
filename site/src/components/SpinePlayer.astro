@@ -1,0 +1,30 @@
+---
+interface Props {
+  src: string;
+  caption?: string;
+}
+
+// docs/4-media.md: `src` is the skeleton .json in public/, atlas beside it.
+const { src, caption = '' } = Astro.props;
+const atlas = src.replace(/\.(json|skel)$/, '.atlas');
+---
+
+<figure class="media">
+  <div class="spine-player" data-skeleton={src} data-atlas={atlas}></div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<script>
+  import { SpinePlayer } from '@esotericsoftware/spine-player';
+  import '@esotericsoftware/spine-player/dist/spine-player.css';
+
+  for (const el of document.querySelectorAll<HTMLElement>('.spine-player')) {
+    new SpinePlayer(el, {
+      skeleton: el.dataset.skeleton,
+      atlas: el.dataset.atlas,
+      backgroundColor: '#00000000',
+      alpha: true,
+      showControls: true,
+    });
+  }
+</script>

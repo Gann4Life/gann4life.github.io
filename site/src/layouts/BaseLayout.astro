@@ -1,12 +1,17 @@
 ---
 import '../styles/global.css';
+import { profile } from '../profile';
 
 interface Props {
   title: string;
   description?: string;
+  image?: string;
 }
 
-const { title, description } = Astro.props;
+const { title, description = profile.tagline || `Work by ${profile.name}`, image } = Astro.props;
+const pageTitle = title === profile.name ? title : `${title} — ${profile.name}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = image ? new URL(image, Astro.site).href : undefined;
 ---
 
 <!doctype html>
@@ -14,10 +19,33 @@ const { title, description } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    {description && <meta name="description" content={description} />}
-    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:type" content="website" />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    <title>{pageTitle}</title>
   </head>
   <body>
+    <header class="site-header">
+      <a class="site-header__name" href="/">{profile.name}</a>
+      <nav>
+        <a href="/#work">Work</a>
+      </nav>
+    </header>
     <slot />
+    <footer class="site-footer">
+      {profile.links.length > 0 && (
+        <ul class="profile-links">
+          {profile.links.map((link) => (
+            <li><a href={link.url} rel="me noopener" target="_blank">{link.label}</a></li>
+          ))}
+        </ul>
+      )}
+      <p>© {new Date().getFullYear()} {profile.name}</p>
+    </footer>
   </body>
 </html>

@@ -65,7 +65,7 @@ const work = defineCollection({
           .array(
             z.object({
               type: z.enum(MEDIA_TYPES),
-              // Embed URL or a local path (e.g. a GLB in public/).
+              // Embed URL or a local path in public/ (e.g. a Spine skeleton).
               src: z.string().min(1),
               caption: z.string().default(''),
             }),
