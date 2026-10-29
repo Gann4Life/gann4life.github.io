@@ -6,6 +6,7 @@ import AuthorshipBadge from '../../components/AuthorshipBadge.astro';
 import LinkButtons from '../../components/LinkButtons.astro';
 import Media from '../../components/Media.astro';
 import Gallery from '../../components/Gallery.astro';
+import EditLink from '../../components/EditLink.astro';
 import {
   CONTEXT_LABELS,
   KIND_LABELS,
@@ -52,6 +53,7 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
         <span>{STATUS_LABELS[data.status]}</span>
         <span>{data.team === 'solo' ? 'Solo' : 'Team'}</span>
       </p>
+      <EditLink path={`collection/work/item/${entry.id}`} />
       {data.draft && <p class="draft-note">Draft — visible on the dev server only.</p>}
       <h1>{data.title}</h1>
       {data.position && <p class="detail__position">{data.position}</p>}

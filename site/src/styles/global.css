@@ -603,6 +603,122 @@ h2 {
   }
 }
 
+/* Tile wrapper: lets a dev-only edit button sit on the tile without nesting links. */
+.tile-wrap {
+  position: relative;
+}
+
+/* Pagination */
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+.pager ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.pager a,
+.pager__gap {
+  display: grid;
+  place-items: center;
+  min-width: 2.75rem;
+  height: 2.75rem;
+  padding: 0 0.9rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.pager a {
+  border: 1px solid var(--line);
+  background: var(--card);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.pager a:hover {
+  border-color: var(--accent);
+}
+
+.pager a[aria-current="page"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-fg);
+}
+
+.pager__gap {
+  color: var(--muted);
+}
+
+.pager__step {
+  min-width: 7rem;
+}
+
+@media (max-width: 40rem) {
+  .pager {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .pager ol {
+    order: -1;
+    width: 100%;
+  }
+}
+
+/* Dev-only edit shortcut into Keystatic (never rendered in production). */
+.edit-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 1px dashed #f59e0b;
+  background: rgb(245 158 11 / 0.12);
+  color: #f59e0b;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  margin-bottom: 0.75rem;
+}
+
+.edit-link svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  fill: currentColor;
+}
+
+.edit-link:hover {
+  background: rgb(245 158 11 / 0.25);
+}
+
+.edit-link--tile {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  z-index: 2;
+  margin: 0;
+  background: rgb(10 10 12 / 0.75);
+  backdrop-filter: blur(6px);
+}
+
+.players li {
+  position: relative;
+}
+
+.players .edit-link {
+  margin: 0.5rem 0 0;
+}
+
 /* Badges, tags, buttons */
 
 .badge {

@@ -2,6 +2,7 @@
 import { Picture, getImage } from 'astro:assets';
 import { render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import EditLink from '../../components/EditLink.astro';
 import { formatDate, getPosts, type Post } from '../../lib/blog';
 import { getWork } from '../../lib/work';
 
@@ -23,6 +24,7 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
 <BaseLayout title={data.title} description={data.summary || undefined} image={ogImage}>
   <main class="page post">
     <header class="detail__header">
+      <EditLink path={`collection/blog/item/${post.id}`} />
       <p class="detail__meta">
         <a href="/blog/">Blog</a>
         <time datetime={data.date.toISOString()}>{formatDate(data.date)}</time>

@@ -1,0 +1,42 @@
+---
+import type { Page } from 'astro';
+
+/*
+ * Page navigation for paginated collections. Shows first, last, and the
+ * pages around the current one; renders nothing when there is one page.
+ */
+interface Props {
+  page: Page<unknown>;
+}
+
+const { page } = Astro.props;
+const { currentPage: current, lastPage: last } = page;
+
+// /work/c/art/ is page 1; /work/c/art/2/ onwards.
+const base = page.url.current.replace(/\/\d+\/?$/, '').replace(/\/$/, '');
+const href = (n: number) => (n === 1 ? `${base}/` : `${base}/${n}/`);
+
+const numbers: (number | '…')[] = [];
+for (let n = 1; n <= last; n++) {
+  if (n === 1 || n === last || Math.abs(n - current) <= 1) numbers.push(n);
+  else if (numbers.at(-1) !== '…') numbers.push('…');
+}
+---
+
+{last > 1 && (
+  <nav class="pager" aria-label="Pages">
+    {page.url.prev ? <a class="pager__step" href={page.url.prev} rel="prev">← Previous</a> : <span class="pager__step" aria-hidden="true"></span>}
+    <ol>
+      {numbers.map((n) =>
+        n === '…' ? (
+          <li class="pager__gap" aria-hidden="true">…</li>
+        ) : (
+          <li>
+            <a href={href(n)} aria-current={n === current ? 'page' : undefined}>{n}</a>
+          </li>
+        ),
+      )}
+    </ol>
+    {page.url.next ? <a class="pager__step" href={page.url.next} rel="next">Next →</a> : <span class="pager__step" aria-hidden="true"></span>}
+  </nav>
+)}

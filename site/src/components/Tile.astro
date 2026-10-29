@@ -1,11 +1,12 @@
 ---
 import { Picture } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
+import EditLink from './EditLink.astro';
 
 /*
  * 4:3 tile with the text laid over it. The image is cropped to fill (never
  * stretched); without one the tile is typographic. `index` staggers the
- * cascade animation.
+ * cascade animation. `edit` (dev only) is the Keystatic item, e.g. "work/item/beatlords".
  */
 interface Props {
   href: string;
@@ -15,26 +16,30 @@ interface Props {
   subtitle?: string;
   index?: number;
   size?: 'large' | 'normal';
+  edit?: string;
 }
 
-const { href, title, image, eyebrow, subtitle, index = 0, size = 'normal' } = Astro.props;
+const { href, title, image, eyebrow, subtitle, index = 0, size = 'normal', edit } = Astro.props;
 ---
 
-<a class:list={['tile', `tile--${size}`, { 'tile--plain': !image }]} href={href} style={`--i: ${index}`}>
-  {image && (
-    <Picture
-      class="tile__image"
-      src={image}
-      formats={['avif', 'webp']}
-      widths={[480, 800, 1200]}
-      sizes={size === 'large' ? '(max-width: 48rem) 100vw, 50vw' : '(max-width: 40rem) 100vw, (max-width: 80rem) 50vw, 25vw'}
-      alt=""
-      loading={index < 6 ? 'eager' : 'lazy'}
-    />
-  )}
-  <div class="tile__text">
-    {eyebrow && <p class="tile__eyebrow">{eyebrow}</p>}
-    <h3 class="tile__title">{title}</h3>
-    {subtitle && <p class="tile__subtitle">{subtitle}</p>}
-  </div>
-</a>
+<div class="tile-wrap">
+  <a class:list={['tile', `tile--${size}`, { 'tile--plain': !image }]} href={href} style={`--i: ${index}`}>
+    {image && (
+      <Picture
+        class="tile__image"
+        src={image}
+        formats={['avif', 'webp']}
+        widths={[480, 800, 1200]}
+        sizes={size === 'large' ? '(max-width: 48rem) 100vw, 50vw' : '(max-width: 40rem) 100vw, (max-width: 80rem) 50vw, 25vw'}
+        alt=""
+        loading={index < 8 ? 'eager' : 'lazy'}
+      />
+    )}
+    <div class="tile__text">
+      {eyebrow && <p class="tile__eyebrow">{eyebrow}</p>}
+      <h3 class="tile__title">{title}</h3>
+      {subtitle && <p class="tile__subtitle">{subtitle}</p>}
+    </div>
+  </a>
+  {edit && <EditLink path={`collection/${edit}`} class="edit-link--tile" />}
+</div>

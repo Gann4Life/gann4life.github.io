@@ -38,6 +38,9 @@ Subagents cannot launch subagents, so the main session (the lead) orchestrates. 
 | Opus — decides | `planner` | Turning work into GitHub issues that double as work orders; backlog grooming | No — issues only |
 | Opus — decides | `architect` | Spec changes, data formats, module boundaries, code/spec disagreements | Spec, architecture and decision docs only |
 | Opus — decides | `design-auditor` | After executors finish, before committing: drift against the spec | No |
+| Opus — decides | `ux-reviewer` | After visual changes: screenshots at desktop and phone width, navigation and design findings | No |
+| Opus — decides | `security-auditor` | Before publishing, after new dependencies, workflows or bulk imports: secrets, build leaks, deps, embeds, CI | No |
+| Sonnet — measures | `perf-auditor` | After bulk content or before release: page weight, images, JS, Lighthouse on the built site | No |
 | Sonnet — executes | `astro-builder` | One issue for Astro code in `site/` | Yes, only the files the issue lists |
 | Sonnet — executes | `content-migrator` | One issue for `work` entries | Yes, only the files the issue lists |
 | Sonnet — executes | `doc-writer` | After implementation: README, docs, CHANGELOG/TODO in sync with the code | Docs only |
@@ -59,6 +62,9 @@ Executors never decide. A prompt without a work order gets `NEEDS ORDER`; an inc
 | Scopes | `site`, `content`, `docs`, `ci`, `agents` |
 | Remote writes allowed | **No** (hard rule 1): agents return `gh` / push commands for the lead |
 | Agents may commit | **No**: the lead commits |
+| Dev server | `npm run dev` in `site/` → `http://localhost:4321` (CMS at `/keystatic`) |
+| Production preview | `npm run build && npm run preview` in `site/` |
+| Headless browser | Helium (Chromium): `$env:LOCALAPPDATA\imput\Helium\Application\chrome.exe --headless=new --screenshot=<file> --window-size=W,H --virtual-time-budget=10000 <url>` |
 
 ### OpenCode set
 
