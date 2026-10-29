@@ -567,6 +567,25 @@ h2 {
   transform: none;
 }
 
+/*
+ * Pictures speak first: on devices with a mouse the text and its shade only
+ * appear on hover/focus. Touch screens can't hover, so they keep it visible.
+ */
+@media (hover: hover) {
+  .tile:not(.tile--plain)::after,
+  .tile:not(.tile--plain) .tile__text {
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.4s var(--ease);
+  }
+
+  .tile:not(.tile--plain):hover::after,
+  .tile:not(.tile--plain):focus-visible::after,
+  .tile:not(.tile--plain):hover .tile__text,
+  .tile:not(.tile--plain):focus-visible .tile__text {
+    opacity: 1;
+  }
+}
+
 .tile:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
@@ -678,8 +697,11 @@ h2 {
   margin: 0 0 0.75rem;
 }
 
+/* Astro puts the class on the <img> itself. Small sources (itch covers) are capped so they don't blur. */
+img.detail__cover,
 .detail__cover img {
   width: 100%;
+  max-width: 56rem;
   max-height: 80vh;
   object-fit: contain;
   border-radius: var(--radius);
