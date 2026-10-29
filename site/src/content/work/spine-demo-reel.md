@@ -17,6 +17,7 @@ status: released
 started: 2025-01-01
 featured: true
 tools: [Spine]
+cover: ../../assets/spine-demo-reel/cover.jpg
 gallery: []
 media:
   - type: video

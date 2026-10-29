@@ -46,6 +46,9 @@ async function each(items, read) {
 
 async function itchListing(profileUrl) {
   const html = await get(profileUrl);
+  // The profile page also shows collections of other people's assets; keep only
+  // pages hosted under this profile. Team projects go in with `npm run add`.
+  const ownHost = new URL(profileUrl).hostname;
   return html
     .split(/class="game_cell\b/)
     .slice(1)
@@ -59,7 +62,7 @@ async function itchListing(profileUrl) {
         image: cell.match(/data-lazy_src="([^"]+)"/)?.[1] ?? cell.match(/data-background_image="([^"]+)"/)?.[1],
       };
     })
-    .filter((g) => g.url);
+    .filter((g) => g.url && new URL(g.url).hostname === ownHost);
 }
 
 async function bandcampListing(profileUrl) {

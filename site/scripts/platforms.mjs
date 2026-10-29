@@ -55,8 +55,15 @@ export const isoDate = (value) => {
   return d && !Number.isNaN(d.getTime()) ? d.toISOString().slice(0, 10) : null;
 };
 
-export async function get(url, as = 'text') {
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+export async function get(url, as = 'text', retries = 4) {
   const res = await fetch(url, { headers: HEADERS, redirect: 'follow' });
+  // Rate limited (GitHub social cards after a few dozen requests): wait and retry.
+  if (res.status === 429 && retries > 0) {
+    await sleep((Number(res.headers.get('retry-after')) || 15) * 1000);
+    return get(url, as, retries - 1);
+  }
   if (!res.ok) throw new Error(`${res.status} ${res.statusText} for ${url}`);
   return as === 'json' ? res.json() : as === 'raw' ? res : res.text();
 }
@@ -66,12 +73,26 @@ export async function get(url, as = 'text') {
 export async function itchGame(url, known = {}) {
   const html = await get(url);
   const upload = html.match(/(?:html-classic\.itch\.zone|hwcdn\.net|itch\.zone)\/html\/(\d+)/)?.[1];
-  const published = html.match(/Published<\/td>\s*<td[^>]*>\s*<abbr title=["']([^"'@]+)/)?.[1];
+  // itch labels it "Release date" or "Published" depending on the page; "Updated" is the fallback.
+  const dateOf = (label) => html.match(new RegExp(`<td>${label}</td>\\s*<td[^>]*>\\s*<abbr title=["']([^"'@]+)`))?.[1];
+  // Some pages show no date row: fall back to the earliest date anywhere on the page (devlogs, uploads).
+  const anyDate = [...html.matchAll(/title=["'](\d{1,2} \w+ \d{4}) @/g)]
+    .map((m) => new Date(m[1]))
+    .filter((d) => !Number.isNaN(d.getTime()))
+    .sort((a, b) => a - b)[0];
+  const published = dateOf('Release date') ?? dateOf('Published') ?? anyDate ?? dateOf('Updated');
+  const row = (label) => html.match(new RegExp(`<td>${label}</td>\\s*<td>(.*?)</td>`))?.[1] ?? '';
+  const tools = [...row('Made with').matchAll(/>([^<]+)<\/a>/g)].map((m) => decode(m[1]));
+  const status = { Released: 'released', Canceled: 'archived', Prototype: 'in-development', 'In development': 'in-development' }[
+    decode(row('Status').replace(/<[^>]+>/g, ''))
+  ];
   return {
     title: known.title || meta(html, 'og:title') || titleTag(html).replace(/ by [^|]+$/, ''),
     description: known.description || meta(html, 'og:description'),
     image: known.image || meta(html, 'og:image'),
     started: isoDate(published),
+    status,
+    tools,
     kind: 'game',
     roles: ['programmer'],
     media: upload ? [{ type: 'webgl', src: `https://itch.io/embed-upload/${upload}?color=000000` }] : [],
@@ -153,7 +174,6 @@ export function githubRepo(r) {
   return {
     title: r.name,
     description: r.description ?? '',
-    image: `https://opengraph.githubassets.com/1/${r.full_name}`,
     started: isoDate(r.created_at),
     kind: 'software',
     roles: ['programmer'],
@@ -202,7 +222,7 @@ const EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'im
 
 /*
  * Entries without a cover get one from what they already link to:
- * YouTube thumbnail, GitHub social card, or the itch/Bandcamp page image.
+ * YouTube thumbnail, or the itch/Bandcamp page image.
  */
 export async function backfillCovers() {
   const done = [];
@@ -219,10 +239,8 @@ export async function backfillCovers() {
       const host = new URL(u).hostname.replace(/^www\./, '');
       const yt = u.match(/(?:v=|youtu\.be\/)([\w-]{11})/)?.[1];
       if (yt) candidates.push(`https://i.ytimg.com/vi/${yt}/maxresdefault.jpg`, `https://i.ytimg.com/vi/${yt}/hqdefault.jpg`);
-      else if (host === 'github.com') {
-        const [, owner, repo] = new URL(u).pathname.split('/');
-        if (owner && repo) candidates.push(`https://opengraph.githubassets.com/1/${owner}/${repo}`);
-      } else if (host.endsWith('itch.io') && !u.includes('/embed')) candidates.push(async () => meta(await get(u), 'og:image'));
+      // GitHub's social card is a white text banner, not a picture of the work: skipped.
+      else if (host.endsWith('itch.io') && !u.includes('/embed')) candidates.push(async () => meta(await get(u), 'og:image'));
       else if (host.endsWith('bandcamp.com') && !u.includes('EmbeddedPlayer')) candidates.push(async () => meta(await get(u), 'og:image'));
     }
     for (const c of candidates) {

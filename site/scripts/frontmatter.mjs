@@ -21,7 +21,7 @@ const block = (name, items, fields) =>
 export function frontmatter(e) {
   return `---
 title: ${q(e.title)}
-slug: ${e.slug}
+slug: ${q(e.slug)}
 kind: ${e.kind}
 context: ${e.context ?? 'personal'}
 position: ""
@@ -32,7 +32,7 @@ upstream: ${q(e.upstream)}
 team: solo
 ${block('credits', e.credits ?? [], ['name', 'role', 'url'])}
 contribution: ""
-status: released
+status: ${e.status ?? 'released'}
 started: ${e.started}
 featured: false
 draft: true

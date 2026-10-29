@@ -118,6 +118,7 @@ h2 {
 }
 
 .site-header__name {
+  flex-shrink: 0;
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.15rem;
@@ -165,6 +166,7 @@ h2 {
   }
 
   .site-header__nav {
+    min-width: 0;
     flex-wrap: nowrap;
     overflow-x: auto;
     scrollbar-width: none;
@@ -176,21 +178,62 @@ h2 {
   }
 }
 
-.profile-links {
+/* Platform icons: footer (small) and hero (large, outlined). */
+.icon-links {
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 1.25rem;
+  gap: 0.25rem;
 }
 
-.profile-links a {
+.icon-links a {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  color: var(--muted);
   text-decoration: none;
+  transition: color 0.2s, background 0.2s, transform 0.2s var(--ease);
 }
 
-.profile-links a:hover {
+.icon-links svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: currentColor;
+}
+
+.icon-links a:hover,
+.icon-links a:focus-visible {
   color: var(--fg);
+  background: var(--line);
+  transform: translateY(-2px);
+}
+
+.icon-links--hero {
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  animation: rise 0.8s 0.16s var(--ease) both;
+}
+
+.icon-links--hero a {
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--card) 60%, transparent);
+}
+
+.icon-links--hero svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.icon-links--hero a:hover,
+.icon-links--hero a:focus-visible {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--card));
 }
 
 /* Home */
@@ -231,7 +274,7 @@ h2 {
 
 @media (max-width: 60rem) {
   .hero--reel {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

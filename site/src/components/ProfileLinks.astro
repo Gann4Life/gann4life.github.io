@@ -1,0 +1,62 @@
+---
+import {
+  siArtstation,
+  siBandcamp,
+  siDeviantart,
+  siGithub,
+  siInstagram,
+  siItchdotio,
+  siSoundcloud,
+  siX,
+  siYoutube,
+  type SimpleIcon,
+} from 'simple-icons';
+
+/*
+ * Profile/platform links as icons (simple-icons, CC0, inlined — no CDN).
+ * The label stays as the accessible name and tooltip. Unknown hosts fall
+ * back to the text label.
+ */
+interface Props {
+  links: { label: string; url: string }[];
+  class?: string;
+}
+
+const { links, class: className } = Astro.props;
+
+const ICONS: [test: (host: string) => boolean, icon: SimpleIcon][] = [
+  [(h) => h === 'github.com', siGithub],
+  [(h) => h.endsWith('itch.io'), siItchdotio],
+  [(h) => h === 'soundcloud.com', siSoundcloud],
+  [(h) => h.endsWith('bandcamp.com'), siBandcamp],
+  [(h) => h.endsWith('deviantart.com'), siDeviantart],
+  [(h) => h === 'youtube.com' || h === 'youtu.be', siYoutube],
+  [(h) => h.endsWith('artstation.com'), siArtstation],
+  [(h) => h === 'x.com' || h === 'twitter.com', siX],
+  [(h) => h === 'instagram.com', siInstagram],
+];
+
+const iconFor = (url: string) => {
+  const host = new URL(url).hostname.replace(/^www\./, '');
+  return ICONS.find(([test]) => test(host))?.[1];
+};
+---
+
+{links.length > 0 && (
+  <ul class:list={['icon-links', className]} aria-label="Profiles">
+    {links.map((link) => {
+      const icon = iconFor(link.url);
+      return (
+        <li>
+          <a href={link.url} rel="me noopener" target="_blank" aria-label={link.label} title={link.label}>
+            {icon ? (
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d={icon.path} /></svg>
+            ) : (
+              link.label
+            )}
+          </a>
+        </li>
+      );
+    })}
+  </ul>
+)}

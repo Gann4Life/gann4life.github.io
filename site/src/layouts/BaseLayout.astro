@@ -3,6 +3,7 @@ import '@fontsource-variable/inter';
 import '@fontsource-variable/space-grotesk';
 import '../styles/global.css';
 import { profile } from '../profile';
+import ProfileLinks from '../components/ProfileLinks.astro';
 import { getWork, groupByCategory } from '../lib/work';
 import { getPosts } from '../lib/blog';
 
@@ -57,13 +58,7 @@ const path = Astro.url.pathname;
     </header>
     <slot />
     <footer class="site-footer">
-      {profile.links.length > 0 && (
-        <ul class="profile-links">
-          {profile.links.map((link) => (
-            <li><a href={link.url} rel="me noopener" target="_blank">{link.label}</a></li>
-          ))}
-        </ul>
-      )}
+      <ProfileLinks links={profile.links} />
       <p>© {new Date().getFullYear()} {profile.name}</p>
     </footer>
   </body>
