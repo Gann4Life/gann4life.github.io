@@ -15,7 +15,8 @@ Run from `site/`:
 |---|---|
 | `npm install` | Install dependencies |
 | `npm run dev` | Dev server at <http://localhost:4321>, admin at <http://localhost:4321/keystatic> |
-| `npm run build` | Static build into `site/dist/` |
+| `npm run add -- <url> [<url> ...]` | Import itch.io / Bandcamp / SoundCloud / YouTube / DeviantArt / GitHub work as draft entries |
+| `npm run build` | Static build into `site/dist/` (drafts excluded) |
 | `npm run preview` | Serve the built output locally |
 
 ## Layout

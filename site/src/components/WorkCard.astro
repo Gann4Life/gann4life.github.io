@@ -38,6 +38,7 @@ const { data } = entry;
         <span>{CONTEXT_LABELS[data.context]}</span>
         <span>{year(entry)}</span>
         {data.origin === 'fork' && <span>Fork</span>}
+        {data.draft && <span class="draft-note">Draft</span>}
       </p>
       <AuthorshipBadge authorship={data.authorship} />
     </div>

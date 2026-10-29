@@ -51,13 +51,15 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
         <span>{STATUS_LABELS[data.status]}</span>
         <span>{data.team === 'solo' ? 'Solo' : 'Team'}</span>
       </p>
+      {data.draft && <p class="draft-note">Draft — visible on the dev server only.</p>}
       <h1>{data.title}</h1>
       {data.position && <p class="detail__position">{data.position}</p>}
       <AuthorshipBadge authorship={data.authorship} explain />
-      <LinkButtons links={data.links} />
     </header>
 
-    {data.cover && (
+    {/* The work itself comes first: embeds, then the cover when there is nothing to embed. */}
+    <Media items={data.media} title={data.title} />
+    {data.media.length === 0 && data.cover && (
       <Picture
         class="detail__cover"
         src={data.cover}
@@ -67,23 +69,30 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
         alt=""
       />
     )}
-
-    <section class="detail__section">
-      <h2>What I did</h2>
-      <p>{data.contribution}</p>
-      {data.roles.length > 0 && (
-        <ul class="tags" aria-label="Roles">
-          {data.roles.map((role) => <li>{ROLE_LABELS[role]}</li>)}
-        </ul>
-      )}
-    </section>
-
-    <Media items={data.media} title={data.title} />
     <Gallery slug={data.slug} items={data.gallery} />
+
+    {data.contribution && (
+      <section class="detail__section">
+        <h2>What I did</h2>
+        <p>{data.contribution}</p>
+        {data.roles.length > 0 && (
+          <ul class="tags" aria-label="Roles">
+            {data.roles.map((role) => <li>{ROLE_LABELS[role]}</li>)}
+          </ul>
+        )}
+      </section>
+    )}
 
     <article class="detail__body prose">
       <Content />
     </article>
+
+    {data.links.length > 0 && (
+      <section class="detail__section">
+        <h2>Links</h2>
+        <LinkButtons links={data.links} />
+      </section>
+    )}
 
     {data.origin === 'fork' && (
       <section class="detail__section fork">

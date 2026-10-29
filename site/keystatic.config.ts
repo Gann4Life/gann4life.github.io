@@ -35,7 +35,7 @@ export default config({
       // `slug` is written to frontmatter and also names the file.
       slugField: 'slug',
       format: { contentField: 'body' },
-      columns: ['title', 'kind', 'context', 'status'],
+      columns: ['title', 'kind', 'draft', 'status'],
       schema: {
         title: fields.text({ label: 'Title', validation: { isRequired: true } }),
         slug: fields.text({
@@ -74,13 +74,17 @@ export default config({
         ),
         contribution: fields.text({
           label: 'Contribution',
-          description: 'Exactly what I built/made. On team projects, only my part.',
+          description: 'Exactly what I built/made. On team projects, only my part. Required to publish.',
           multiline: true,
-          validation: { isRequired: true },
         }),
         status: fields.select({ label: 'Status', options: options(STATUSES), defaultValue: 'in-development' }),
         started: fields.date({ label: 'Started', validation: { isRequired: true } }),
         featured: fields.checkbox({ label: 'Featured' }),
+        draft: fields.checkbox({
+          label: 'Draft',
+          description: 'Shown on the dev server only. Untick to publish.',
+          defaultValue: true,
+        }),
         tools: fields.array(fields.text({ label: 'Tool' }), {
           label: 'Tools',
           itemLabel: (props) => props.value || 'Tool',
@@ -98,7 +102,8 @@ export default config({
             type: fields.select({ label: 'Type', options: options(MEDIA_TYPES), defaultValue: 'video' }),
             src: fields.text({
               label: 'Source',
-              description: 'Embed URL (YouTube, SoundCloud, itch...) or an in-repo path. No hotlinked media.',
+              description:
+                'YouTube / Vimeo / SoundCloud URL works as-is. itch.io and Bandcamp need their embed URL: use `npm run add <url>`. Local files: path in public/.',
               validation: { isRequired: true },
             }),
             caption: fields.text({ label: 'Caption' }),

@@ -13,7 +13,7 @@ kind: game            # software | game | app | web | art2d | art3d | animation 
 context: personal     # personal | commission | client | job | jam | study — who it was for
 position: ""          # optional free text, e.g. "Unity Game Developer" on someone else's project
 roles: [programmer, animator]   # what I did — drives the filters
-                      # also: director, designer, spec-author, technical-direction, maintainer, musician
+                      # also: artist, director, designer, spec-author, technical-direction, maintainer, musician
 authorship: hand-made # hand-made | ai-assisted | ai-built — shown as a badge
 origin: original      # original | fork
 upstream: ""          # if fork: link to the original repo
@@ -27,6 +27,7 @@ contribution: >
 status: released      # released | in-development | archived
 started: 2025-06-01   # creation/start date — used for sorting and year filters
 featured: true
+draft: false          # true = dev server only, never published
 tools: [Unity, C#, Spine]
 cover: "../../assets/project-name/cover.png"   # thumbnail, in-repo, see section 1
 gallery:              # any number of extra images, in-repo
@@ -48,6 +49,11 @@ usedIn: []            # slugs of related entries (e.g. song -> game jam entry)
 
 Long description / devlog in Markdown.
 ```
+
+**Adding work**
+- The work itself is shown embedded or as images; links are secondary and sit below it.
+- `npm run add -- <url>` (in `site/`) imports from itch.io, Bandcamp, SoundCloud, YouTube, DeviantArt or GitHub: title, date, cover downloaded into the repo, and the resolved embed. The platform is read once and snapshotted; the site never calls it at build time.
+- Imported entries are `draft: true` with an empty `contribution`. Fill in contribution, roles and authorship in `/keystatic`, then untick Draft. Published entries must have a `contribution`.
 
 **Rules**
 - Buttons render only for links that exist. No link type is required: an entry may have only a demo, only a store page, only a download, or nothing.

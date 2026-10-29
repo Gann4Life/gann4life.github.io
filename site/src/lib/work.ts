@@ -4,9 +4,11 @@ import { LINK_LABELS } from '../vocab';
 export type Work = CollectionEntry<'work'>;
 type Link = Work['data']['links'][number];
 
-// Newest first; featured order follows the same rule.
+// Newest first; featured order follows the same rule. Drafts only on the dev server.
 export async function getWork(): Promise<Work[]> {
-  return (await getCollection('work')).sort((a, b) => b.data.started.getTime() - a.data.started.getTime());
+  return (await getCollection('work', (e) => import.meta.env.DEV || !e.data.draft)).sort(
+    (a, b) => b.data.started.getTime() - a.data.started.getTime(),
+  );
 }
 
 export const linkText = (link: Link) => link.label || LINK_LABELS[link.type];
@@ -38,6 +40,7 @@ export const CONTEXT_LABELS: Record<Work['data']['context'], string> = {
 export const ROLE_LABELS: Record<Work['data']['roles'][number], string> = {
   programmer: 'Programmer',
   animator: 'Animator',
+  artist: 'Artist',
   director: 'Director',
   designer: 'Designer',
   'spec-author': 'Spec author',
@@ -93,6 +96,10 @@ export function embedUrl(type: string, src: string): string | null {
     // Bandcamp only embeds through its EmbeddedPlayer URL ("Share/Embed" on the album page).
     if (host === 'bandcamp.com' && url.pathname.startsWith('/EmbeddedPlayer')) return src;
   }
-  if (type === 'webgl') return src;
+  if (type === 'webgl') {
+    // itch.io pages cannot be framed; `npm run add` stores the embed-upload URL.
+    if (host.endsWith('.itch.io')) return null;
+    return src;
+  }
   return null;
 }

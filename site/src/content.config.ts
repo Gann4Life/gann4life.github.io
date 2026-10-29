@@ -45,10 +45,13 @@ const work = defineCollection({
             }),
           )
           .default([]),
-        contribution: z.string().min(1),
+        // Required once published; drafts from the importer start empty.
+        contribution: z.string().default(''),
         status: z.enum(STATUSES),
         started: z.coerce.date(),
         featured: z.boolean(),
+        // Drafts show on the dev server only and never ship.
+        draft: z.boolean().default(false),
         tools: z.array(z.string()).default([]),
         // Local image only: docs/1-stack.md keeps images in the repo and
         // rule 6 forbids hotlinked media.
@@ -85,6 +88,13 @@ const work = defineCollection({
         usedIn: z.array(z.string()).default([]),
       })
       .superRefine((entry, ctx) => {
+        if (!entry.draft && !entry.contribution.trim()) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['contribution'],
+            message: 'Published entries need `contribution`: what I actually did.',
+          });
+        }
         // docs/2-content-model.md, "AI-built (vibe-coded) projects": the
         // generated part is never claimed as implementation work.
         if (entry.authorship === 'ai-built') {

@@ -10,10 +10,10 @@ const { links } = Astro.props;
 
 {links.length > 0 && (
   <ul class="link-buttons">
-    {links.map((link, i) => (
+    {links.map((link) => (
       <li>
         <a
-          class:list={['button', { 'button--primary': i === 0 }]}
+          class="button"
           data-type={link.type}
           href={link.url}
           target="_blank"
