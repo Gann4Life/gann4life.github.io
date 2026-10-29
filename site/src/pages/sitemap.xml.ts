@@ -9,8 +9,8 @@ export const GET: APIRoute = async ({ site }) => {
   const paths = [
     '/',
     ...groupByCategory(work).map((g) => `/work/c/${g.category.key}/`),
-    ...work.map((e) => `/work/${e.data.slug}/`),
-    ...(posts.length > 0 ? ['/blog/', ...posts.map((p) => `/blog/${p.data.slug}/`)] : []),
+    ...work.map((e) => `/work/${e.id}/`),
+    ...(posts.length > 0 ? ['/blog/', ...posts.map((p) => `/blog/${p.id}/`)] : []),
   ];
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

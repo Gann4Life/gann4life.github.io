@@ -44,7 +44,7 @@ const tiles = entries.filter((e) => !listen.includes(e));
       <ul class="players">
         {listen.map((e, i) => (
           <li style={`--i: ${i}`}>
-            <a class="players__title" href={`/work/${e.data.slug}/`}>
+            <a class="players__title" href={`/work/${e.id}/`}>
               {e.data.title}
               <span class="muted">{tileMeta(e, { showKind: false })}{e.data.draft ? ' · Draft' : ''}</span>
             </a>
@@ -58,7 +58,7 @@ const tiles = entries.filter((e) => !listen.includes(e));
       <div class="grid">
         {tiles.map((entry, i) => (
           <Tile
-            href={`/work/${entry.data.slug}/`}
+            href={`/work/${entry.id}/`}
             title={entry.data.title}
             eyebrow={tileMeta(entry, { showKind: category.kinds.length > 1 })}
             subtitle={[entry.data.position, entry.data.draft ? 'Draft' : ''].filter(Boolean).join(' · ') || undefined}

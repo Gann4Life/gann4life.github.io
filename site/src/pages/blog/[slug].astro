@@ -6,7 +6,7 @@ import { formatDate, getPosts, type Post } from '../../lib/blog';
 import { getWork } from '../../lib/work';
 
 export async function getStaticPaths() {
-  return (await getPosts()).map((post) => ({ params: { slug: post.data.slug }, props: { post } }));
+  return (await getPosts()).map((post) => ({ params: { slug: post.id }, props: { post } }));
 }
 
 interface Props {
@@ -16,7 +16,7 @@ interface Props {
 const { post } = Astro.props;
 const { data } = post;
 const { Content } = await render(post);
-const related = (await getWork()).filter((e) => data.work.includes(e.data.slug));
+const related = (await getWork()).filter((e) => data.work.includes(e.id));
 const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', width: 1200 })).src : undefined;
 ---
 
@@ -48,7 +48,7 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
       <section class="detail__section">
         <h2>Related work</h2>
         <ul class="related">
-          {related.map((e) => <li><a href={`/work/${e.data.slug}/`}>{e.data.title}</a></li>)}
+          {related.map((e) => <li><a href={`/work/${e.id}/`}>{e.data.title}</a></li>)}
         </ul>
       </section>
     )}

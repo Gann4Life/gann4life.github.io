@@ -21,7 +21,6 @@ const block = (name, items, fields) =>
 export function frontmatter(e) {
   return `---
 title: ${q(e.title)}
-slug: ${q(e.slug)}
 kind: ${e.kind}
 context: ${e.context ?? 'personal'}
 position: ""

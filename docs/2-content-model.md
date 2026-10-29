@@ -7,8 +7,8 @@ page at `/work/<slug>` ([section 3](3-pages.md)).
 
 ```yaml
 ---
-title: "Project name"
-slug: project-name
+title: "Project name"  # the file name is the slug: project-name.md -> /work/project-name/
+                      # Keystatic generates it from the title (editable); an explicit `slug:` is optional
 kind: game            # software | game | app | web | art2d | art3d | animation | music | other
 context: personal     # personal | commission | client | job | jam | study — who it was for
 position: ""          # optional free text, e.g. "Unity Game Developer" on someone else's project

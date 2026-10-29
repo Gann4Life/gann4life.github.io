@@ -19,7 +19,7 @@ const posts = await getPosts();
       <div class="grid">
         {posts.map((post, i) => (
           <Tile
-            href={`/blog/${post.data.slug}/`}
+            href={`/blog/${post.id}/`}
             title={post.data.title}
             eyebrow={formatDate(post.data.date)}
             subtitle={[post.data.summary, post.data.draft ? 'Draft' : ''].filter(Boolean).join(' · ') || undefined}

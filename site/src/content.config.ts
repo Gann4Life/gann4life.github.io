@@ -25,8 +25,13 @@ const work = defineCollection({
     z
       .object({
         title: z.string().min(1),
+        // Optional: the file name is the slug (entry.id). Older files still carry it.
         // `c` is taken by the category pages at /work/c/<category>/.
-        slug: z.string().min(1).refine((s) => s !== 'c', 'Slug "c" is reserved for category pages.'),
+        slug: z
+          .string()
+          .min(1)
+          .refine((s) => s !== 'c', 'Slug "c" is reserved for category pages.')
+          .optional(),
         kind: z.enum(KINDS),
         context: z.enum(CONTEXTS).default('personal'),
         // Free-text title actually held, e.g. on someone else's project.
@@ -145,7 +150,8 @@ const blog = defineCollection({
   schema: ({ image }) =>
     z.object({
       title: z.string().min(1),
-      slug: z.string().min(1),
+      // Optional: the file name is the slug (entry.id).
+      slug: z.string().min(1).optional(),
       date: z.coerce.date(),
       summary: z.string().default(''),
       cover: image().optional(),

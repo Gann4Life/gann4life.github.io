@@ -61,7 +61,7 @@ const skillList = skills(entries).slice(0, 12);
         <h2 class="band__title" id="featured-title">Featured</h2>
         <div class="grid">
           {featured.map((e, i) => (
-            <Tile href={`/work/${e.data.slug}/`} title={e.data.title} eyebrow={tileMeta(e)} subtitle={e.data.position || undefined} image={e.data.cover} index={i} />
+            <Tile href={`/work/${e.id}/`} title={e.data.title} eyebrow={tileMeta(e)} subtitle={e.data.position || undefined} image={e.data.cover} index={i} />
           ))}
         </div>
       </section>
@@ -72,7 +72,7 @@ const skillList = skills(entries).slice(0, 12);
         <h2 class="band__title" id="latest-title">Latest</h2>
         <div class="grid">
           {latest.map((e, i) => (
-            <Tile href={`/work/${e.data.slug}/`} title={e.data.title} eyebrow={tileMeta(e)} subtitle={e.data.position || undefined} image={e.data.cover} index={i} />
+            <Tile href={`/work/${e.id}/`} title={e.data.title} eyebrow={tileMeta(e)} subtitle={e.data.position || undefined} image={e.data.cover} index={i} />
           ))}
         </div>
       </section>

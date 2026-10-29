@@ -25,6 +25,18 @@ const options = (values: readonly string[]) => values.map((value) => ({ label: v
 const entryImage = (label: string) =>
   fields.image({ label, directory: 'src/assets', publicPath: '../../assets/' });
 
+// Title plus a slug generated from it while typing; the slug stays editable.
+// `c` is reserved for the category pages (/work/c/<category>/).
+const titleWithSlug = (description: string) =>
+  fields.slug({
+    name: { label: 'Title', validation: { isRequired: true } },
+    slug: {
+      label: 'Slug',
+      description: `${description} Generated from the title; edit if needed.`,
+      validation: { pattern: { regex: /^(?!c$)[a-z0-9]+(?:-[a-z0-9]+)*$/, message: 'Lowercase words joined by hyphens ("c" is reserved).' } },
+    },
+  });
+
 export default config({
   storage: { kind: 'local' },
   ui: { brand: { name: 'Portfolio' } },
@@ -33,16 +45,12 @@ export default config({
       label: 'Work',
       path: 'src/content/work/*',
       // `slug` is written to frontmatter and also names the file.
-      slugField: 'slug',
+      // The slug is generated from the title (editable) and becomes the file name.
+      slugField: 'title',
       format: { contentField: 'body' },
-      columns: ['title', 'kind', 'draft', 'status'],
+      columns: ['kind', 'draft', 'status'],
       schema: {
-        title: fields.text({ label: 'Title', validation: { isRequired: true } }),
-        slug: fields.text({
-          label: 'Slug',
-          description: 'URL of the page: /work/<slug>. kebab-case.',
-          validation: { isRequired: true, pattern: { regex: /^[a-z0-9]+(?:-[a-z0-9]+)*$/, message: 'kebab-case' } },
-        }),
+        title: titleWithSlug('URL of the page: /work/<slug>.'),
         kind: fields.select({ label: 'Kind', description: 'What it is.', options: options(KINDS), defaultValue: 'software' }),
         context: fields.select({
           label: 'Context',
@@ -137,16 +145,11 @@ export default config({
     blog: collection({
       label: 'Blog',
       path: 'src/content/blog/*',
-      slugField: 'slug',
+      slugField: 'title',
       format: { contentField: 'body' },
-      columns: ['title', 'date', 'draft'],
+      columns: ['date', 'draft'],
       schema: {
-        title: fields.text({ label: 'Title', validation: { isRequired: true } }),
-        slug: fields.text({
-          label: 'Slug',
-          description: 'URL of the post: /blog/<slug>. kebab-case.',
-          validation: { isRequired: true, pattern: { regex: /^[a-z0-9]+(?:-[a-z0-9]+)*$/, message: 'kebab-case' } },
-        }),
+        title: titleWithSlug('URL of the post: /blog/<slug>.'),
         date: fields.date({ label: 'Date', defaultValue: { kind: 'today' }, validation: { isRequired: true } }),
         summary: fields.text({ label: 'Summary', description: 'One line, shown on the blog list.' }),
         cover: fields.image({ label: 'Cover', directory: 'src/assets/blog', publicPath: '../../assets/blog/' }),

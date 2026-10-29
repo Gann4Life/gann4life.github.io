@@ -20,7 +20,7 @@ import {
 export async function getStaticPaths() {
   const entries = await getWork();
   return entries.map((entry) => ({
-    params: { slug: entry.data.slug },
+    params: { slug: entry.id },
     props: { entry, all: entries },
   }));
 }
@@ -35,9 +35,9 @@ const { data } = entry;
 const { Content } = await render(entry);
 
 // usedIn works both ways (docs/2-content-model.md).
-const bySlug = new Map(all.map((e) => [e.data.slug, e]));
+const bySlug = new Map(all.map((e) => [e.id, e]));
 const usedIn = data.usedIn.map((slug) => bySlug.get(slug)).filter((e): e is Work => Boolean(e));
-const features = all.filter((e) => e.data.usedIn.includes(data.slug));
+const features = all.filter((e) => e.data.usedIn.includes(entry.id));
 
 const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', width: 1200 })).src : undefined;
 ---
@@ -70,7 +70,7 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
         alt=""
       />
     )}
-    <Gallery slug={data.slug} items={data.gallery} />
+    <Gallery slug={entry.id} items={data.gallery} />
 
     {data.contribution && (
       <section class="detail__section">
@@ -130,11 +130,11 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
       <section class="detail__section">
         <h2>Related</h2>
         <ul class="related">
-          {usedIn.map((e) => <li>Used in <a href={`/work/${e.data.slug}/`}>{e.data.title}</a></li>)}
+          {usedIn.map((e) => <li>Used in <a href={`/work/${e.id}/`}>{e.data.title}</a></li>)}
           {features.map((e) => (
             <li>
               {e.data.kind === 'music' ? 'Music' : KIND_LABELS[e.data.kind]}:{' '}
-              <a href={`/work/${e.data.slug}/`}>{e.data.title}</a>
+              <a href={`/work/${e.id}/`}>{e.data.title}</a>
             </li>
           ))}
         </ul>
