@@ -38,7 +38,28 @@ export function groupByCategory(entries: Work[]) {
   })).filter((g) => g.entries.length > 0);
 }
 
-export const linkText =(link: Link) => link.label || LINK_LABELS[link.type];
+// Line shown over a thumbnail. Authorship is flagged only when AI was involved.
+export function tileMeta(entry: Work, { showKind = true } = {}) {
+  const d = entry.data;
+  return [
+    showKind ? KIND_LABELS[d.kind] : null,
+    d.context !== 'personal' ? CONTEXT_LABELS[d.context] : null,
+    d.origin === 'fork' ? 'Fork' : null,
+    d.authorship === 'ai-built' ? 'AI-built' : d.authorship === 'ai-assisted' ? 'AI-assisted' : null,
+    year(entry),
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
+
+// Roles that appear in published work, most frequent first — the hero's "what I do".
+export function topRoles(entries: Work[]) {
+  const counts = new Map<Work['data']['roles'][number], number>();
+  for (const e of entries) for (const r of e.data.roles) counts.set(r, (counts.get(r) ?? 0) + 1);
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([r]) => ROLE_LABELS[r]);
+}
+
+export const linkText = (link: Link) => link.label || LINK_LABELS[link.type];
 
 // Dates are stored as UTC midnight, so read the year in UTC.
 export const year = (entry: Work) => entry.data.started.getUTCFullYear();

@@ -11,8 +11,8 @@ interface Props {
 
 const { authorship, explain = false } = Astro.props;
 
-const LABELS: Record<Authorship, string> = {
-  'hand-made': 'Hand-made',
+// Hand-made is the default and gets no label; only AI involvement is flagged.
+const LABELS: Partial<Record<Authorship, string>> = {
   'ai-assisted': 'AI-assisted',
   'ai-built': 'AI-built',
 };
@@ -21,7 +21,9 @@ const NOTES: Partial<Record<Authorship, string>> = {
   'ai-assisted': 'Written by me with AI assistance; I reviewed and own every part.',
   'ai-built': 'Directed, designed and specified by me, implemented with AI.',
 };
+
+const label = authorship ? LABELS[authorship] : undefined;
 ---
 
-{authorship && <span class="badge" data-authorship={authorship}>{LABELS[authorship] ?? authorship}</span>}
-{explain && authorship && NOTES[authorship] && <p class="authorship-note">{NOTES[authorship]}</p>}
+{label && <span class="badge" data-authorship={authorship}>{label}</span>}
+{explain && label && <p class="authorship-note">{NOTES[authorship!]}</p>}

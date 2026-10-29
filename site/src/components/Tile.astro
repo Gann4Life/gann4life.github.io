@@ -3,8 +3,9 @@ import { Picture } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 
 /*
- * Full-bleed image tile with the text laid over it. Used for home categories
- * and for entries on category pages. `index` staggers the cascade animation.
+ * 4:3 image tile with the text laid over it. Used for categories and works.
+ * The image is cropped to fill (never stretched). `index` staggers the
+ * cascade animation.
  */
 interface Props {
   href: string;
@@ -13,10 +14,10 @@ interface Props {
   eyebrow?: string;
   subtitle?: string;
   index?: number;
-  size?: 'large' | 'natural';
+  size?: 'large' | 'normal';
 }
 
-const { href, title, image, eyebrow, subtitle, index = 0, size = 'natural' } = Astro.props;
+const { href, title, image, eyebrow, subtitle, index = 0, size = 'normal' } = Astro.props;
 ---
 
 <a class:list={['tile', `tile--${size}`]} href={href} style={`--i: ${index}`}>
@@ -25,8 +26,8 @@ const { href, title, image, eyebrow, subtitle, index = 0, size = 'natural' } = A
       class="tile__image"
       src={image}
       formats={['avif', 'webp']}
-      widths={[480, 960, 1440]}
-      sizes={size === 'large' ? '(max-width: 48rem) 100vw, 50vw' : '(max-width: 40rem) 100vw, (max-width: 80rem) 50vw, 33vw'}
+      widths={[480, 800, 1200]}
+      sizes={size === 'large' ? '(max-width: 48rem) 100vw, 50vw' : '(max-width: 40rem) 100vw, (max-width: 80rem) 50vw, 25vw'}
       alt=""
       loading={index < 6 ? 'eager' : 'lazy'}
     />

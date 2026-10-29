@@ -14,7 +14,7 @@ context: personal     # personal | commission | client | job | jam | study — w
 position: ""          # optional free text, e.g. "Unity Game Developer" on someone else's project
 roles: [programmer, animator]   # what I did — drives the filters
                       # also: artist, director, designer, spec-author, technical-direction, maintainer, musician
-authorship: hand-made # hand-made | ai-assisted | ai-built — shown as a badge
+authorship: hand-made # hand-made | ai-assisted | ai-built — AI badge shown; hand-made (the default) gets no label
 origin: original      # original | fork
 upstream: ""          # if fork: link to the original repo
 team: team            # solo | team
