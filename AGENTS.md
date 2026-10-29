@@ -28,6 +28,7 @@ Project instructions for OpenCode. Read this and `DESIGN.md` (the index) before 
 ## Subagent routing
 
 Launch these through the `subagent` tool. Each has its own fixed model and permissions.
+OpenCode reads them from `.opencode/agents/`; Claude Code has the same four in `.claude/agents/` (Agent tool). Keep both sets in sync when a brief changes.
 
 | Agent | Use when | Writes? |
 |---|---|---|
