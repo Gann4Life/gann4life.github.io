@@ -25,6 +25,8 @@ Project instructions for OpenCode. Read this and `DESIGN.md` (the index) before 
 4. Verify before committing: run the build script that exists (`npm run build` for v2 today; `npx astro build` once Astro is installed) and, when content changed, validate frontmatter against the schema.
 5. Commit locally. Then report what changed, what was verified, and what is still unproven.
 
+The lead also follows `.claude/github-workflow.md`: a `TODO` or `ISSUE` in a user message goes to `planner` as a new issue, and so does new work found mid-task.
+
 ## Subagent routing
 
 OpenCode launches its set from `.opencode/agents/` through the `subagent` tool. Claude Code launches the tiered set below from `.claude/agents/` through the Agent tool.

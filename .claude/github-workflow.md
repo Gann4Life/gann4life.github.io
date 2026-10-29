@@ -1,6 +1,6 @@
 # GitHub workflow conventions
 
-Shared by the `planner`, `architect` and `doc-writer` agents and the `/next` skill. Project-specific values (spec location, base branch, scopes, milestones, whether agents may write to the remote) come from the project instructions (`CLAUDE.md` / `AGENTS.md`); this file never hard-codes them.
+Shared by the lead (main session), the `planner`, `architect` and `doc-writer` agents and the `/next` skill. Project-specific values (spec location, base branch, scopes, milestones, whether agents may write to the remote) come from the project instructions (`CLAUDE.md` / `AGENTS.md`); this file never hard-codes them.
 
 ## Project facts to look up first
 
@@ -46,6 +46,18 @@ feature | bug | chore | docs | spike
 
 - **Title:** short imperative summary, usable as the description of a Conventional Commit.
 - **Size:** one branch and one PR per issue. Split anything larger.
+- **`TODO.md`**, if the repo has one, is a generated index of the issues: `doc-writer` regenerates it, nobody edits it by hand.
+
+## Capturing new work
+
+- **`TODO` / `ISSUE` in a user message** (any case, as a marker, e.g. "TODO: tiles need captions") means: file it. The lead hands the text to `planner`, which turns it into an issue under the remote-write policy, then the lead continues the current task. No confirmation needed unless the item is ambiguous enough that the issue could not be written.
+- **Work discovered during a task** is not done on the current branch: it goes to `planner` the same way.
+
+## General rules
+
+- **No AI attribution** in commits, trailers (`Co-Authored-By`), PR bodies, file headers, docs or changelog. If the project's content rules require disclosing how published work was made, those rules govern that content.
+- **English** for code, docs, commits and issues, unless the project instructions say otherwise.
+- **Confidentiality:** no client names, credentials, tokens or private data in the repo, issues or commits. Use generic terms and placeholders.
 
 ## Labels and milestones
 
@@ -59,10 +71,11 @@ feature | bug | chore | docs | spike
 ## Branches, commits, PRs
 
 - Branch (Conventional Branch): `<type>/issue-<number>-<slug>`. `<type>` is `feature`, `bugfix`, `hotfix` or `chore`; spikes and docs use `chore`. The slug is 2–5 lowercase hyphenated words from the title.
-- Commits and PR titles: Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`, `ci:`, `build:`, `perf:`, `style:`; `!` or `BREAKING CHANGE` for breaking).
+- Commits and PR titles: Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`, `ci:`, `build:`, `perf:`, `style:`; `!` plus a `BREAKING CHANGE:` footer for breaking).
+- Keep them short: subjects imperative, lower-case, no trailing period, 50–72 characters. Bodies and PR descriptions say what changed and why; no narration, no file-by-file lists.
 - The PR body says `Closes #<number>`. Merged PRs close issues; agents never close them.
 
 ## Versioning (only if the repo has a CHANGELOG.md or release tags)
 
 - Next version from `git describe --tags --abbrev=0` (`v0.0.0` if none) and the PR's commit type: `feat` → minor; other types → patch; breaking → major (minor while < 1.0.0).
-- `CHANGELOG.md` follows Keep a Changelog 1.1.0.
+- `CHANGELOG.md` follows Keep a Changelog 1.1.0. Entries are written for users, one line each; they are not commit messages.
