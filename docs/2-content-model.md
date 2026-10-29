@@ -23,10 +23,10 @@ status: released      # released | in-development | archived
 started: 2025-06-01   # creation/start date — used for sorting and year filters
 featured: true
 tools: [Unity, C#, Spine]
-cover: "https://<image-cdn>/cover.webp"
+cover: "../../assets/project-name/cover.png"   # in-repo, see section 1
 media:
   - type: image       # image | video | model3d | spine | audio | webgl
-    src: "https://..."
+    src: "../../assets/project-name/shot-1.png"   # images in-repo; embeds may be URLs
     caption: ""
 links:
   - type: source      # source | play | download | watch | listen | docs | buy

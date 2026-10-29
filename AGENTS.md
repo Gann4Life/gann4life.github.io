@@ -5,7 +5,7 @@ Project instructions for OpenCode. Read this and `DESIGN.md` (the index) before 
 ## What this repo is
 
 - `main` is the live Portfolio v2: a Create React App published to GitHub Pages at `https://gann4life.github.io`.
-- `portfolio-v3` is the rebuild: Astro, static output, git-based content. `DESIGN.md` plus `docs/` is the spec.
+- `astro-rewrite` is the rebuild: Astro project in `site/`, static output, git-based content. `DESIGN.md` plus `docs/` is the spec.
 - v2 stays intact and deployable until v3 renders equivalent content. Do not delete v2 files to "clean up".
 
 ## Hard rules
@@ -19,7 +19,7 @@ Project instructions for OpenCode. Read this and `DESIGN.md` (the index) before 
 
 ## Workflow
 
-1. Confirm the branch: `git branch --show-current` must be `portfolio-v3` for v3 work.
+1. Confirm the branch: `git branch --show-current` must be `astro-rewrite` for v3 work.
 2. Read `docs/1-stack.md` and `docs/2-content-model.md` before writing code or content; read `docs/6-content-rules.md` before writing claims.
 3. Keep changes small and single-purpose. One commit per coherent step, imperative subject line.
 4. Verify before committing: run the build script that exists (`npm run build` for v2 today; `npx astro build` once Astro is installed) and, when content changed, validate frontmatter against the schema.
@@ -48,4 +48,4 @@ Rules of thumb
 - Code builds with no errors and no new client-side JS unless the component is explicitly interactive.
 - Content validates against the schema and contains no unverifiable claims.
 - `design-auditor` returns no blocking findings.
-- The change is committed locally on `portfolio-v3`, and `main` still builds and deploys v2.
+- The change is committed locally on `astro-rewrite`, and `main` still builds and deploys v2.

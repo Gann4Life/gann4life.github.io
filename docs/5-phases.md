@@ -1,8 +1,8 @@
 # 5. Phases
 
 ### Phase 1 — Skeleton
-- [ ] Create the Astro project on the `portfolio-v3` branch, keeping v2 deployable until cutover
-- [ ] Define `work` collection schema (Zod) matching [section 2](2-content-model.md)
+- [x] Create the Astro project (`site/`) on the `astro-rewrite` branch, keeping v2 deployable until cutover
+- [x] Define `work` collection schema (Zod) matching [section 2](2-content-model.md)
 - [ ] Configure Keystatic in local mode at `/keystatic`
 - [ ] Deploy to GitHub Pages from Actions, auto-deploy on push to `main` after cutover
 
