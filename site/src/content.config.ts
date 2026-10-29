@@ -25,7 +25,8 @@ const work = defineCollection({
     z
       .object({
         title: z.string().min(1),
-        slug: z.string().min(1),
+        // `c` is taken by the category pages at /work/c/<category>/.
+        slug: z.string().min(1).refine((s) => s !== 'c', 'Slug "c" is reserved for category pages.'),
         kind: z.enum(KINDS),
         context: z.enum(CONTEXTS).default('personal'),
         // Free-text title actually held, e.g. on someone else's project.

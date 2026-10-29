@@ -11,6 +11,7 @@ import {
   KIND_LABELS,
   ROLE_LABELS,
   STATUS_LABELS,
+  categoryOf,
   getWork,
   year,
   type Work,
@@ -140,6 +141,6 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
       </section>
     )}
 
-    <p><a href="/#work">← All work</a></p>
+    <p><a href={`/work/c/${categoryOf(entry).key}/`}>← {categoryOf(entry).label}</a></p>
   </main>
 </BaseLayout>

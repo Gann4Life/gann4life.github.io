@@ -15,7 +15,8 @@ Run from `site/`:
 |---|---|
 | `npm install` | Install dependencies |
 | `npm run dev` | Dev server at <http://localhost:4321>, admin at <http://localhost:4321/keystatic> |
-| `npm run add -- <url> [<url> ...]` | Import itch.io / Bandcamp / SoundCloud / YouTube / DeviantArt / GitHub work as draft entries |
+| `npm run sync` | Pull everything from the profiles in `src/data/profile.json` as draft entries (re-run anytime) |
+| `npm run add -- <url> [<url> ...]` | Import specific works (e.g. SoundCloud tracks) as draft entries |
 | `npm run build` | Static build into `site/dist/` (drafts excluded) |
 | `npm run preview` | Serve the built output locally |
 

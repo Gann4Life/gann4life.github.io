@@ -1,103 +1,40 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import WorkCard from '../components/WorkCard.astro';
+import Tile from '../components/Tile.astro';
 import { profile } from '../profile';
-import { CONTEXT_LABELS, KIND_LABELS, ROLE_LABELS, getWork, skills } from '../lib/work';
+import { getWork, groupByCategory, skills } from '../lib/work';
 
 const entries = await getWork();
-const featured = entries.filter((e) => e.data.featured);
+const groups = groupByCategory(entries);
 const skillList = skills(entries);
-
-// Only offer filters for values that actually appear.
-const used = <T extends string>(values: T[]) => [...new Set(values)];
-const filters = [
-  { key: 'kind', label: 'Type', values: used(entries.map((e) => e.data.kind)), names: KIND_LABELS },
-  { key: 'context', label: 'For', values: used(entries.map((e) => e.data.context)), names: CONTEXT_LABELS },
-  { key: 'roles', label: 'Role', values: used(entries.flatMap((e) => e.data.roles)), names: ROLE_LABELS },
-].filter((f) => f.values.length > 1) as { key: string; label: string; values: string[]; names: Record<string, string> }[];
 ---
 
 <BaseLayout title={profile.name}>
-  <main class="page">
-    <section class="hero">
+  <main class="home">
+    <section class="home__intro">
       <h1>{profile.name}</h1>
-      {profile.tagline && <p class="hero__tagline">{profile.tagline}</p>}
-      {profile.bio && <p class="hero__bio">{profile.bio}</p>}
-      {profile.links.length > 0 && (
-        <ul class="profile-links">
-          {profile.links.map((link) => (
-            <li><a href={link.url} rel="me noopener" target="_blank">{link.label}</a></li>
-          ))}
-        </ul>
+      {profile.tagline && <p class="home__tagline">{profile.tagline}</p>}
+      {profile.bio && <p class="home__bio">{profile.bio}</p>}
+      {skillList.length > 0 && (
+        <ul class="tags home__skills" aria-label="Skills">{skillList.map((s) => <li>{s}</li>)}</ul>
       )}
     </section>
 
-    {featured.length > 0 && (
-      <section aria-labelledby="featured-title">
-        <h2 id="featured-title">Featured</h2>
-        <ul class="cards cards--featured">
-          {featured.map((entry) => <WorkCard entry={entry} />)}
-        </ul>
-      </section>
-    )}
-
-    <section id="work" aria-labelledby="work-title">
-      <h2 id="work-title">All work</h2>
-      {filters.length > 0 && (
-        <div class="filters" hidden>
-          {filters.map((f) => (
-            <div class="filters__group" data-filter={f.key} role="group" aria-label={f.label}>
-              <span class="filters__label">{f.label}</span>
-              <button type="button" data-value="" aria-pressed="true">All</button>
-              {f.values.map((v) => (
-                <button type="button" data-value={v} aria-pressed="false">{f.names[v] ?? v}</button>
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
-      {entries.length === 0 ? (
-        <p class="muted">Nothing here yet.</p>
-      ) : (
-        <ul class="cards" id="work-grid">
-          {entries.map((entry) => <WorkCard entry={entry} />)}
-        </ul>
-      )}
-      <p class="muted" id="no-match" hidden>No work matches these filters.</p>
-    </section>
-
-    {skillList.length > 0 && (
-      <section aria-labelledby="skills-title">
-        <h2 id="skills-title">Skills</h2>
-        <ul class="tags">{skillList.map((s) => <li>{s}</li>)}</ul>
-      </section>
+    {groups.length === 0 ? (
+      <p class="muted home__empty">Nothing published yet.</p>
+    ) : (
+      <nav class="categories" aria-label="Categories">
+        {groups.map(({ category, entries }, i) => (
+          <Tile
+            href={`/work/c/${category.key}/`}
+            title={category.label}
+            subtitle={`${entries.length} ${entries.length === 1 ? 'project' : 'projects'}`}
+            image={entries.find((e) => e.data.cover)?.data.cover}
+            index={i}
+            size="large"
+          />
+        ))}
+      </nav>
     )}
   </main>
 </BaseLayout>
-
-<script>
-  // Progressive enhancement: without JS every card stays visible.
-  const box = document.querySelector<HTMLElement>('.filters');
-  const cards = [...document.querySelectorAll<HTMLElement>('#work-grid > .card')];
-  const empty = document.getElementById('no-match');
-  if (box) {
-    box.hidden = false;
-    const active: Record<string, string> = {};
-    box.addEventListener('click', (event) => {
-      const button = (event.target as HTMLElement).closest('button');
-      const group = button?.closest<HTMLElement>('[data-filter]');
-      if (!button || !group) return;
-      active[group.dataset.filter!] = button.dataset.value ?? '';
-      for (const b of group.querySelectorAll('button')) b.setAttribute('aria-pressed', String(b === button));
-      let shown = 0;
-      for (const card of cards) {
-        const match = Object.entries(active).every(
-          ([key, value]) => !value || (card.dataset[key] ?? '').split(' ').includes(value),
-        );
-        card.hidden = !match;
-        if (match) shown++;
-      }
-      if (empty) empty.hidden = shown > 0;
-    });
-  }
-</script>

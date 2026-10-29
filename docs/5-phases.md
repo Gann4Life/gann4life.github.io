@@ -7,8 +7,8 @@
 - [ ] Deploy to GitHub Pages from Actions, auto-deploy on push to `main` after cutover
 
 ### Phase 2 — Core pages
-- [x] Home: hero, featured strip, grid
-- [x] Filters by kind, context and role
+- [x] Home: full-size category tiles; one page per category with overlay thumbnails and cascade animation
+- [x] ~~Filters by kind, context and role~~ — replaced by category pages
 - [x] Detail page with conditional sections (contribution, credits, links, usedIn)
 - [x] Authorship badge + fork/upstream block
 - [x] Skills list generated from `hand-made` and `ai-assisted` entries only

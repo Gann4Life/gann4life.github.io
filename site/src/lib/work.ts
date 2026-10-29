@@ -11,7 +11,34 @@ export async function getWork(): Promise<Work[]> {
   );
 }
 
-export const linkText = (link: Link) => link.label || LINK_LABELS[link.type];
+/*
+ * Home categories (docs/3-pages.md): each groups one or more kinds and has a
+ * page at /work/c/<key>/. Only categories with entries are shown.
+ */
+export const CATEGORIES = [
+  { key: 'games', label: 'Games', kinds: ['game'] },
+  { key: 'music', label: 'Music', kinds: ['music'] },
+  { key: 'art', label: 'Art', kinds: ['art2d', 'art3d', 'animation'] },
+  { key: 'software', label: 'Software', kinds: ['software', 'app', 'web'] },
+  { key: 'other', label: 'Other', kinds: ['other'] },
+] as const satisfies readonly { key: string; label: string; kinds: readonly Work['data']['kind'][] }[];
+
+export type Category = (typeof CATEGORIES)[number];
+
+export const categoryOf = (entry: Work): Category =>
+  CATEGORIES.find((c) => (c.kinds as readonly string[]).includes(entry.data.kind)) ?? CATEGORIES[CATEGORIES.length - 1];
+
+// Categories that have entries, each with its entries (newest first, featured first).
+export function groupByCategory(entries: Work[]) {
+  return CATEGORIES.map((category) => ({
+    category,
+    entries: entries
+      .filter((e) => categoryOf(e).key === category.key)
+      .sort((a, b) => Number(b.data.featured) - Number(a.data.featured)),
+  })).filter((g) => g.entries.length > 0);
+}
+
+export const linkText =(link: Link) => link.label || LINK_LABELS[link.type];
 
 // Dates are stored as UTC midnight, so read the year in UTC.
 export const year = (entry: Work) => entry.data.started.getUTCFullYear();

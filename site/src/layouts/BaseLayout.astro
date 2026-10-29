@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { profile } from '../profile';
+import { getWork, groupByCategory } from '../lib/work';
 
 interface Props {
   title: string;
@@ -12,6 +13,8 @@ const { title, description = profile.tagline || `Work by ${profile.name}`, image
 const pageTitle = title === profile.name ? title : `${title} — ${profile.name}`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = image ? new URL(image, Astro.site).href : undefined;
+const categories = groupByCategory(await getWork()).map((g) => g.category);
+const path = Astro.url.pathname;
 ---
 
 <!doctype html>
@@ -32,9 +35,15 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
   <body>
     <header class="site-header">
       <a class="site-header__name" href="/">{profile.name}</a>
-      <nav>
-        <a href="/#work">Work</a>
-      </nav>
+      {categories.length > 0 && (
+        <nav class="site-header__nav" aria-label="Categories">
+          {categories.map((c) => (
+            <a href={`/work/c/${c.key}/`} aria-current={path.startsWith(`/work/c/${c.key}/`) ? 'page' : undefined}>
+              {c.label}
+            </a>
+          ))}
+        </nav>
+      )}
     </header>
     <slot />
     <footer class="site-footer">

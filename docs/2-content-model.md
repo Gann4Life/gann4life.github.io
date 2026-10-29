@@ -52,7 +52,8 @@ Long description / devlog in Markdown.
 
 **Adding work**
 - The work itself is shown embedded or as images; links are secondary and sit below it.
-- `npm run add -- <url>` (in `site/`) imports from itch.io, Bandcamp, SoundCloud, YouTube, DeviantArt or GitHub: title, date, cover downloaded into the repo, and the resolved embed. The platform is read once and snapshotted; the site never calls it at build time.
+- `npm run sync` (in `site/`) pulls every work from the profiles in `src/data/profile.json` (itch.io, Bandcamp, DeviantArt, GitHub, YouTube) as drafts. Re-running only adds what is new; edited entries are never touched. A GitHub repo whose homepage is an itch.io game becomes that game's source link.
+- `npm run add -- <url>` imports a single work, e.g. a SoundCloud track (SoundCloud has no public listing). It imports from itch.io, Bandcamp, SoundCloud, YouTube, DeviantArt or GitHub: title, date, cover downloaded into the repo, and the resolved embed. The platform is read once and snapshotted; the site never calls it at build time.
 - Imported entries are `draft: true` with an empty `contribution`. Fill in contribution, roles and authorship in `/keystatic`, then untick Draft. Published entries must have a `contribution`.
 
 **Rules**
