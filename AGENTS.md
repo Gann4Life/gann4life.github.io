@@ -10,7 +10,7 @@ Project instructions for OpenCode. Read this and `DESIGN.md` (the index) before 
 
 ## Hard rules
 
-1. **Local commits only.** Never run `git push` or `git push --force`; the user pushes by hand. `gh` writes for the backlog (issues, labels, milestones, comments) are allowed.
+1. **The lead runs the GitHub flow; the user directs it.** The lead pushes branches, opens, reviews and merges PRs, and opens, comments on and closes issues without asking, within what the user has asked for. Never force-push and never rewrite published history.
 2. **`DESIGN.md` and `docs/` are the spec.** Do not weaken it to match code. When reality diverges, report the gap or propose an edit; do not silently rewrite sections.
 3. **No paid services.** Free GitHub Pages hosting, no Cloudflare, no image CDN, no managed database. Adding a paid dependency is a blocking decision, not an implementation detail.
 4. **No third-party API as the content source.** Snapshot the data into the repo, then read from the snapshot.
@@ -62,7 +62,7 @@ Executors never decide. A prompt without a work order gets `NEEDS ORDER`; an inc
 | Decision log | `docs/8-open-decisions.md` |
 | Base branch | `astro-rewrite` until cutover, then `main` |
 | Scopes | `site`, `content`, `docs`, `ci`, `agents` |
-| Remote writes allowed | `gh` backlog writes (issues, labels, milestones, comments): **yes**. `git push`, PRs, releases: **no**, the user does them (hard rule 1) |
+| Remote writes allowed | **Yes** (hard rule 1): `planner` writes the backlog; the lead pushes branches and merges PRs. No force-push |
 | Agents may commit | **No**: the lead commits |
 | Dev server | `npm run dev` in `site/` → `http://localhost:4321` (CMS at `/keystatic`) |
 | Production preview | `npm run build && npm run preview` in `site/` |
