@@ -15,13 +15,15 @@ export async function getWork(): Promise<Work[]> {
  * Home categories (docs/3-pages.md): each groups one or more kinds and has a
  * page at /work/c/<key>/. Only categories with entries are shown.
  */
+// `hobby` categories are shown apart from professional work on the home page.
 export const CATEGORIES = [
-  { key: 'games', label: 'Games', kinds: ['game'] },
-  { key: 'music', label: 'Music', kinds: ['music'] },
-  { key: 'art', label: 'Art', kinds: ['art2d', 'art3d', 'animation'] },
-  { key: 'software', label: 'Software', kinds: ['software', 'app', 'web'] },
-  { key: 'other', label: 'Other', kinds: ['other'] },
-] as const satisfies readonly { key: string; label: string; kinds: readonly Work['data']['kind'][] }[];
+  { key: 'games', label: 'Games', kinds: ['game'], hobby: false },
+  { key: 'animation', label: 'Animation', kinds: ['animation'], hobby: false },
+  { key: 'software', label: 'Software', kinds: ['software', 'app', 'web'], hobby: false },
+  { key: 'music', label: 'Music', kinds: ['music'], hobby: true },
+  { key: 'art', label: 'Art', kinds: ['art2d', 'art3d'], hobby: true },
+  { key: 'other', label: 'Other', kinds: ['other'], hobby: false },
+] as const satisfies readonly { key: string; label: string; kinds: readonly Work['data']['kind'][]; hobby: boolean }[];
 
 export type Category = (typeof CATEGORIES)[number];
 
@@ -50,13 +52,6 @@ export function tileMeta(entry: Work, { showKind = true } = {}) {
   ]
     .filter(Boolean)
     .join(' · ');
-}
-
-// Roles that appear in published work, most frequent first — the hero's "what I do".
-export function topRoles(entries: Work[]) {
-  const counts = new Map<Work['data']['roles'][number], number>();
-  for (const e of entries) for (const r of e.data.roles) counts.set(r, (counts.get(r) ?? 0) + 1);
-  return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([r]) => ROLE_LABELS[r]);
 }
 
 export const linkText = (link: Link) => link.label || LINK_LABELS[link.type];

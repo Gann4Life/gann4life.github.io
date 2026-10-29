@@ -2,13 +2,14 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Tile from '../components/Tile.astro';
 import { profile } from '../profile';
-import { getWork, groupByCategory, skills, tileMeta, topRoles } from '../lib/work';
+import { getWork, groupByCategory, skills, tileMeta } from '../lib/work';
 
 const entries = await getWork();
 const groups = groupByCategory(entries);
+const work = groups.filter((g) => !g.category.hobby);
+const hobbies = groups.filter((g) => g.category.hobby);
 const featured = entries.filter((e) => e.data.featured);
 const latest = entries.filter((e) => !e.data.featured).slice(0, 8);
-const roles = topRoles(entries);
 const skillList = skills(entries).slice(0, 12);
 ---
 
@@ -17,8 +18,7 @@ const skillList = skills(entries).slice(0, 12);
     <section class="hero">
       <p class="hero__kicker">Portfolio</p>
       <h1 class="hero__name">{profile.name}</h1>
-      {roles.length > 0 && <p class="hero__roles">{roles.join(' · ')}</p>}
-      {profile.tagline && <p class="hero__tagline">{profile.tagline}</p>}
+      {profile.tagline && <p class="hero__roles">{profile.tagline}</p>}
       {profile.bio && <p class="hero__bio">{profile.bio}</p>}
       {profile.links.length > 0 && (
         <ul class="pills" aria-label="Profiles">
@@ -40,22 +40,27 @@ const skillList = skills(entries).slice(0, 12);
       </section>
     )}
 
-    {groups.length > 0 && (
-      <section class="band" aria-labelledby="categories-title">
-        <h2 class="band__title" id="categories-title">Browse</h2>
-        <nav class="grid" aria-label="Categories">
-          {groups.map(({ category, entries: items }, i) => (
-            <Tile
-              href={`/work/c/${category.key}/`}
-              title={category.label}
-              subtitle={`${items.length} ${items.length === 1 ? 'project' : 'projects'}`}
-              image={items.find((e) => e.data.cover)?.data.cover}
-              index={i}
-            />
-          ))}
-        </nav>
-      </section>
-    )}
+    {[
+      { id: 'work', title: 'Work', items: work },
+      { id: 'hobbies', title: 'Hobbies', items: hobbies },
+    ]
+      .filter((band) => band.items.length > 0)
+      .map((band) => (
+        <section class="band" aria-labelledby={`${band.id}-title`}>
+          <h2 class="band__title" id={`${band.id}-title`}>{band.title}</h2>
+          <nav class="grid" aria-label={band.title}>
+            {band.items.map(({ category, entries: items }, i) => (
+              <Tile
+                href={`/work/c/${category.key}/`}
+                title={category.label}
+                subtitle={`${items.length} ${items.length === 1 ? 'project' : 'projects'}`}
+                image={items.find((e) => e.data.cover)?.data.cover}
+                index={i}
+              />
+            ))}
+          </nav>
+        </section>
+      ))}
 
     {latest.length > 0 && (
       <section class="band" aria-labelledby="latest-title">

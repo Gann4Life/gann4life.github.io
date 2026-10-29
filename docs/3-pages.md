@@ -2,7 +2,7 @@
 
 Full-width, image-first site. Text sits over thumbnails; tiles cascade in on load; pages cross-fade (CSS view transitions, no JS).
 
-- `/` — name, tagline, bio, skills, then one full-size tile per category (Games, Music, Art, Software, Other) with the cover of its newest/featured work. Only categories with published work appear.
+- `/` — name, headline (profile `tagline`: "Unity Game Developer & 2D Animator"), bio, profile links, Featured, then category tiles in two bands: **Work** (Games, Animation, Software, Other) and **Hobbies** (Music, Art — not presented as professional work), then Latest and Tools. Only categories with published work appear.
 - `/work/c/<category>/` — every work in the category as a masonry of thumbnails at their own aspect ratio (fully visible), title and meta over the image.
 - `/work/<slug>` — one page per entry: the work first (embed, or cover image), gallery, what I did, description, then links, fork block, credits, tools, related.
 - `/keystatic` — CMS (dev server only, not linked publicly).

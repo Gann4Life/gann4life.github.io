@@ -1,7 +1,7 @@
 {
   "name": "Gann4Life",
-  "tagline": "",
-  "bio": "",
+  "tagline": "Unity Game Developer & 2D Animator",
+  "bio": "Skeletal and cutout animation in Spine with mesh deformation, bringing other artists' art to life.",
   "links": [
     { "label": "GitHub", "url": "https://github.com/gann4life" },
     { "label": "itch.io", "url": "https://gann4life.itch.io" },
