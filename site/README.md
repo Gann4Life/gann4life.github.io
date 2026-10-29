@@ -14,7 +14,7 @@ Run from `site/`:
 | Command | Purpose |
 |---|---|
 | `npm install` | Install dependencies |
-| `npm run dev` | Dev server at <http://localhost:4321> |
+| `npm run dev` | Dev server at <http://localhost:4321>, admin at <http://localhost:4321/keystatic> |
 | `npm run build` | Static build into `site/dist/` |
 | `npm run preview` | Serve the built output locally |
 
@@ -22,7 +22,8 @@ Run from `site/`:
 
 ```
 site/
-├─ astro.config.mjs        # static output, site URL
+├─ astro.config.mjs        # static output, site URL, dev-only Keystatic
+├─ keystatic.config.ts     # admin fields for `work`, mirrors the Zod schema
 ├─ src/
 │  ├─ content.config.ts    # `work` collection loader + Zod schema
 │  ├─ content/work/*.md    # one Markdown file per entry
@@ -38,8 +39,10 @@ Requires Node `>=22.23.4` (Astro 7).
 
 ## Content
 
-Entries are hand-written Markdown; the schema in `src/content.config.ts` is the
-only gate. Rules for claims, credits, forks, and AI-built work live in
+Entries are Markdown, written by hand or through Keystatic at `/keystatic`
+(dev server only, local mode: it edits files in the working tree; commit them
+yourself). The schema in `src/content.config.ts` is the only gate; Keystatic is
+loaded only under `astro dev`, so builds stay static and ship no React. Rules for claims, credits, forks, and AI-built work live in
 `docs/2-content-model.md` and `docs/6-content-rules.md` — follow those, not this file.
 
 Images must live in the repo (`src/assets/` referenced relatively from the
@@ -48,5 +51,5 @@ Markdown file, or `public/` for unprocessed files). No hotlinked media.
 ## Deploy
 
 `.github/workflows/pages.yml` builds `site/` and publishes `site/dist` with the
-official GitHub Pages actions. It triggers on push to `main`; v2's own deploy
-path is untouched until the lead confirms cutover.
+official GitHub Pages actions. It is dormant (`workflow_dispatch` only) so it
+cannot publish over v2; the push-to-`main` trigger is added at cutover.
