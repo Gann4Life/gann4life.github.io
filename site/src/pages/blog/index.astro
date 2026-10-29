@@ -25,6 +25,7 @@ const posts = await getPosts();
             subtitle={[post.data.summary, post.data.draft ? 'Draft' : ''].filter(Boolean).join(' · ') || undefined}
             image={post.data.cover}
             index={i}
+            headingLevel={2}
             edit={`blog/item/${post.id}`}
           />
         ))}
