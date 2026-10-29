@@ -4,6 +4,7 @@ import { z } from 'astro/zod';
 import {
   AUTHORSHIP,
   CONTEXTS,
+  IMPLEMENTATION_ROLES,
   KINDS,
   LINK_TYPES,
   MEDIA_TYPES,
@@ -84,6 +85,25 @@ const work = defineCollection({
         usedIn: z.array(z.string()).default([]),
       })
       .superRefine((entry, ctx) => {
+        // docs/2-content-model.md, "AI-built (vibe-coded) projects": the
+        // generated part is never claimed as implementation work.
+        if (entry.authorship === 'ai-built') {
+          const claimed = entry.roles.filter((role) => IMPLEMENTATION_ROLES.includes(role));
+          if (claimed.length > 0) {
+            ctx.addIssue({
+              code: 'custom',
+              path: ['roles'],
+              message: `ai-built entries cannot claim ${claimed.join(', ')}; use director, designer, spec-author, technical-direction or maintainer.`,
+            });
+          }
+          if (/develop|programm|coder|engineer/i.test(entry.position)) {
+            ctx.addIssue({
+              code: 'custom',
+              path: ['position'],
+              message: 'ai-built entries describe direction/design, e.g. "Director / Designer", not a developer title.',
+            });
+          }
+        }
         // docs/2-content-model.md, "Forks": upstream link plus credit to the
         // original authors. Both are honesty requirements, not new fields.
         if (entry.origin === 'fork') {

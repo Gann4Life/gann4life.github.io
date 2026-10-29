@@ -5,3 +5,4 @@
 - Collaborative work: describe my part only; credit others.
 - Songs licensed to others: music entry + `usedIn`, no composer role on that game.
 - Be honest about authorship: never claim a skill only shown in AI-built work.
+- Vibe-coded work is `ai-built`: I am director/designer, not programmer. See the authorship table in [section 2](2-content-model.md).

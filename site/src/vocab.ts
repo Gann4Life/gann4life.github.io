@@ -22,6 +22,7 @@ export const CONTEXTS = ['personal', 'commission', 'client', 'job', 'jam', 'stud
 export const ROLES = [
   'programmer',
   'animator',
+  'director',
   'designer',
   'spec-author',
   'technical-direction',
@@ -29,7 +30,10 @@ export const ROLES = [
   'musician',
 ] as const;
 
-export const AUTHORSHIP = ['hand-made', 'ai-assisted', 'ai-built'] as const;
+// Roles that claim hands-on implementation; never allowed on ai-built entries.
+export const IMPLEMENTATION_ROLES: readonly (typeof ROLES)[number][] = ['programmer', 'animator', 'musician'];
+
+export const AUTHORSHIP =['hand-made', 'ai-assisted', 'ai-built'] as const;
 
 export const ORIGINS = ['original', 'fork'] as const;
 

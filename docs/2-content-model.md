@@ -13,7 +13,7 @@ kind: game            # software | game | app | web | art2d | art3d | animation 
 context: personal     # personal | commission | client | job | jam | study — who it was for
 position: ""          # optional free text, e.g. "Unity Game Developer" on someone else's project
 roles: [programmer, animator]   # what I did — drives the filters
-                      # also: designer, spec-author, technical-direction, maintainer, musician
+                      # also: director, designer, spec-author, technical-direction, maintainer, musician
 authorship: hand-made # hand-made | ai-assisted | ai-built — shown as a badge
 origin: original      # original | fork
 upstream: ""          # if fork: link to the original repo
@@ -63,11 +63,25 @@ Long description / devlog in Markdown.
 - `team: team`, `position` set to the title actually held, `contribution` describes only my part, others go in `credits`.
 - `position` is a real title from that project, not an upgraded one.
 
-**AI-built / AI-assisted projects**
-- Badge + one line: "Designed and specified by me, implemented with Claude."
-- Roles reflect real work: designer, spec author, technical direction, maintainer — not programmer.
+**Authorship: which badge**
+
+| `authorship` | Means | Implementation roles allowed |
+|---|---|---|
+| `hand-made` | I wrote the code / made the art or music myself. AI at most for lookups or line completion. | Yes (`programmer`, `animator`, `musician`) |
+| `ai-assisted` | I wrote it and can explain every part; AI generated pieces that I reviewed, edited and own. | Yes |
+| `ai-built` | Vibe-coded / generated: AI wrote the implementation (or produced the asset) from my direction, specs and review. | **No** |
+
+- When unsure between `ai-assisted` and `ai-built`, pick `ai-built`.
+- The same scale applies to art, animation and music: generated assets are `ai-built`.
+
+**AI-built (vibe-coded) projects**
+- Badge + one line on the page: "Directed, designed and specified by me, implemented with AI."
+- Roles reflect real work: `director`, `designer`, `spec-author`, `technical-direction`, `maintainer` — never `programmer`, `animator` or `musician` for the generated part.
+- `position` says the same, e.g. "Director / Designer", never "Developer" or "Programmer".
+- `contribution` names what I actually did: the idea, the spec, the design decisions, review and testing.
+- Link the spec as `type: docs` (e.g. DESIGN.md) — it is the evidence of the work.
 - Their languages/frameworks go in that entry's `tools`, never in the site-wide skills list.
-- Site-wide skills list is built only from `hand-made` entries.
+- Site-wide skills list is built only from `hand-made` and `ai-assisted` entries.
 
 **Forks**
 - `origin: fork` + `upstream` link; credit original authors in `credits`.
