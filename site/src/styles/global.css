@@ -143,7 +143,7 @@ h2 {
 }
 
 .site-header__nav a:hover,
-.site-header__nav a[aria-current="page"] {
+.site-header__nav a[aria-current] {
   color: var(--fg);
   background: var(--line);
 }
@@ -175,6 +175,14 @@ h2 {
 
   .site-header__nav a {
     white-space: nowrap;
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .icon-links a {
+    width: 2.75rem;
+    height: 2.75rem;
   }
 }
 
@@ -381,9 +389,10 @@ h2 {
 .hero__name {
   font-size: clamp(3.2rem, 1rem + 9vw, 9rem);
   font-weight: 700;
-  line-height: 0.92;
+  line-height: 1.02;
   letter-spacing: -0.05em;
-  margin: 0 0 1.25rem;
+  margin: 0 0 1.25rem -0.06em;
+  padding: 0 0.06em 0.08em;
   background: linear-gradient(100deg, var(--fg) 30%, color-mix(in srgb, var(--accent) 70%, var(--fg)));
   -webkit-background-clip: text;
   background-clip: text;
@@ -507,7 +516,7 @@ h2 {
 }
 
 .tile--plain .tile__title {
-  font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2.2rem);
+  font-size: clamp(1.25rem, 1rem + 1vw, 1.9rem);
 }
 
 .tile--plain .tile__eyebrow,
@@ -545,6 +554,8 @@ h2 {
   margin: 0.15rem 0;
   font-size: clamp(1.1rem, 1rem + 0.4vw, 1.35rem);
   line-height: 1.15;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .tile--large .tile__title {
@@ -816,12 +827,12 @@ h2 {
 /* Astro puts the class on the <img> itself. Small sources (itch covers) are capped so they don't blur. */
 img.detail__cover,
 .detail__cover img {
-  width: 100%;
-  max-width: 56rem;
+  width: auto;
+  height: auto;
+  max-width: min(100%, 56rem);
   max-height: 80vh;
   object-fit: contain;
   border-radius: var(--radius);
-  background: var(--bg-2);
 }
 
 .detail__section p,
