@@ -11,8 +11,11 @@ const EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'avif', 'gif', 'svg'];
 
 export type AppearanceSource = { kind: 'asset'; image: ImageMetadata } | { kind: 'url'; src: string } | null;
 
-function resolve(field: string, file: string, url: string): AppearanceSource {
-  if (file) {
+type Source = typeof profile.appearance.photo;
+
+function resolve(field: string, source: Source): AppearanceSource {
+  if (source.discriminant === 'upload') {
+    const file = source.value;
     const path = posix.normalize(posix.join('/src/data', file));
     const extension = path.split('.').pop()?.toLowerCase() ?? '';
     if (!EXTENSIONS.includes(extension)) {
@@ -27,18 +30,19 @@ function resolve(field: string, file: string, url: string): AppearanceSource {
     }
     return { kind: 'asset', image };
   }
-  return url ? { kind: 'url', src: url } : null;
+  if (source.discriminant === 'link' && source.value) return { kind: 'url', src: source.value };
+  return null;
 }
 
 const { appearance } = profile;
 
 /** Resolved site appearance from the profile: per field an uploaded asset, a directly used https URL or null, plus background darken (0-100, default 70) and blur (px, default 12). Fails the build on a missing, misplaced or unsupported upload; never fetches a URL. */
 export const siteAppearance = {
-  photo: resolve('photo', appearance.photo.file, appearance.photo.url),
-  logo: resolve('logo', appearance.logo.file, appearance.logo.url),
-  favicon: resolve('favicon', appearance.favicon.file, appearance.favicon.url),
-  banner: resolve('banner', appearance.banner.file, appearance.banner.url),
-  background: resolve('background', appearance.background.file, appearance.background.url),
-  darken: appearance.background.darken ?? 70,
-  blur: appearance.background.blur ?? 12,
+  photo: resolve('photo', appearance.photo),
+  logo: resolve('logo', appearance.logo),
+  favicon: resolve('favicon', appearance.favicon),
+  banner: resolve('banner', appearance.banner),
+  background: resolve('background', appearance.background),
+  darken: appearance.darken ?? 70,
+  blur: appearance.blur ?? 12,
 };

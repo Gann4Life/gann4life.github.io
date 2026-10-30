@@ -1,8 +1,18 @@
 {
-  "name": "Gann4Life",
-  "tagline": "Unity Game Developer & 2D Animator",
-  "bio": "Skeletal and cutout animation in Spine with mesh deformation, bringing other artists' art to life.",
-  "reel": "https://www.youtube.com/watch?v=9vX-9SAaqUo",
+  "hero": {
+    "banner": { "discriminant": "none" },
+    "photo": { "discriminant": "none" },
+    "reel": "https://www.youtube.com/watch?v=9vX-9SAaqUo",
+    "name": "Gann4Life",
+    "tagline": "Unity Game Developer & 2D Animator",
+    "bio": "Skeletal and cutout animation in Spine with mesh deformation, bringing other artists' art to life."
+  },
+  "background": {
+    "image": { "discriminant": "none" }
+  },
+  "header": {
+    "logo": { "discriminant": "none" }
+  },
   "links": [
     { "label": "GitHub", "url": "https://github.com/gann4life" },
     { "label": "itch.io", "url": "https://gann4life.itch.io" },
@@ -10,5 +20,8 @@
     { "label": "Bandcamp", "url": "https://gann4life.bandcamp.com" },
     { "label": "DeviantArt", "url": "https://gann4life.deviantart.com" },
     { "label": "YouTube", "url": "https://www.youtube.com/@gann4life" }
-  ]
+  ],
+  "tab": {
+    "favicon": { "discriminant": "none" }
+  }
 }
