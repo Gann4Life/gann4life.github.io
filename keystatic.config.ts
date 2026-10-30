@@ -166,7 +166,7 @@ export default config({
         pinned: fields.checkbox({ label: 'Pinned', description: 'Listed above all other posts on the home page and the blog list, newest pinned first.' }),
         featured: fields.checkbox({
           label: 'Featured',
-          description: 'The home page shows the newest featured post right after the pinned ones (one at a time); "Featured" marker on the blog list.',
+          description: 'Adds a "Featured" marker on the blog list. Does not change the order or the home page.',
         }),
         draft: fields.checkbox({ label: 'Draft', description: 'Shown on the dev server only. Untick to publish.', defaultValue: true }),
         body: fields.markdoc({
