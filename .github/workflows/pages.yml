@@ -44,6 +44,7 @@ jobs:
           mkdir -p ../_site
           if [ -f package.json ] && jq -e '.dependencies.astro // .devDependencies.astro' package.json > /dev/null; then
             npm ci
+            npm run dupes
             npm run build
             cp -a dist/. ../_site/
           elif [ -f index.html ]; then
@@ -68,6 +69,7 @@ jobs:
             exit 1
           fi
           npm ci
+          npm run dupes
           npm run build
           mkdir -p ../_site/dev
           cp -a dist/. ../_site/dev/
