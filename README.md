@@ -22,6 +22,7 @@ Run from the repository root:
 | `npm run drafts` | Refresh the list of drafts kept out of git; also runs before dev and build |
 | `npm run build` | Static build into `dist/` (drafts excluded); with `DEPLOY_TARGET=staging` it builds for `/dev/` |
 | `npm run preview` | Serve the built output locally |
+| `npm test` | Production and staging builds, dev-server smoke (reuses a running `npm run dev`), script tests; CI runs it on PRs without the dev smoke |
 | `npm run check-urls -- --dry-run` | Check the remote URLs of published content and print each with `file:line` and status (OK, Broken, Unverified); without `--dry-run` it also writes the "Broken remote URLs" GitHub issue, which only CI should do |
 
 ## Layout
@@ -40,6 +41,7 @@ Run from the repository root:
 │  └─ styles/              # plain CSS
 ├─ public/                 # copied as-is: robots.txt, favicon.svg, service-worker.js
 ├─ scripts/                # npm scripts (sync, add, exclude-drafts)
+├─ test/                   # `npm test` (node:test)
 └─ dist/                   # build output (gitignored)
 ```
 
