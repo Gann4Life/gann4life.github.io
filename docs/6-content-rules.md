@@ -8,3 +8,4 @@
 - Songs licensed to others: music entry + `usedIn`, no composer role on that game.
 - Be honest about authorship: never claim a skill only shown in AI-built work.
 - Vibe-coded work is `ai-built`: I am director/designer, not programmer. See the authorship table in [section 2](2-content-model.md).
+- These rules bind blog posts too. A post's claims match the related entries' `authorship` and roles, and any work by someone else shown in a post (art, music, code, footage) is credited in the post next to it: name, and link when there is one.

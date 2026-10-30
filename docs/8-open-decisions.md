@@ -4,18 +4,30 @@
 
 - Single-page home vs separate sections
 - Domain name (only worth it to decouple the URL from the repo name)
-- **Blog: content rules** (issue #14). Does [section 6](6-content-rules.md) bind post text (e.g. a devlog about an `ai-built` project describing "my code")? Recommended: yes, the authorship and credit rules apply to any claim in a post; no new fields.
-- **Blog: draft images in the shared `src/assets/blog/` folder** (issue #14). All posts share one asset folder, so under the asset folder rule it is committed as soon as one published post references it, and images used only by draft posts get committed with it. This contradicts "a draft entry and its assets live only on the dev machine". Recommended: per-post folders `src/assets/blog/<slug>/` (Keystatic config change; existing published paths, if any, migrate). Until decided, keep draft-only post images out of commits by hand.
-- **Blog: unknown `work` slugs** (issue #14). A slug in `work` that matches no published entry is silently skipped (an existing draft post already holds a placeholder value). Recommended: fail the build for slugs that match no entry at all; keep skipping slugs of draft `work` entries, since production drops them.
-- **Blog: link back from `work` pages** (issue #14). `work` → posts is one-way today. Recommended: leave as is until there are posts worth linking.
 
 ## Decided
+
+### 2026-10-29 — Exact-duplicate media resolver: fix in the hook, check in CI
+
+- **Decision**: byte-identical files (SHA-256, any type) under `src/assets/` and `public/media/` are merged by `scripts/dedupe-media.mjs`: one copy kept in `src/assets/shared/` or `public/media/shared/` as `<16 hex of SHA-256>.<ext>`, every reference in `src/` and `keystatic.config.*` rewritten in the same path form, other copies deleted. Merges stay within one tree (cross-tree identical files: warning only). Runs in fix mode from the pre-commit hook (re-stages the result; aborts if a file to rewrite has unstaged changes), as a check in the Pages workflow before each Astro build, and by hand (`npm run dupes`, `npm run dupes -- --fix`). The kept copy obeys the per-file draft rule. Defines `public/media/<slug>/` for files served as-is and `public/webgl/<slug>/` (outside the resolver) for WebGL builds.
+- **Reason**: duplicates never reach the repo, local drafts are covered too (CI cannot see them), and CI stays read-only.
+- **Rejected**: CI auto-fix committing back (needs a write token and bot commits on a repo where only the lead writes to the remote; would also add commits the lead has not reviewed, and CI cannot see local drafts anyway); perceptual matching (false merges); merging across `src/assets/` and `public/` (import vs URL serving are not interchangeable); hash-only names without the extension (breaks MIME detection and Astro's image pipeline).
+- **Affects**: [section 2](2-content-model.md) "Drafts stay out of git" (hook) and new "Duplicate media files"; [section 1](1-stack.md) workflow build step; [section 4](4-media.md) "Where local media lives".
+
+### 2026-10-29 — Blog follow-ups from issue #14 decided
+
+- **Decision**: (1) [Section 6](6-content-rules.md) binds blog posts; any work by someone else shown in a post is credited in the post; no new fields. (2) Draft exclusion is per file for every asset (`work` and `blog`): an asset file is excluded only when draft entries alone reference it; it is committable once any published entry or non-content source file references it; unreferenced files are a warning only. Blog images stay in the shared `src/assets/blog/`. (3) A slug in a post's `work` that matches no entry fails the build; slugs of draft `work` entries are skipped. (4) `/work/<slug>` ends with "Posts about this project": published posts naming the entry, newest first, omitted when none.
+- **Reason**: (2) the per-folder rule committed draft-only images in any shared folder, contradicting "a draft entry and its assets live only on the dev machine"; per file fixes it without changing Keystatic paths. (3) a typo should not vanish silently. (4) the user wants the link back now.
+- **Rejected**: (2) per-post folders `src/assets/blog/<slug>/` (Keystatic config change plus path migration, and still per folder).
+- **Supersedes**: the per-folder "Asset folder rule" (decisions "Draft entries never enter git" and "Unreferenced asset folders are reported, not excluded", folder parts). The slug-folder heuristic survives per file; `blog/` and `shared/` are not slug folders.
+- **Migration**: no data format change and no version bump. The exclude block switches from folder lines to file lines on the next script run (it rewrites only its own block). A draft post with a placeholder `work` slug fails the production build once published unless the slug is fixed.
+- **Affects**: [section 2](2-content-model.md) "Drafts stay out of git" and "Blog posts"; [section 3](3-pages.md) `/work/<slug>` order; [section 6](6-content-rules.md). Removed the four blog items from Open.
 
 ### 2026-10-29 — `blog` collection specified as built (issue #14)
 
 - **Decision**: the content model has two collections. `blog` is specified field-for-field as `src/content.config.ts` defines it (`title`, optional `slug`, `date`, `summary`, `cover`, `work`, `draft`), with the same draft semantics as `work`, routes `/blog/` and `/blog/<slug>/`, and blog URLs in the sitemap only when a post is published. No behavior change.
 - **Reason**: the spec said "one collection" while the code, CMS and phase list already shipped a blog.
-- **Open follow-ups**: content rules for posts, shared asset folder vs draft exclusion, unknown `work` slugs, back-links (listed under Open).
+- **Open follow-ups**: content rules for posts, shared asset folder vs draft exclusion, unknown `work` slugs, back-links. *(All decided 2026-10-29, see "Blog follow-ups from issue #14 decided".)*
 - **Affects**: [section 2](2-content-model.md) intro and "Blog posts"; [section 3](3-pages.md) blog route and "Base-path rule" (`related` → `work`).
 
 ### 2026-10-29 — Hotfix path (issue #17)
@@ -57,7 +69,7 @@
 
 ### 2026-10-29 — Unreferenced asset folders are reported, not excluded
 
-- **Decision**: (a) an asset folder that no entry or file references is no longer excluded and is not blocked by the pre-commit hook: the exclude script prints a `WARNING` naming it and exits 0. Folders referenced only by drafts are still excluded. (b) The script reads frontmatter by parsing only the `draft:` and `slug:` lines inside the leading `---` block; no YAML library or other new dependency.
+- **Decision**: (a) an asset folder that no entry or file references is no longer excluded and is not blocked by the pre-commit hook: the exclude script prints a `WARNING` naming it and exits 0. Folders referenced only by drafts are still excluded. (b) The script reads frontmatter by parsing only the `draft:` and `slug:` lines inside the leading `---` block; no YAML library or other new dependency. *(Amended 2026-10-29: (a) now applies per file, see "Blog follow-ups from issue #14 decided".)*
 - **Reason**: (a) excluding unreferenced folders could silently keep legitimate assets out of git (e.g. files referenced in a way the scanner does not see); a warning is enough to find leftovers. (b) Two plain scalar keys written by Keystatic do not justify a dependency.
 - **Rejected**: (b) adding a YAML/frontmatter library.
 - **Amends**: the "Draft entries never enter git" decision below (its last sentence on unreferenced folders).
@@ -65,7 +77,7 @@
 
 ### 2026-10-29 — Draft entries never enter git
 
-- **Decision**: `draft: true` entries (`work` and `blog`) and their asset folders stay local until published. A Node script in `site/scripts/` writes them into a marked block of `.git/info/exclude`; it runs on `predev`, `prebuild` and from a committed pre-commit hook (`.githooks/pre-commit`, `core.hooksPath`) that blocks staging draft files. Publishing = `draft: false`, after which entry and assets are committed together. Asset folders are excluded unless a non-draft file references them; unreferenced folders are excluded and reported. *(Amended 2026-10-29, issue #11: unreferenced folders are only reported, not excluded. Issue #17: the script now lives in `scripts/` at the repository root.)*
+- **Decision**: `draft: true` entries (`work` and `blog`) and their asset folders stay local until published. A Node script in `site/scripts/` writes them into a marked block of `.git/info/exclude`; it runs on `predev`, `prebuild` and from a committed pre-commit hook (`.githooks/pre-commit`, `core.hooksPath`) that blocks staging draft files. Publishing = `draft: false`, after which entry and assets are committed together. Asset folders are excluded unless a non-draft file references them; unreferenced folders are excluded and reported. *(Amended 2026-10-29, issue #11: unreferenced folders are only reported, not excluded. Issue #17: the script now lives in `scripts/` at the repository root. Later 2026-10-29: exclusion is per asset file, not per folder; see "Blog follow-ups from issue #14 decided".)*
 - **Reason**: the repo is public and the only thing to keep private is unpublished work. Drafts must not reach the public history, not only the built site.
 - **Rejected**: a separate drafts folder (breaks the single Keystatic collection path); a second, private source repo (user rejected it for now).
 - **Kept**: the build-time draft filter stays as a second guard for local builds.

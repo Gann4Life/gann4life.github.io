@@ -8,10 +8,16 @@ The work is the page: embeds and images come first, links after.
 | itch.io download-only game | Cover + link to the page | `cover`, `links` |
 | Bandcamp album/track | Bandcamp player with tracklist | `audio`, `https://bandcamp.com/EmbeddedPlayer/...` (resolved by `npm run add`) |
 | SoundCloud track | SoundCloud player | `audio`, track URL as-is |
-| Own audio file | Native `<audio>` | `audio`, path in `public/` |
+| Own audio file | Native `<audio>` | `audio`, site-relative path in `public/media/<slug>/` |
 | YouTube / Vimeo | Video player (youtube-nocookie) | `video`, video URL as-is |
 | DeviantArt / any 2D art | Image downloaded into the repo, gallery + lightbox | `cover`, `gallery` |
 | 3D | Screenshots in `gallery` (textures, wireframe, rig, poses); turntables as `video`. No in-browser 3D viewer: it cannot show texturing, topology or rigging work | `gallery`, `video` |
 | Spine | Rendered video (YouTube embed or own file). No live Spine player: anything a browser can play — skeleton, atlas, textures — can be downloaded and reused, so rigs are never published | `video` |
-| Own WebGL build | Iframe | `webgl`, path in `public/` or URL |
+| Own WebGL build | Iframe | `webgl`, path in `public/webgl/<slug>/` or URL |
+
+**Where local media lives**
+- Images: `src/assets/` (imported through `astro:assets`).
+- Files served as-is (own audio, video, PDFs): `public/media/<slug>/`, referenced as `/media/<slug>/<file>` through `withBase` ([section 3](3-pages.md)).
+- WebGL builds: `public/webgl/<slug>/`, one folder per build, left untouched by the duplicate resolver.
+- Files under `src/assets/` and `public/media/` follow the per-file draft rule and the duplicate resolver ([section 2](2-content-model.md) "Drafts stay out of git", "Duplicate media files"); identical files end up once in `src/assets/shared/` or `public/media/shared/`.
 | GitHub repo | Cover/description + source link | `links` |
