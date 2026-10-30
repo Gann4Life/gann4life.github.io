@@ -1106,7 +1106,7 @@ img.detail__cover,
 @media (min-width: 48rem) {
   .blog__split {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
     gap: clamp(1.5rem, 3vw, 3rem);
     align-items: start;
   }
