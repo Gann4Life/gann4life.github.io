@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -46,11 +46,11 @@ const listMarkdown = (dir) => {
   }
 };
 
-const collect = () => {
+const collect = (root = ROOT) => {
   const found = [];
   const add = (url, file, line, field, appearance) => found.push({ url, file, line, field, appearance });
 
-  const profileAbs = path.join(ROOT, 'src', 'data', 'profile.json');
+  const profileAbs = path.join(root, 'src', 'data', 'profile.json');
   const profileRel = 'src/data/profile.json';
   let raw = null;
   try {
@@ -82,10 +82,10 @@ const collect = () => {
   }
 
   for (const name of ['work', 'blog']) {
-    for (const abs of listMarkdown(path.join(ROOT, 'src', 'content', name))) {
+    for (const abs of listMarkdown(path.join(root, 'src', 'content', name))) {
       const block = frontmatterBlock(readText(abs));
       if (!block || isDraft(block)) continue;
-      const rel = posix(path.relative(ROOT, abs));
+      const rel = posix(path.relative(root, abs));
       let field = '';
       for (let i = 1; i < block.end; i++) {
         const line = block.lines[i];
@@ -290,8 +290,12 @@ const report = (items) => {
   console.log(`created issue ${url}`);
 };
 
-const items = collect();
-console.log(`${items.length} unique URLs${DRY_RUN ? ' (dry run, GitHub untouched)' : ''}`);
-await checkAll(items);
-printReport(items);
-if (!DRY_RUN) report(items);
+export { classify, collect, frontmatterBlock, hostOf, isDraft };
+
+if (process.argv[1] && realpathSync.native(process.argv[1]) === realpathSync.native(fileURLToPath(import.meta.url))) {
+  const items = collect();
+  console.log(`${items.length} unique URLs${DRY_RUN ? ' (dry run, GitHub untouched)' : ''}`);
+  await checkAll(items);
+  printReport(items);
+  if (!DRY_RUN) report(items);
+}
