@@ -271,13 +271,55 @@ h2 {
   animation: rise 0.9s 0.2s var(--ease) both;
 }
 
-.hero__reel iframe {
+.hero__reel iframe,
+.reel-facade {
+  display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
   border: 0;
   border-radius: var(--radius);
   background: #000;
   box-shadow: 0 0 0 1px var(--line), 0 30px 80px -30px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+.reel-facade {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.reel-facade img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.reel-facade span {
+  position: relative;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.65);
+  box-shadow: 0 0 0 2px #fff;
+  transition: background 0.2s var(--ease);
+}
+
+.reel-facade span::after {
+  content: '';
+  position: absolute;
+  left: 1.8rem;
+  top: 1.375rem;
+  border-style: solid;
+  border-width: 0.875rem 0 0.875rem 1.375rem;
+  border-color: transparent transparent transparent #fff;
+}
+
+.reel-facade:hover span,
+.reel-facade:focus-visible span {
+  background: var(--accent);
 }
 
 @media (max-width: 60rem) {
