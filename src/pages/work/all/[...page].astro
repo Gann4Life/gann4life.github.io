@@ -1,0 +1,53 @@
+---
+import type { GetStaticPaths, Page } from 'astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Tile from '../../../components/Tile.astro';
+import Pager from '../../../components/Pager.astro';
+import { profile } from '../../../profile';
+import { getWork, tileMeta, type Work } from '../../../lib/work';
+import { withBase } from '../../../lib/paths';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const entries = await getWork();
+  return paginate(entries, { props: { total: entries.length }, pageSize: 24 });
+}) satisfies GetStaticPaths;
+
+interface Props {
+  total: number;
+  page: Page<Work>;
+}
+
+const { total, page } = Astro.props;
+const title = page.currentPage > 1 ? `All work — page ${page.currentPage}` : 'All work';
+---
+
+<BaseLayout title={title}>
+  <main class="home">
+    <header class="hero hero--compact">
+      <p class="hero__kicker"><a href={withBase('/')}>{profile.name}</a> / Work</p>
+      <h1 class="hero__name">All work</h1>
+      <p class="hero__roles">
+        {total} {total === 1 ? 'project' : 'projects'}
+        {page.lastPage > 1 && <span class="muted"> · page {page.currentPage} of {page.lastPage}</span>}
+      </p>
+    </header>
+
+    <div class="grid">
+      {page.data.map((entry, i) => (
+        <Tile
+          href={withBase(`/work/${entry.id}/`)}
+          title={entry.data.title}
+          eyebrow={tileMeta(entry)}
+          subtitle={[entry.data.position, entry.data.draft ? 'Draft' : ''].filter(Boolean).join(' · ') || undefined}
+          image={entry.data.cover}
+          index={i}
+          headingLevel={2}
+          edit={`work/item/${entry.id}`}
+          draft={entry.data.draft}
+        />
+      ))}
+    </div>
+
+    <Pager current={page.currentPage} last={page.lastPage} href={(n) => withBase(n === 1 ? '/work/all/' : `/work/all/${n}/`)} />
+  </main>
+</BaseLayout>

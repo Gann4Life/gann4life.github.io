@@ -56,7 +56,7 @@ export default config({
       format: { contentField: 'body' },
       columns: ['kind', 'draft', 'status'],
       schema: {
-        title: titleWithSlug('URL of the page: /work/<slug>.', ['c', 't', 'site']),
+        title: titleWithSlug('URL of the page: /work/<slug>.', ['c', 't', 'site', 'all']),
         kind: fields.select({ label: 'Kind', description: 'What it is.', options: options(KINDS), defaultValue: 'software' }),
         context: fields.select({
           label: 'Context',
