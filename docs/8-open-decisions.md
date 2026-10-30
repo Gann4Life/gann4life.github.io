@@ -6,6 +6,8 @@
 - Domain name (only worth it to decouple the URL from the repo name)
 - Banner legibility without a scrim (2026-10-30): if a chosen banner leaves the hero text below WCAG AA contrast, add an optional uniform tint (e.g. reuse a `darken`-style 0–100 % field on `hero`) or keep the image as is? Recommendation: decide after `ui-ux-designer` checks the real banner at desktop and phone width.
 
+- Work pages with no gallery and no posts (2026-10-30, issue #119): with the side column limited to gallery and posts, these pages keep the single narrow text column and the empty right side the user reported (the reported page, `/work/ragassembler2d/`, has neither, and so do most published entries today). Options: (a) keep as is; (b) move Links, Tools, Credits and Related into the side column on wide screens, so every entry with any of them gets two columns; (c) center the single column. User's call.
+
 ## Known issues
 
 Recorded, not specified; investigation belongs in a separate bug issue.
@@ -13,6 +15,15 @@ Recorded, not specified; investigation belongs in a separate bug issue.
 - **2026-10-30 — `LocalImageUsedWrongly` on draft pages in dev**: after saving in Keystatic while production builds ran in parallel, the dev server threw `LocalImageUsedWrongly` on draft pages; restarting the dev server fixed it. **Resolved (issue #77)**. Cause: `astro build` always rewrites `.astro/content-assets.mjs`, shared with the dev server; the build's draft filter (`withoutDrafts`, `src/content.config.ts`) leaves draft image imports out of it, so a running dev server reloads the map and draft covers stay strings. `.astro/data-store.json` is not shared; saving any content entry or restarting dev heals it. Fix: `npm run build` runs `scripts/build.mjs`, which keeps `.astro/content-assets.mjs` in memory, runs `astro build` and restores the file when the build ends (success, failure or Ctrl+C; not if the process is killed), exiting with the build's code; no-op when the file does not exist (CI). Draft filtering is unchanged. Trade-off: while a build runs, draft pages on a running dev server can still 500 and recover when it ends; a work entry saved during a build gets the pre-build map back until the next content save or dev restart.
 
 ## Decided
+
+### 2026-10-30 — Work page side column for gallery and posts (issue #119)
+
+- **Decision**: on `/work/<slug>` at ≥ 64rem, when the entry has a gallery or at least one published post, the text sits in a left 2/3 column (What I did, description, Links, Fork, Credits, Tools, Related) and the gallery, then "Posts about this project", in a right 1/3 column (`minmax(0, 2fr) minmax(0, 1fr)`). Header, work embed/cover and the back link stay full width. The side column is not sticky. In it the gallery shows two 4:3 thumbnails per row (a single image spans the column). With neither gallery nor posts the page stays one column as before. Below 64rem the page is one column in today's order. The document order is unchanged, so visual and reading order match at every width. CSS-only; the `:target` lightbox is unchanged and nothing between the page and the lightbox may create a containing block for fixed elements or a stacking context.
+- **Reason**: the user found the right half of wide work pages empty, with the text squeezed into the left column. 64rem rather than the blog's 48rem: at 48rem a 1/3 column is about 15rem, too narrow for two thumbnails; a 2/3 text column still holds the 48rem measure at the 80rem page width. Not sticky: a long gallery would need its own scroll area, and `position: sticky` creates a stacking context that would trap the lightbox (`z-index: 10`) under the sticky site header (`z-index: 5`).
+- **Trade-offs**: between 48rem and 64rem (tablets, small laptops) work pages stay one column. On wide screens the gallery is no longer seen before the text is reached in the document order. Keyboard focus visits the gallery before the text, as today, although it now sits to the right. Pages without gallery or posts (most published entries today, the reported page included) do not change; see Open.
+- **Rejected**: CSS `order` or `display: contents` to place the columns (visual order would differ from reading order; `display: contents` has had accessibility bugs); a sticky side column (see Reason); a 1/4–3/4 split like the blog (thumbnails too small); moving the lightbox overlays out of the gallery markup (not needed while the column is not sticky).
+- **Migration**: none. No data format change, no version bump.
+- **Affects**: [section 3](3-pages.md) `/work/<slug>` item and new "Work page layout".
 
 ### 2026-10-30 — Blog split view: list pane 1/4 (issue #106)
 

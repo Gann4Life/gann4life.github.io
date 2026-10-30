@@ -11,7 +11,7 @@ Full-width, image-first site. On thumbnails the text only appears on hover/focus
   The home has no category bands: the former **Work** / **Hobbies** button bands are removed (user decision 2026-10-30). Categories are reached from the header nav, which lists every category with included work.
 - `/work/c/<category>/` — every work in the category as 4:3 thumbnails with the text over the image. Music releases instead get a compact player each, playable in place.
 - `/work/t/<tool-slug>/` (and `/work/t/<tool-slug>/<n>/` for page n ≥ 2) — every included work entry whose `tools` contains that tool, as the same 4:3 tile grid and pagination as category pages (24 per page, same `Pager`), same order (featured first, then newest `started`); tiles only, no in-place music players. Header kicker `<name> / Tools`, title = the tool name as written, count line "1 project" / "N projects". One page per tool slug ([section 2](2-content-model.md) "Tool pages"); no index page at `/work/t/`. Not in the header nav. In production the sitemap lists the first page of each tool (`/work/t/<tool-slug>/`), like category pages; staging has no sitemap.
-- `/work/<slug>` — one page per entry: the work first (embed, or cover image), gallery, what I did, description, then links, fork block, credits, tools (each a link to its tool page), related, and last "Posts about this project": published posts whose `work` field includes the entry's slug, in list order ([section 2](2-content-model.md) "Post order"), as title + date links (summary under the title when set); the section is omitted when there are none.
+- `/work/<slug>` — one page per entry: the work first (embed, or cover image), gallery, what I did, description, then links, fork block, credits, tools (each a link to its tool page), related, and last "Posts about this project": published posts whose `work` field includes the entry's slug, in list order ([section 2](2-content-model.md) "Post order"), as title + date links (summary under the title when set); the section is omitted when there are none. That is the document and phone order; on wide screens the gallery and the posts move to a side column ("Work page layout" below).
 - `/blog/`, `/blog/page/<n>/` (n ≥ 2) and `/blog/<slug>/` — posts written in `/keystatic` (Blog); fields in [section 2](2-content-model.md) "Blog posts". The header links to the blog once a post is published. Layout below ("Blog split view").
 - `/sitemap.xml`, `/robots.txt`, `/404.html`.
 - `/service-worker.js` — self-unregistering worker that removes v2's; never registered by v3 ([section 1](1-stack.md) "Retired v2 service worker").
@@ -33,6 +33,20 @@ All blog routes render the same two-pane layout, fully static: no new client-sid
 - **Phone (< 48rem)**: one pane at a time, by CSS only. `/blog/` and `/blog/page/<n>/` show the list only (the reader pane is not displayed). `/blog/<slug>/` shows the post only, with a "← All posts" link to `withBase('/blog/')` above it; the list pane is not displayed. On wide screens that back link is hidden (the list is visible).
 - **Sitemap** (production): `/blog/` and every `/blog/<slug>/`, as today; `/blog/page/<n>/` is not listed (like later category pages).
 - No published post: `/blog/` shows "No posts yet." and no panes; no `/blog/page/` or post routes exist.
+
+**Work page layout** (user request 2026-10-30, issue #119)
+
+`/work/<slug>` is fully static; no new client-side JS.
+
+- **Full width, always**: the header (kicker, meta, title, position, authorship) and the work itself (media embeds, or the cover when there are no media), as today. The "← <category>" back link stays last, full width, after the columns.
+- **Columns (≥ 64rem), only when the entry has a gallery or at least one post**: left 2/3 the text, right 1/3 the side column (grid `minmax(0, 2fr) minmax(0, 1fr)` inside the page width, column gap as the blog split view, `clamp(1.5rem, 3vw, 3rem)`). Both columns start at the same height, right below the work.
+  - Left, in this order: What I did, description, Links, Fork, Credits, Tools, Related. The text keeps its 48rem measure.
+  - Right, in this order: the gallery, then "Posts about this project", directly under the gallery with no empty space between them. When only one exists, it alone fills the top of the side column.
+  - The side column is not sticky: it scrolls with the page.
+- **No gallery and no posts**: no side column and no grid; the page is one column, exactly as before this layout (the text does not widen beyond its 48rem measure).
+- **Phone and narrow screens (< 64rem)**: one column in the document order of the `/work/<slug>` item above (gallery before What I did, posts after Related). The visual order never differs from the document order at any width, so keyboard and screen-reader order match what is seen.
+- **Gallery in the side column**: two thumbnails per row (equal columns, 4:3, cropped, as today); a gallery with a single image shows it across the full column width. Captions stay under their thumbnails. Below 64rem the gallery grid is unchanged (auto-fill, 14rem minimum). The thumbnail `sizes` hint matches the rendered width at each breakpoint.
+- **Lightbox**: unchanged, CSS-only (`:target`), and it must still cover the whole viewport above the sticky site header from the side column. So no element between the page and the lightbox (the layout grid, its column wrappers, the gallery) may establish a containing block for fixed descendants or a stacking context: no `transform`, `filter`, `backdrop-filter`, `perspective`, `contain`, `container-type`, `will-change`, opacity below 1, `position: sticky`/`fixed`, a positioned element with a `z-index`, or the load animation (`rise`), on any of them.
 
 **Base-path rule** (links and asset URLs)
 
