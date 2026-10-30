@@ -38,7 +38,7 @@ const work = defineCollection({
         slug: z
           .string()
           .min(1)
-          .refine((s) => s !== 'c', 'Slug "c" is reserved for category pages.')
+          .refine((s) => s !== 'c' && s !== 'site', 'Slugs "c" (category pages) and "site" (appearance images) are reserved.')
           .optional(),
         kind: z.enum(KINDS),
         context: z.enum(CONTEXTS).default('personal'),
