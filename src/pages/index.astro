@@ -27,14 +27,20 @@ const REEL_CSS =
   'img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}' +
   'span{position:relative;width:72px;height:72px;border-radius:50%;background:rgb(0 0 0/.65);box-shadow:0 0 0 2px #fff}' +
   'span::after{content:"";position:absolute;left:29px;top:22px;border-style:solid;border-width:14px 0 14px 22px;border-color:transparent transparent transparent #fff}' +
-  'a:hover span,a:focus-visible span{background:#7c6cff}';
+  'a:hover span,a:focus-visible span{background:#7c6cff}' +
+  'iframe{position:absolute;inset:0;width:100%;height:100%;border:0}';
+const REEL_JS =
+  "document.querySelector('a').addEventListener('click',(e)=>{e.preventDefault();" +
+  "const f=document.createElement('iframe');f.src=e.currentTarget.href;" +
+  "f.allow='autoplay; fullscreen; encrypted-media; picture-in-picture';f.allowFullscreen=true;" +
+  'f.title=e.currentTarget.getAttribute("aria-label");document.body.replaceChildren(f);});';
 const reelEntry = entries.find(isReel);
 const reelPoster =
   reel && reelEntry?.data.cover ? (await getImage({ src: reelEntry.data.cover, format: 'webp', width: 1280 })).src : null;
 const reelPlay = reel ? `${reel}${reel.includes('?') ? '&' : '?'}autoplay=1` : null;
 const reelLabel = `Play the ${profile.name} demo reel`.replaceAll('"', '&quot;');
 const reelDoc = reelPoster
-  ? `<!doctype html><style>${REEL_CSS}</style><a href="${reelPlay}" aria-label="${reelLabel}"><img src="${reelPoster}" alt=""><span aria-hidden="true"></span></a>`
+  ? `<!doctype html><style>${REEL_CSS}</style><a href="${reelPlay}" aria-label="${reelLabel}"><img src="${reelPoster}" alt=""><span aria-hidden="true"></span></a><script>${REEL_JS}</script>`
   : null;
 ---
 
