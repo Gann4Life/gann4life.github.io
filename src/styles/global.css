@@ -994,6 +994,7 @@ img.detail__cover,
 }
 
 .prose img {
+  height: auto;
   border-radius: var(--radius);
 }
 
