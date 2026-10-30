@@ -1,10 +1,16 @@
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { execFileSync, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const FIX = process.argv.includes('--fix');
+const HOOK = process.argv.includes('--hook');
+if (HOOK && !FIX) {
+  console.log('--hook requires --fix');
+  process.exit(2);
+}
 const TREES = [
   { root: 'src/assets', needle: 'assets' },
   { root: 'public/media', needle: 'media' },
@@ -184,10 +190,39 @@ if (!FIX) {
   process.exit(mergeable.length + skipped.length > 0 ? 1 : 0);
 }
 
+const writtenCopies = [];
+const rewrittenFiles = new Set();
+
+if (HOOK && mergeable.length > 0) {
+  const touched = new Set();
+  for (const p of mergeable) {
+    if (p.needsCopy) touched.add(p.kept);
+    for (const item of p.removed) touched.add(item.file);
+    for (const [file, text] of texts) {
+      const found = p.removed.some((item) => matches(text, refNeedle(item)).length > 0);
+      if (found) touched.add(file);
+    }
+  }
+  const gitList = (args) =>
+    execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }).split('\0').filter(Boolean);
+  const dirty = new Set([
+    ...gitList(['diff', '--name-only', '-z']),
+    ...gitList(['ls-files', '--others', '--exclude-standard', '-z']),
+  ]);
+  const blocked = [...touched].filter((f) => dirty.has(f)).sort(byteCompare);
+  if (blocked.length > 0) {
+    process.stderr.write('pre-commit: duplicate media need merging, but these files have unstaged changes:\n');
+    for (const f of blocked) process.stderr.write(`  ${f}\n`);
+    process.stderr.write('Run npm run dupes -- --fix, review the result, stage it and commit again.\n');
+    process.exit(1);
+  }
+}
+
 for (const p of mergeable) {
   if (p.needsCopy) {
     mkdirSync(path.dirname(abs(p.kept)), { recursive: true });
     copyFileSync(abs(p.items[0].file), abs(p.kept));
+    writtenCopies.push(p.kept);
   }
   const keptNeedle = `${p.tree.needle}/${p.kept.slice(p.tree.root.length + 1)}`;
   let rewrote = 0;
@@ -204,11 +239,31 @@ for (const p of mergeable) {
     if (next === text) continue;
     writeFileSync(abs(file), next);
     texts.set(file, next);
+    rewrittenFiles.add(file);
     rewrote++;
   }
   for (const item of p.removed) unlinkSync(abs(item.file));
   console.log(`MERGED ${p.h16} -> ${p.kept} (removed ${p.removed.length}, rewrote ${rewrote} files)`);
 }
 for (const p of skipped) console.log(skipLine(p));
-console.log(`dupes: ${mergeable.length} merged, ${skipped.length} skipped`);
+if (!HOOK || mergeable.length + skipped.length > 0) {
+  console.log(`dupes: ${mergeable.length} merged, ${skipped.length} skipped`);
+}
+
+if (HOOK && mergeable.length > 0) {
+  execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'exclude-drafts.mjs')], { cwd: ROOT, stdio: 'inherit' });
+  const git = (args) => spawnSync('git', args, { cwd: ROOT, stdio: 'inherit' });
+  const tracked = new Set(
+    execFileSync('git', ['ls-files', '-z'], { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }).split('\0').filter(Boolean),
+  );
+  for (const f of [...rewrittenFiles, ...writtenCopies]) {
+    const ignored = spawnSync('git', ['check-ignore', '-q', '--no-index', '--', f], { cwd: ROOT }).status === 0;
+    if (!ignored) git(['add', '--', f]);
+  }
+  for (const p of mergeable) {
+    for (const item of p.removed) {
+      if (tracked.has(item.file)) git(['rm', '--cached', '--quiet', '--', item.file]);
+    }
+  }
+}
 process.exit(skipped.length > 0 ? 1 : 0);
