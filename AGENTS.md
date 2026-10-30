@@ -15,7 +15,7 @@ Project instructions for OpenCode. Read this and `DESIGN.md` (the index) before 
 3. **No paid services.** Free GitHub Pages hosting, no Cloudflare, no image CDN, no managed database. Adding a paid dependency is a blocking decision, not an implementation detail.
 4. **No third-party API as the content source.** Snapshot the data into the repo, then read from the snapshot.
 5. **Honesty outranks polish.** Authorship, roles, credits, and fork attribution follow `docs/6-content-rules.md`. A thinner truthful entry beats a fuller invented one.
-6. **No hotlinked media.** Old CDN URLs expire; media must live in the repo.
+6. **No hotlinked media.** Old CDN URLs expire; media must live in the repo. Only exception (user decision 2026-10-29): the Site appearance URL fields, checked weekly by the remote URL workflow (`docs/1-stack.md`).
 
 ## Workflow
 

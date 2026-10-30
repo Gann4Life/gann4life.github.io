@@ -19,5 +19,6 @@ The work is the page: embeds and images come first, links after.
 - Images: `src/assets/` (imported through `astro:assets`).
 - Files served as-is (own audio, video, PDFs): `public/media/<slug>/`, referenced as `/media/<slug>/<file>` through `withBase` ([section 3](3-pages.md)).
 - WebGL builds: `public/webgl/<slug>/`, one folder per build, left untouched by the duplicate resolver.
+- Site appearance uploads (photo, logo, favicon, banner, background): `src/assets/site/<field>/`. Appearance fields may instead hold an external `https://` URL, used directly and never downloaded: the only hotlinked media on the site ([section 2](2-content-model.md) "Site appearance"); reachability is reported by the remote URL check ([section 1](1-stack.md)).
 - Files under `src/assets/` and `public/media/` follow the per-file draft rule and the duplicate resolver ([section 2](2-content-model.md) "Drafts stay out of git", "Duplicate media files"); identical files end up once in `src/assets/shared/` or `public/media/shared/`.
 | GitHub repo | Cover/description + source link | `links` |

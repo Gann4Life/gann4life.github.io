@@ -6,7 +6,7 @@
 | Interactive islands | None by default | Players are plain HTML or framework-agnostic scripts (native `<audio>`/embeds). Spine work is shown as video so rigs are never published. 3D work is shown as screenshots, not an in-browser viewer. Add an island only if a component genuinely needs one |
 | Admin panel | **Keystatic** (local mode) | `npm run dev` → `localhost:4321/keystatic`, commits Markdown to the repo. Remote editing falls back to `github.dev` |
 | Hosting | **GitHub Pages** | Free user site at `gann4life.github.io`, deployed from Actions on push to `main` (production) or `dev` (staging under `/dev/`); see "Branches, environments and deploys" |
-| Images | In-repo, `astro:assets` + sharp | WebP/AVIF generated at build; stays inside the ~1 GB published-site budget, no CDN |
+| Images | In-repo, `astro:assets` + sharp | WebP/AVIF generated at build; stays inside the ~1 GB published-site budget, no CDN. Only exception: appearance fields given as a URL are hotlinked as-is ([section 2](2-content-model.md) "Site appearance") |
 | Video | YouTube / Vimeo / itch.io | Embed only |
 
 **Admin decision notes**
@@ -49,6 +49,16 @@ One repo, one Pages site (GitHub Pages serves a single site per repo), two envir
 - Deploy target is passed as one environment variable, `DEPLOY_TARGET` = `production` | `staging` (unset = `production`, so local builds behave as production). `astro.config` derives everything from it: `base` is `/` for production and `/dev/` for staging; `site` stays `https://gann4life.github.io`.
 - Permissions: `contents: read`, `pages: write`, `id-token: write`. One concurrency group for all runs, no cancel-in-progress. No tokens, secrets or paid services; `GITHUB_TOKEN` is enough to read both branches of the same public repo.
 - The `github-pages` environment must allow deployments from both `main` and `dev` (repo settings, deployment branch rules).
+
+**Remote URL check** (`.github/workflows/remote-urls.yml` + `scripts/check-urls.mjs`)
+- Purpose: report external URLs that stopped working. It only reports: it never edits content, never downloads media into the repo, never fails or blocks the Pages workflow (separate workflow, nothing depends on it).
+- Triggers: `schedule` weekly (`cron: '0 6 * * 1'`, Monday 06:00 UTC), `workflow_dispatch`, and `push` to `dev` touching `src/data/profile.json` or `src/content/**`. GitHub runs scheduled workflows only from the default branch (`main`), so the schedule is active once the file is on `main`; like `pages.yml`, the file is identical on both branches. Concurrency group `remote-urls`, cancel in progress.
+- What it checks: it checks out `dev` (always the superset of published content; CI has no drafts) and collects, with file and line: every `appearance` URL that is in effect (a `url` whose field has no `file`), profile `reel` and `links[].url` from `src/data/profile.json`; and every `http(s)://` URL in the frontmatter block of each published `work` and `blog` entry (`links`, `media` src, `credits` url, `upstream`), found by pattern inside the leading `---` block, published read as in "Drafts stay out of git" (no YAML library). Markdown bodies are not scanned. Duplicate URLs are requested once and listed with every place they occur.
+- Request: Node built-in `fetch` (no dependency), `HEAD` with a 10 s timeout, redirects followed; on 403, 405, 501 or a network error it retries once with `GET` (body discarded). At most 4 requests at a time and 1 per host. Timeouts and 5xx are retried once after 30 s.
+- Result per URL: **OK** = final status 2xx (for appearance URLs also a `content-type` starting with `image/`); **Broken** = 404, 410, other 4xx except below, 5xx after retry, DNS/TLS error, timeout, or an appearance URL that is not an image; **Unverified** = 401, 403, 429 (sites that block bots).
+- Issue: exactly one issue titled `Broken remote URLs`, labels `type:bug`, `scope:content`, `priority:medium`, `status:ready`, found among open issues by that exact title. If any URL is Broken: create it, or replace its body if open. The body lists Broken, then Unverified, as a table (URL, status or error, field, `file:line`), plus the checked commit SHA and the run date. Unverified URLs alone never open the issue. If nothing is Broken: close the open issue, if any, with a comment naming the run. Labels that do not exist are skipped with a warning, never a failure. Uses `gh` from the runner.
+- Permissions: `contents: read`, `issues: write`, nothing else; `GITHUB_TOKEN` only, no secrets, no third-party or paid service. This is the only CI job that writes to the remote, and only to that one issue.
+- Exit code: 0 whatever the URLs return; non-zero only if the script itself crashes.
 
 **Staging is never indexed**
 - Every staging page carries `<meta name="robots" content="noindex, nofollow">`; production pages do not.
