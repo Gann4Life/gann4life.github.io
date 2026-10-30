@@ -64,6 +64,26 @@ export default config({
           defaultValue: true,
         }),
         featured: fields.checkbox({ label: 'Featured', description: 'Shown in the Featured band at the top of the home page.' }),
+        kind: fields.select({ label: 'Kind', description: 'What it is.', options: options(KINDS), defaultValue: 'software' }),
+        context: fields.select({
+          label: 'Context',
+          description: 'Who it was for.',
+          options: options(CONTEXTS),
+          defaultValue: 'personal',
+        }),
+        started: fields.date({ label: 'Started', validation: { isRequired: true } }),
+        status: fields.select({ label: 'Status', options: options(STATUSES), defaultValue: 'in-development' }),
+        team: fields.select({ label: 'Team', options: options(TEAMS), defaultValue: 'solo' }),
+        position: fields.text({
+          label: 'Position',
+          description: 'Optional. Title actually held, e.g. "Unity Game Developer" on someone else\'s project.',
+        }),
+        authorship: fields.select({
+          label: 'Authorship',
+          description: 'ai-built entries take designer/spec roles, not programmer (docs/2-content-model.md).',
+          options: options(AUTHORSHIP),
+          defaultValue: 'hand-made',
+        }),
         cover: entryImage('Cover (thumbnail)'),
         media: fields.array(
           fields.object({
@@ -88,18 +108,9 @@ export default config({
           description: 'What you were on this project. Drives the filters.',
           itemLabel: (props) => props.value,
         }),
-        authorship: fields.select({
-          label: 'Authorship',
-          description: 'ai-built entries take designer/spec roles, not programmer (docs/2-content-model.md).',
-          options: options(AUTHORSHIP),
-          defaultValue: 'hand-made',
-        }),
+        body: fields.markdoc({ label: 'Description', description: 'The text under What I did on the project page.', extension: 'md' }),
         origin: fields.select({ label: 'Origin', options: options(ORIGINS), defaultValue: 'original' }),
         upstream: fields.url({ label: 'Upstream', description: 'Required for forks.' }),
-        position: fields.text({
-          label: 'Position',
-          description: 'Optional. Title actually held, e.g. "Unity Game Developer" on someone else\'s project.',
-        }),
         links: fields.array(
           fields.object({
             label: fields.text({ label: 'Label', description: 'Button text. Empty uses the type default.' }),
@@ -122,13 +133,6 @@ export default config({
           description: 'Engines, programs, languages and libraries you used. Each one gets a page listing its projects. Missing one? Ask Claude to add it.',
           itemLabel: (props) => props.value,
         }),
-        gallery: fields.array(
-          fields.object({
-            image: entryImage('Image'),
-            caption: fields.text({ label: 'Caption' }),
-          }),
-          { label: 'Gallery', itemLabel: (props) => props.fields.caption.value || props.fields.image.value?.filename || 'Image' },
-        ),
         credits: fields.array(
           fields.object({
             name: fields.text({ label: 'Name', validation: { isRequired: true } }),
@@ -137,22 +141,18 @@ export default config({
           }),
           { label: 'Credits', itemLabel: (props) => props.fields.name.value || 'Credit' },
         ),
-        kind: fields.select({ label: 'Kind', description: 'What it is.', options: options(KINDS), defaultValue: 'software' }),
-        context: fields.select({
-          label: 'Context',
-          description: 'Who it was for.',
-          options: options(CONTEXTS),
-          defaultValue: 'personal',
-        }),
-        status: fields.select({ label: 'Status', options: options(STATUSES), defaultValue: 'in-development' }),
-        started: fields.date({ label: 'Started', validation: { isRequired: true } }),
-        team: fields.select({ label: 'Team', options: options(TEAMS), defaultValue: 'solo' }),
         usedIn: fields.array(fields.relationship({ label: 'Project', collection: 'work', validation: { isRequired: true } }), {
           label: 'Used in',
           description: 'Other projects this one was used in, e.g. a song used in a game. Both pages link to each other.',
           itemLabel: (props) => props.value ?? 'Choose a project',
         }),
-        body: fields.markdoc({ label: 'Description', description: 'The text under What I did on the project page.', extension: 'md' }),
+        gallery: fields.array(
+          fields.object({
+            image: entryImage('Image'),
+            caption: fields.text({ label: 'Caption' }),
+          }),
+          { label: 'Gallery', itemLabel: (props) => props.fields.caption.value || props.fields.image.value?.filename || 'Image' },
+        ),
       },
     }),
     blog: collection({
@@ -169,18 +169,18 @@ export default config({
           label: 'Featured',
           description: 'Adds a "Featured" marker on the blog list. Does not change the order or the home page.',
         }),
+        date: fields.date({ label: 'Date', defaultValue: { kind: 'today' }, validation: { isRequired: true } }),
         summary: fields.text({ label: 'Summary', description: 'One line: post subheading and page description.' }),
         cover: fields.image({ label: 'Cover', directory: 'src/assets/blog', publicPath: '../../assets/blog/' }),
-        work: fields.array(fields.relationship({ label: 'Project', collection: 'work', validation: { isRequired: true } }), {
-          label: 'Related work',
-          description: 'Projects this post is about; the post is listed on their pages.',
-          itemLabel: (props) => props.value ?? 'Choose a project',
-        }),
-        date: fields.date({ label: 'Date', defaultValue: { kind: 'today' }, validation: { isRequired: true } }),
         body: fields.markdoc({
           label: 'Post',
           extension: 'md',
           options: { image: { directory: 'src/assets/blog', publicPath: '../../assets/blog/' } },
+        }),
+        work: fields.array(fields.relationship({ label: 'Project', collection: 'work', validation: { isRequired: true } }), {
+          label: 'Related work',
+          description: 'Projects this post is about; the post is listed on their pages.',
+          itemLabel: (props) => props.value ?? 'Choose a project',
         }),
       },
     }),
