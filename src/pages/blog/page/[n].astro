@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import BlogSplit from '../../../components/BlogSplit.astro';
+import { profile } from '../../../profile';
+import { getPosts, listPages, type Post } from '../../../lib/blog';
+
+export async function getStaticPaths() {
+  const pages = listPages(await getPosts());
+  return pages.slice(1).map((posts, k) => ({
+    params: { n: String(k + 2) },
+    props: { posts, current: k + 2, last: pages.length },
+  }));
+}
+
+interface Props {
+  posts: Post[];
+  current: number;
+  last: number;
+}
+
+const { posts, current, last } = Astro.props;
+---
+
+<BaseLayout title={`Blog — page ${current}`} description={`Devlogs and posts by ${profile.name}.`}>
+  <BlogSplit mode="index" posts={posts} selected={posts[0]} current={current} last={last} />
+</BaseLayout>
