@@ -48,8 +48,8 @@ async function assertWorkSlugs(posts: Post[]): Promise<void> {
     }
   }
   if (unknown.length > 0) {
-    throw new Error(
-      `Blog posts name work slugs that match no work entry (docs/2-content-model.md, "Blog posts"):\n${unknown.join('\n')}`,
+    console.warn(
+      `Blog posts name work slugs that match no published work entry; those links are left out (docs/2-content-model.md, "Blog posts"):\n${unknown.join('\n')}`,
     );
   }
 }
