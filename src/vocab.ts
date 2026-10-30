@@ -37,6 +37,38 @@ export const STATUSES = ['released', 'in-development', 'archived'] as const;
 
 export const MEDIA_TYPES = ['video', 'audio', 'webgl'] as const;
 
+/** Tool names offered in Keystatic's Tools picker, written exactly as on the site. Every name used in an entry must be here (test/vocab.test.mjs); add new tools to this list. */
+export const TOOLS = [
+  'Adobe Photoshop',
+  'Aseprite',
+  'Astro',
+  'Audacity',
+  'bitsy',
+  'Blender',
+  'C#',
+  'C++',
+  'Clip Studio Paint',
+  'DAZ 3D',
+  'GameMaker',
+  'GDScript',
+  'HTML',
+  'Iray',
+  'Java',
+  'JavaScript',
+  'LiquidFun',
+  'LMMS',
+  'Lua',
+  'Node.js',
+  'PHP',
+  'PIXI.js',
+  'PowerShell',
+  'Python',
+  'Shell',
+  'Spine',
+  'Unity',
+  'Wollok',
+] as const;
+
 export const LINK_TYPES = [
   'source',
   'play',

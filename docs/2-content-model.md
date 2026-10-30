@@ -29,7 +29,7 @@ status: released      # released | in-development | archived
 started: 2025-06-01   # creation/start date — used for sorting and year filters
 featured: true
 draft: false          # true = local only: dev server, never committed, never published (see "Drafts stay out of git")
-tools: [Unity, C#, Spine]   # each tool links to /work/t/<tool-slug>/ (see "Tool pages")
+tools: [Unity, C#, Spine]   # each tool links to /work/t/<tool-slug>/ (see "Tool pages"); Keystatic offers the names in TOOLS (src/vocab.ts) as a picker
 cover: "../../assets/project-name/cover.png"   # thumbnail, in-repo, see section 1
 gallery:              # any number of extra images, in-repo
   - image: "../../assets/project-name/shot-1.png"
@@ -45,7 +45,7 @@ links:                # all optional, any mix, any order
   - label: "Steam page"
     type: store
     url: "https://..."
-usedIn: []            # slugs of related entries (e.g. song -> game jam entry)
+usedIn: []            # slugs of related entries (e.g. song -> game jam entry); Keystatic picks them from the work list
 ---
 
 Long description / devlog in Markdown.

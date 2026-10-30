@@ -10,6 +10,7 @@ import {
   ROLES,
   STATUSES,
   TEAMS,
+  TOOLS,
 } from './src/vocab';
 
 const options = (values: readonly string[]) => values.map((value) => ({ label: value, value }));
@@ -99,9 +100,10 @@ export default config({
           description: 'Shown on the dev server only. Untick to publish.',
           defaultValue: true,
         }),
-        tools: fields.array(fields.text({ label: 'Tool' }), {
+        tools: fields.multiselect({
           label: 'Tools',
-          itemLabel: (props) => props.value || 'Tool',
+          description: 'Engines, programs, languages and libraries you used. Each one gets a page listing its projects. Missing one? Ask Claude to add it.',
+          options: options(TOOLS),
         }),
         cover: entryImage('Cover (thumbnail)'),
         gallery: fields.array(
@@ -141,9 +143,10 @@ export default config({
               `${props.fields.label.value || LINK_LABELS[props.fields.type.value]}: ${props.fields.url.value ?? ''}`,
           },
         ),
-        usedIn: fields.array(fields.text({ label: 'Slug' }), {
+        usedIn: fields.array(fields.relationship({ label: 'Project', collection: 'work', validation: { isRequired: true } }), {
           label: 'Used in',
-          itemLabel: (props) => props.value || 'Slug',
+          description: 'Other projects this one was used in, e.g. a song used in a game. Both pages link to each other.',
+          itemLabel: (props) => props.value ?? 'Choose a project',
         }),
         body: fields.markdoc({ label: 'Body', extension: 'md' }),
       },
