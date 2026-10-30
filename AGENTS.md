@@ -33,14 +33,14 @@ OpenCode launches its set from `.opencode/agents/` through the `subagent` tool. 
 
 ### Claude Code: tiered by model
 
-Subagents cannot launch subagents, so the main session (the lead) orchestrates. Flow: `/next` picks an issue → `architect` first if the spec must change → executor implements the issue → `doc-writer` syncs docs → `design-auditor` reviews, and the lead runs `/code-review` on non-trivial diffs → the lead commits. Before publishing the lead also runs `/security-review` with `security-auditor`; at the end of a phase, `/simplify`. Skills that fan out to agents run in the main session, never inside a subagent; `astro-builder`, `ux-reviewer` and `perf-auditor` preload `/run`.
+Subagents cannot launch subagents, so the main session (the lead) orchestrates. Flow: `/next` picks an issue → `architect` first if the spec must change → `ui-ux-designer` proposes the design for any interface change (public site or admin panel) → executor implements the issue → `ui-ux-designer` reviews the rendered result → `doc-writer` syncs docs → `design-auditor` reviews, and the lead runs `/code-review` on non-trivial diffs → the lead commits. Before publishing the lead also runs `/security-review` with `security-auditor`; at the end of a phase, `/simplify`. Skills that fan out to agents run in the main session, never inside a subagent; `astro-builder`, `ui-ux-designer` and `perf-auditor` preload `/run`. An executor never decides structure (that is `architect`) or interaction and layout (that is `ui-ux-designer`).
 
 | Tier | Agent | Use when | Writes? |
 |---|---|---|---|
 | Opus — decides | `planner` | Turning work into GitHub issues that double as work orders; backlog grooming | No — issues only |
 | Opus — decides | `architect` | Spec changes, data formats, module boundaries, code/spec disagreements | Spec, architecture and decision docs only |
 | Opus — decides | `design-auditor` | After executors finish, before committing: drift against the spec | No |
-| Opus — decides | `ux-reviewer` | After visual changes: screenshots at desktop and phone width, navigation and design findings | No |
+| Opus — decides | `ui-ux-designer` | Every interface change, site or admin panel: proposes the design before the executor (within what the stack supports), reviews screenshots at desktop and phone width after | No |
 | Opus — decides | `security-auditor` | Before publishing, after new dependencies, workflows or bulk imports: secrets, build leaks, deps, embeds, CI | No |
 | Sonnet — measures | `perf-auditor` | After bulk content or before release: page weight, images, JS, Lighthouse on the built site | No |
 | Sonnet — executes | `astro-builder` | One issue for Astro code | Yes, only the files the issue lists |
