@@ -12,7 +12,7 @@ import { withBase } from '../../../../lib/paths';
 // (getStaticPaths runs in isolation, so the size is inlined.)
 export const getStaticPaths = (async ({ paginate }) =>
   groupByCategory(await getWork()).flatMap(({ category, entries }) =>
-    paginate(entries, { params: { category: category.key }, props: { category, total: entries.length }, pageSize: 24 }),
+    paginate(entries, { params: { category: category.key }, props: { category, total: entries.length }, pageSize: category.key === 'music' ? 8 : 24 }),
   )) satisfies GetStaticPaths;
 
 interface Props {
@@ -45,7 +45,7 @@ const title = page.currentPage > 1 ? `${category.label} — page ${page.currentP
       <p class="hero__kicker"><a href={withBase('/')}>{profile.name}</a> / {category.hobby ? 'Hobbies' : 'Work'}</p>
       <h1 class="hero__name">{category.label}</h1>
       <p class="hero__roles">
-        {total} {total === 1 ? 'project' : 'projects'}
+        {total} {category.noun[total === 1 ? 0 : 1]}
         {page.lastPage > 1 && <span class="muted"> · page {page.currentPage} of {page.lastPage}</span>}
       </p>
     </header>
