@@ -25,7 +25,7 @@ Project instructions for OpenCode. Read this and `DESIGN.md` (the index) before 
 4. Verify before committing: run `npm run build` at the repo root and, when content changed, validate frontmatter against the schema.
 5. Commit locally. Then report what changed, what was verified, and what is still unproven.
 
-The lead and every agent follow `.claude/github-workflow.md`: branch and commit conventions, the no-comments rule, and `TODO` / `ISSUE` in a user message (or new work found mid-task) going to `planner` as a new issue.
+The lead and every agent follow `.claude/github-workflow.md`: branch and commit conventions, the no-comments rule, and `/issue` (or `TODO` / `ISSUE` in a user message, or new work found mid-task) becoming a new issue.
 
 ## Subagent routing
 
