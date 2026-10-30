@@ -24,9 +24,30 @@ started: 2022-02-14
 featured: true
 draft: false
 tools: ["Unity", "C#", "Blender", "Clip Studio Paint"]
-cover: ../../assets/thirdym/cover.png
-gallery: []
-media: []
+cover: ../../assets/thirdym/banner.png
+gallery:
+  - image: ../../assets/thirdym/screenshot-03.png
+    caption: ""
+  - image: ../../assets/thirdym/screenshot-04.png
+    caption: ""
+  - image: ../../assets/thirdym/screenshot-05.png
+    caption: ""
+  - image: ../../assets/thirdym/screenshot-06.png
+    caption: ""
+  - image: ../../assets/thirdym/screenshot-07.png
+    caption: ""
+  - image: ../../assets/thirdym/screenshot-08.png
+    caption: ""
+  - image: ../../assets/thirdym/screenshot-09.png
+    caption: ""
+  - image: ../../assets/thirdym/screenshot-01.png
+    caption: ""
+  - image: ../../assets/thirdym/screenshot-02.png
+    caption: ""
+media:
+  - type: video
+    src: "https://www.youtube.com/watch?v=wAhMM2vP_qY"
+    caption: "Trailer"
 links:
   - label: "itch.io page"
     type: "download"
