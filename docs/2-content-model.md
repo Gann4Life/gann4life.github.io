@@ -159,19 +159,22 @@ Post body in Markdown. Body images go in `src/assets/blog/`.
 - No contribution, role, authorship or credit fields. [Section 6](6-content-rules.md) binds post text: authorship claims follow the entry's `authorship`, and any work by someone else shown in a post is credited in the post itself (name, and link when there is one, next to the work).
 
 **Profile**
-- One `profile` file (`src/data/profile.json`): name, tagline, bio, demo reel (`reel`, YouTube/Vimeo URL) and a list of profile links (label + url), edited from the panel (Profile) and shown on the home page and footer; plus the optional `appearance` group below.
-
-**Site appearance** (`appearance` in `src/data/profile.json`, group "Appearance" in the Profile panel)
+- One `profile` file (`src/data/profile.json`), edited from the panel (Profile). The panel and the file are ordered by what stands out first on the site, images first in each section (user decision 2026-10-30):
 
 ```json
-"appearance": {
-  "photo":      { "file": "../assets/site/photo/<name>.png", "url": "" },
-  "logo":       { "file": null, "url": "https://example.com/logo.svg" },
-  "favicon":    { "file": null, "url": "" },
-  "banner":     { "file": null, "url": "" },
-  "background": { "file": null, "url": "", "darken": 70, "blur": 12 }
+{
+  "hero":       { "banner": <source>, "photo": <source>, "reel": "https://…", "name": "…", "tagline": "…", "bio": "…" },
+  "background": { "image": <source>, "darken": 70, "blur": 12 },
+  "header":     { "logo": <source> },
+  "links":      [ { "label": "…", "url": "https://…" } ],
+  "tab":        { "favicon": <source> }
 }
 ```
+
+- `<source>` is one choice: `{ "discriminant": "none" }`, `{ "discriminant": "upload", "value": "../assets/site/<field>/<name>.<ext>" }` or `{ "discriminant": "link", "value": "https://…" }`. The panel shows a None / Upload / Link selector and only the matching input.
+- `name`, `tagline`, `bio`, `reel` (YouTube/Vimeo) and `links` are shown on the home page and footer as before.
+
+**Site appearance** (the image sources above plus `background.darken` / `background.blur`)
 
 | Field | Shown | Empty means |
 |---|---|---|
@@ -179,12 +182,12 @@ Post body in Markdown. Body images go in `src/assets/blog/`.
 | `logo` | Replaces the name text in the site header; `alt` = profile `name` | Name as text (today's header) |
 | `favicon` | `<link rel="icon">` on every page | `withBase('/favicon.svg')` (today's icon) |
 | `banner` | Full-bleed image behind the home hero (text and reel), with a fixed dark scrim that fades into the page background | Plain hero (today's) |
-| `background` | Fixed full-viewport layer behind every page, blurred and darkened | Plain `--bg` colour (today's) |
+| `background.image` | Fixed full-viewport layer behind every page, blurred and darkened | Plain `--bg` colour (today's) |
 | `background.darken` | Opacity, 0–100 %, of a `#08080b` overlay over the background image | 70 when a background image is set |
 | `background.blur` | CSS blur radius, 0–40 px | 12 when a background image is set |
 
-- Every field, the whole group, and `profile.json` without an `appearance` key are optional; each empty field renders exactly today's look. Adding the group is not a breaking change: no version bump, no migration.
-- **Image source per field**: `file` (an upload from the panel) or `url` (an `https://` address), alternatives. **When both are set, `file` wins** and `url` is ignored. Neither set = empty.
+- Every image source and `darken`/`blur` are optional; each empty field renders exactly today's look. Adding the group is not a breaking change: no version bump, no migration.
+- **Image source per field**: None, Upload or Link, one at a time (the selector); None = empty.
 - **Uploads**: Keystatic stores each field's upload in its own folder, `src/assets/site/<field>/` (`photo`, `logo`, `favicon`, `banner`, `background`), and writes the path relative to `src/data/` (`../assets/site/<field>/<name>.<ext>`). The build resolves it to a local file under `src/assets/site/` or `src/assets/shared/` (the duplicate resolver may move it there and rewrite the path); any other location, a missing file, or an extension other than `png`, `jpg`, `jpeg`, `webp`, `avif`, `gif`, `svg` fails the build naming the field and path. Uploads go through `astro:assets` like other images. `favicon` uploads: `svg` or `png` only (`.ico` is not supported).
 - **URLs are used directly** — the one exception to "no hotlinked media" (decision 2026-10-29 "Site appearance"). The URL is emitted as-is in `<img src>`, `<link href>` or CSS `url("…")`; it never goes through `astro:assets` (no `image.domains` / `remotePatterns`), and neither the build nor any script fetches it. Validation is syntax only: `https:` scheme, and none of `"`, `'`, `(`, `)`, `\`, `<`, `>` or whitespace (they could break out of the CSS string or attribute); an invalid URL fails the build. A URL that is unreachable, expired or not an image never fails the build; the page degrades as follows: `background` and `banner` (CSS backgrounds) show today's look under the overlay/scrim; `photo` leaves an empty round slot; `logo` falls back to the browser's alt text (the name); `favicon` falls back to the browser's default icon. No client-side JS is added for fallbacks.
 - **Dark look**: when `background` or `banner` resolves to an image, the page uses the dark palette regardless of `prefers-color-scheme`, so the art shows blurred and darkened in its own colours and text stays on dark. No default background or banner image ships.
