@@ -168,7 +168,8 @@ h2 {
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
-  mask-image: linear-gradient(to right, #000 85%, transparent);
+  padding-inline-end: 2rem;
+  mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
 }
 
 .site-header__nav a {
@@ -396,46 +397,6 @@ h2 {
   }
 }
 
-.category-links {
-  display: grid;
-  gap: clamp(0.5rem, 1vw, 0.75rem);
-  grid-template-columns: repeat(auto-fill, minmax(min(15rem, 100%), 1fr));
-}
-
-.category-links a {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: clamp(1rem, 2vw, 1.5rem) clamp(1.1rem, 2vw, 1.6rem);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--card);
-  text-decoration: none;
-  animation: rise 0.6s var(--ease) both;
-  animation-delay: calc(var(--i, 0) * 60ms);
-  transition: border-color 0.25s, transform 0.3s var(--ease), background 0.25s;
-}
-
-.category-links a:hover,
-.category-links a:focus-visible {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 8%, var(--card));
-  transform: translateY(-3px);
-}
-
-.category-links__label {
-  font-family: var(--font-display);
-  font-size: clamp(1.4rem, 1.1rem + 1vw, 2rem);
-  font-weight: 600;
-  letter-spacing: -0.03em;
-}
-
-.category-links__count {
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-
 .players {
   list-style: none;
   padding: 0;
@@ -542,8 +503,7 @@ h2 {
   animation: rise 0.8s 0.16s var(--ease) both;
 }
 
-.pills a,
-.pills--quiet li {
+.pills a {
   display: inline-block;
   padding: 0.45rem 1rem;
   border: 1px solid var(--line);
@@ -571,6 +531,30 @@ h2 {
   text-transform: uppercase;
   color: var(--muted);
   margin: 0 0 1.25rem;
+}
+
+.band__more {
+  margin: 1rem 0 0;
+}
+
+.home-chips {
+  display: none;
+}
+
+@media (max-width: 40rem) {
+  .home-chips {
+    display: block;
+  }
+
+  .home-chips .pills {
+    margin-top: 1rem;
+  }
+
+  .home-chips a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
 }
 
 .grid {
