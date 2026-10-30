@@ -15,7 +15,7 @@ import {
 } from './vocab';
 
 const keepDrafts = import.meta.env.DEV;
-function withoutDrafts(loader: Loader): Loader {
+function withoutDrafts(loader: Loader, { needsContribution = false } = {}): Loader {
   return {
     ...loader,
     name: `${loader.name}-without-drafts`,
@@ -23,14 +23,19 @@ function withoutDrafts(loader: Loader): Loader {
       await loader.load(context);
       if (keepDrafts) return;
       for (const [id, entry] of context.store.entries()) {
-        if (entry.data.draft === true) context.store.delete(id);
+        if (entry.data.draft === true) {
+          context.store.delete(id);
+        } else if (needsContribution && !String(entry.data.contribution ?? '').trim()) {
+          context.logger.warn(`${id}: published without "What I did" (contribution); left out of the build until it is filled in.`);
+          context.store.delete(id);
+        }
       }
     },
   };
 }
 
 const work = defineCollection({
-  loader: withoutDrafts(glob({ pattern: '**/*.md', base: './src/content/work' })),
+  loader: withoutDrafts(glob({ pattern: '**/*.md', base: './src/content/work' }), { needsContribution: true }),
   schema: ({ image }) =>
     z
       .object({
@@ -96,13 +101,6 @@ const work = defineCollection({
         usedIn: z.array(z.string()).default([]),
       })
       .superRefine((entry, ctx) => {
-        if (!import.meta.env.DEV && !entry.draft && !entry.contribution.trim()) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['contribution'],
-            message: 'Published entries need "What I did" (`contribution`) in Keystatic, or tick Draft.',
-          });
-        }
         if (entry.authorship === 'ai-built') {
           const claimed = entry.roles.filter((role) => IMPLEMENTATION_ROLES.includes(role));
           if (claimed.length > 0) {

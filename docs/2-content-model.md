@@ -55,7 +55,7 @@ Long description / devlog in Markdown.
 - The work itself is shown embedded or as images; links are secondary and sit below it.
 - `npm run sync` (at the repository root) pulls every work from the profiles in `src/data/profile.json` (itch.io, Bandcamp, DeviantArt, GitHub, YouTube) as drafts. Re-running only adds what is new; edited entries are never touched. A GitHub repo whose homepage is an itch.io game becomes that game's source link.
 - `npm run add -- <url>` imports a single work, e.g. a SoundCloud track (SoundCloud has no public listing). It imports from itch.io, Bandcamp, SoundCloud, YouTube, DeviantArt or GitHub: title, date, cover downloaded into the repo, and the resolved embed. The platform is read once and snapshotted; the site never calls it at build time.
-- Imported entries are `draft: true` with an empty `contribution`. Fill in contribution, roles and authorship in `/keystatic`, then untick Draft. Published entries must have a `contribution` (Keystatic label "What I did"): the production build rejects a published entry without one; the dev server renders it with a warning instead of failing every page (issue #121).
+- Imported entries are `draft: true` with an empty `contribution`. Fill in contribution, roles and authorship in `/keystatic`, then untick Draft. Published entries must have a `contribution` (Keystatic label "What I did"): a published entry without one is left out of the production build (like a draft, with a build-log warning) instead of failing the build (user decision 2026-10-30: a missing field must not interrupt publishing); the dev server renders it with a warning (issue #121).
 
 **Drafts stay out of git**
 
