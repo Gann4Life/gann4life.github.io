@@ -17,6 +17,7 @@ Full-width, image-first site. On thumbnails the text only appears on hover/focus
 - `/sitemap.xml`, `/robots.txt`, `/404.html`.
 - `/service-worker.js` — self-unregistering worker that removes v2's; never registered by v3 ([section 1](1-stack.md) "Retired v2 service worker").
 - `/keystatic` — CMS (dev server only, not linked publicly).
+- `__editor/work/<id>` under the base — JSON endpoint of the page editor, dev server only, not a page and never built ([section 1](1-stack.md) "Dev-only page editor").
 - No other top-level paths: other repos publish under this domain (e.g. `/RagAssembler2D/`), so v3 must not create routes that shadow them. The work slugs `c`, `t`, `site` and `all` are reserved (`t` for tool pages; `all` for the all-work page; `site` because `src/assets/site/` holds the appearance images), and the post slug `page` (blog list pagination). `/dev/` is reserved for the staging build ([section 1](1-stack.md)), so no repo of this account may be named `dev` with Pages enabled.
 
 **Blog split view** (user decision 2026-10-30)
@@ -37,7 +38,7 @@ All blog routes render the same two-pane layout, fully static: no new client-sid
 
 **Work page layout** (user request 2026-10-30, issue #119; option (b) user decision 2026-10-30)
 
-`/work/<slug>` is fully static; no new client-side JS.
+`/work/<slug>` is fully static; no new client-side JS (the dev-only edit mode below is never part of a build).
 
 - **Full width, always**: the header (kicker, meta, title, position, authorship) and the work itself (media embeds, or the cover when there are no media), as today. The "← <category>" back link stays last, full width, after the columns.
 - **Two blocks, in this document order**:
@@ -53,6 +54,21 @@ All blog routes render the same two-pane layout, fully static: no new client-sid
 - **Gallery in the side column**: two thumbnails per row (equal columns, 4:3, cropped, as today); a gallery with a single image shows it across the full column width. Captions stay under their thumbnails. Below 64rem the gallery grid is unchanged (auto-fill, 14rem minimum). The thumbnail `sizes` hint matches the rendered width at each breakpoint (a gallery always sits in the side column at ≥ 64rem, since it makes the sheet non-empty).
 - **Sheet sections in the side column**: link buttons and tool tags wrap within the column; credit and related lists keep their bullets and indentation.
 - **Lightbox**: unchanged, CSS-only (`:target`), and it must still cover the whole viewport above the sticky site header from the side column. So no element between the page and the lightbox (the layout grid, its column wrappers, the gallery) may establish a containing block for fixed descendants or a stacking context: no `transform`, `filter`, `backdrop-filter`, `perspective`, `contain`, `container-type`, `will-change`, opacity below 1, `position: sticky`/`fixed`, a positioned element with a `z-index`, or the load animation (`rise`), on any of them.
+
+**Edit mode (dev server only)** (issue #136; specified, not built; mechanics in [section 1](1-stack.md) "Dev-only page editor")
+
+On the dev server a `/work/<slug>` page can switch into edit mode: the page itself is the form, so fields are edited where they are shown. Production and staging builds are unchanged and contain none of it. The page layout above does not change for the editor (whether the user's layout ideas should change the public page is open, [section 8](8-open-decisions.md)); the exact look of the controls is for `ui-ux-designer` to propose within these rules.
+
+- **Toggle**: an "Edit here" button beside the existing dev-only Edit link (which keeps opening Keystatic). It turns edit mode on; "Done" (or `Esc` when no control has unsaved text) turns it off. Edit mode survives the reload after a save (per-tab `sessionStorage`, keyed by slug).
+- **Edit bar** (top of the header, shown only in edit mode): Draft and Featured as two toggles on one row; save state ("Saved" / "Unsaved changes" / the error); Save; Done. Phase 2 adds the cover thumbnail with a "Change in Keystatic" link (cover editing stays in Keystatic). The bar may be sticky; it is not an ancestor of the gallery, so the lightbox rule above is unaffected.
+- **In place** (phase 1):
+  - Title: a one-line text input inside the `h1`, in the `h1`'s font and size. Empty is not allowed (the Save button reports it; nothing is sent).
+  - What I did: an auto-growing plain-text area in place of the contribution paragraph, under its "What I did" heading. In edit mode the section is shown even when the field is empty (the dev page renders an empty slot for it). Roles under it stay read-only until phase 4.
+  - Description: an auto-growing plain-text area holding the raw Markdown body, in place of the rendered `article`. The rendered result appears after Save (the page reloads). Not `contenteditable`/WYSIWYG ([section 8](8-open-decisions.md) decision).
+- **In place** (phase 2): the header meta line becomes compact controls in the same spots and order: Kind, Context, Status, Team as selects showing the site's labels (`KIND_LABELS`, etc.; values from `src/vocab.ts`), the year as a date input for `started`. Phase 3 adds an `ended` date input next to it, clearable (empty = no end date).
+- **Help**: no help text under the controls. Each control has an accessible name and its help from `FIELD_HELP` (`src/vocab.ts`) as a tooltip (`title`) and as its accessible description (`aria-describedby` to visually hidden text), so keyboard and screen-reader users get it too.
+- **Saving**: explicit, never on every keystroke: Save button or `Ctrl`/`Cmd`+`S` sends every changed field in one `PUT`. On `200` the page reloads once and comes back in edit mode. On `409` the bar says the file changed elsewhere and offers "Reload" (unsaved text is lost; nothing was written). On `422` each issue is shown next to its control when its path is an editable field, otherwise in the bar; nothing was written. Leaving the page with unsaved changes asks for confirmation (`beforeunload`).
+- **Lists** (`roles`, `tools`, `links`) are a later phase (phase 4, not yet specified); until then they render as today and are edited in Keystatic.
 
 **Base-path rule** (links and asset URLs)
 
