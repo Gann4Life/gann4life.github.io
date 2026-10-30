@@ -6,7 +6,8 @@ import EditLink from '../components/EditLink.astro';
 import { profile } from '../profile';
 import { embedUrl, getWork, groupByCategory, skills, tileMeta } from '../lib/work';
 import { withBase } from '../lib/paths';
-import { getImage } from 'astro:assets';
+import { getImage, Image } from 'astro:assets';
+import { siteAppearance } from '../lib/appearance';
 
 const entries = await getWork();
 const groups = groupByCategory(entries);
@@ -25,15 +26,36 @@ const reelPoster =
   reel && reelEntry?.data.cover ? (await getImage({ src: reelEntry.data.cover, format: 'webp', width: 1280 })).src : null;
 const reelPlay = reel ? `${reel}${reel.includes('?') ? '&' : '?'}autoplay=1` : null;
 const reelTitle = `${profile.name} demo reel`;
+const { photo, banner } = siteAppearance;
+const bannerSrc =
+  banner?.kind === 'asset'
+    ? (await getImage({ src: banner.image, format: 'webp', width: 1920 })).src
+    : banner?.kind === 'url'
+      ? banner.src
+      : null;
 ---
 
 <BaseLayout title={profile.name}>
   <main class="home">
-    <section class:list={['hero', { 'hero--reel': reel }]}>
+    <section
+      class:list={['hero', { 'hero--reel': reel, 'hero--banner': bannerSrc }]}
+      style={bannerSrc ? `--hero-banner-image: url("${bannerSrc}")` : undefined}
+    >
       <div class="hero__text">
         <p class="hero__kicker">Portfolio</p>
         <EditLink path="singleton/profile" label="Edit profile" />
-        <h1 class="hero__name">{profile.name}</h1>
+        {photo ? (
+          <div class="hero__id">
+            {photo.kind === 'asset' ? (
+              <Image class="hero__photo" src={photo.image} width={160} height={160} widths={[160, 320]} sizes="160px" format="webp" alt="" loading="eager" />
+            ) : (
+              <img class="hero__photo" src={photo.src} width="160" height="160" loading="eager" decoding="async" alt="" />
+            )}
+            <h1 class="hero__name">{profile.name}</h1>
+          </div>
+        ) : (
+          <h1 class="hero__name">{profile.name}</h1>
+        )}
         {profile.tagline && <p class="hero__roles">{profile.tagline}</p>}
         {profile.bio && <p class="hero__bio">{profile.bio}</p>}
         <ProfileLinks links={profile.links} class="icon-links--hero" />

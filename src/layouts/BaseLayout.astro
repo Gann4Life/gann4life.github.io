@@ -8,6 +8,8 @@ import { getWork, groupByCategory } from '../lib/work';
 import { getPosts } from '../lib/blog';
 import { withBase } from '../lib/paths';
 import { DEPLOY_TARGET } from 'astro:env/server';
+import { getImage } from 'astro:assets';
+import { siteAppearance } from '../lib/appearance';
 
 interface Props {
   title: string;
@@ -24,17 +26,46 @@ const categories = groupByCategory(await getWork()).map((g) => g.category);
 const hasBlog = (await getPosts()).length > 0;
 const path = Astro.url.pathname;
 const staging = DEPLOY_TARGET === 'staging';
+
+const { favicon, logo, background, banner, darken, blur } = siteAppearance;
+const faviconIcon =
+  favicon?.kind === 'asset'
+    ? favicon.image.format === 'svg'
+      ? { href: favicon.image.src, type: 'image/svg+xml' }
+      : { href: (await getImage({ src: favicon.image, format: 'png', width: 64 })).src, type: 'image/png' }
+    : favicon?.kind === 'url'
+      ? { href: favicon.src, type: undefined }
+      : { href: withBase('/favicon.svg'), type: 'image/svg+xml' };
+const logoRaster =
+  logo?.kind === 'asset' && logo.image.format !== 'svg'
+    ? await getImage({ src: logo.image, format: 'webp', height: 64 })
+    : null;
+const logoImage =
+  logo?.kind === 'asset'
+    ? logoRaster
+      ? { src: logoRaster.src, ...logoRaster.attributes }
+      : { src: logo.image.src, width: logo.image.width, height: logo.image.height }
+    : logo?.kind === 'url'
+      ? { src: logo.src, width: undefined, height: undefined }
+      : null;
+const backgroundSrc =
+  background?.kind === 'asset'
+    ? (await getImage({ src: background.image, format: 'webp', width: 1920 })).src
+    : background?.kind === 'url'
+      ? background.src
+      : null;
+const dark = Boolean(backgroundSrc || banner);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" class={dark ? 'appearance-dark' : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     {staging && <meta name="robots" content="noindex, nofollow" />}
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+    <link rel="icon" href={faviconIcon.href} type={faviconIcon.type} />
     {!staging && <link rel="sitemap" href={withBase('/sitemap.xml')} />}
     <meta name="theme-color" content="#08080b" />
     <meta property="og:title" content={pageTitle} />
@@ -46,8 +77,17 @@ const staging = DEPLOY_TARGET === 'staging';
     <title>{pageTitle}</title>
   </head>
   <body>
+    {backgroundSrc && (
+      <div
+        class="site-bg"
+        aria-hidden="true"
+        style={`--site-bg-image: url("${backgroundSrc}"); --site-bg-darken: ${darken / 100}; --site-bg-blur: ${blur}px`}
+      />
+    )}
     <header class="site-header">
-      <a class="site-header__name" href={withBase('/')}>{profile.name}</a>
+      <a class="site-header__name" href={withBase('/')}>
+        {logoImage ? <img class="site-header__logo" src={logoImage.src} width={logoImage.width} height={logoImage.height} alt={profile.name} /> : profile.name}
+      </a>
       {(categories.length > 0 || hasBlog) && (
         <nav class="site-header__nav" aria-label="Site">
           {categories.map((c) => (

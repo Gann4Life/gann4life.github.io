@@ -23,9 +23,23 @@ const titleWithSlug = (description: string) =>
     slug: {
       label: 'Slug',
       description: `${description} Generated from the title; edit if needed.`,
-      validation: { pattern: { regex: /^(?!c$)[a-z0-9]+(?:-[a-z0-9]+)*$/, message: 'Lowercase words joined by hyphens ("c" is reserved).' } },
+      validation: { pattern: { regex: /^(?!(?:c|site)$)[a-z0-9]+(?:-[a-z0-9]+)*$/, message: 'Lowercase words joined by hyphens ("c" and "site" are reserved).' } },
     },
   });
+
+const siteImageSource = (field: string) => ({
+  file: fields.image({
+    label: 'Upload',
+    directory: `src/assets/site/${field}`,
+    publicPath: `../assets/site/${field}/`,
+  }),
+  url: fields.url({ label: 'HTTPS URL' }),
+});
+
+const siteImageDescription = 'Upload or https URL; if both are set, the upload wins. Empty = default look.';
+
+const siteImage = (label: string, field: string) =>
+  fields.object(siteImageSource(field), { label, description: siteImageDescription });
 
 export default config({
   storage: { kind: 'local' },
@@ -170,6 +184,31 @@ export default config({
             url: fields.url({ label: 'URL', validation: { isRequired: true } }),
           }),
           { label: 'Profile links', itemLabel: (props) => props.fields.label.value || 'Link' },
+        ),
+        appearance: fields.object(
+          {
+            photo: siteImage('Photo', 'photo'),
+            logo: siteImage('Logo', 'logo'),
+            favicon: siteImage('Favicon', 'favicon'),
+            banner: siteImage('Banner', 'banner'),
+            background: fields.object(
+              {
+                ...siteImageSource('background'),
+                darken: fields.integer({
+                  label: 'Darken (%)',
+                  description: 'Overlay opacity, 0-100. Empty = 70.',
+                  validation: { min: 0, max: 100 },
+                }),
+                blur: fields.integer({
+                  label: 'Blur (px)',
+                  description: 'Blur radius, 0-40. Empty = 12.',
+                  validation: { min: 0, max: 40 },
+                }),
+              },
+              { label: 'Background', description: siteImageDescription },
+            ),
+          },
+          { label: 'Appearance' },
         ),
       },
     }),
