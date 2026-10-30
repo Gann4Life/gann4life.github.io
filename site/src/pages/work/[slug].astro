@@ -17,6 +17,7 @@ import {
   year,
   type Work,
 } from '../../lib/work';
+import { withBase } from '../../lib/paths';
 
 export async function getStaticPaths() {
   const entries = await getWork();
@@ -132,17 +133,17 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
       <section class="detail__section">
         <h2>Related</h2>
         <ul class="related">
-          {usedIn.map((e) => <li>Used in <a href={`/work/${e.id}/`}>{e.data.title}</a></li>)}
+          {usedIn.map((e) => <li>Used in <a href={withBase(`/work/${e.id}/`)}>{e.data.title}</a></li>)}
           {features.map((e) => (
             <li>
               {e.data.kind === 'music' ? 'Music' : KIND_LABELS[e.data.kind]}:{' '}
-              <a href={`/work/${e.id}/`}>{e.data.title}</a>
+              <a href={withBase(`/work/${e.id}/`)}>{e.data.title}</a>
             </li>
           ))}
         </ul>
       </section>
     )}
 
-    <p><a href={`/work/c/${categoryOf(entry).key}/`}>← {categoryOf(entry).label}</a></p>
+    <p><a href={withBase(`/work/c/${categoryOf(entry).key}/`)}>← {categoryOf(entry).label}</a></p>
   </main>
 </BaseLayout>

@@ -5,6 +5,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import EditLink from '../../components/EditLink.astro';
 import { formatDate, getPosts, type Post } from '../../lib/blog';
 import { getWork } from '../../lib/work';
+import { withBase } from '../../lib/paths';
 
 export async function getStaticPaths() {
   return (await getPosts()).map((post) => ({ params: { slug: post.id }, props: { post } }));
@@ -26,7 +27,7 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
     <header class="detail__header">
       <EditLink path={`collection/blog/item/${post.id}`} />
       <p class="detail__meta">
-        <a href="/blog/">Blog</a>
+        <a href={withBase('/blog/')}>Blog</a>
         <time datetime={data.date.toISOString()}>{formatDate(data.date)}</time>
         {data.draft && <span class="draft-note">Draft</span>}
       </p>
@@ -50,10 +51,10 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
       <section class="detail__section">
         <h2>Related work</h2>
         <ul class="related">
-          {related.map((e) => <li><a href={`/work/${e.id}/`}>{e.data.title}</a></li>)}
+          {related.map((e) => <li><a href={withBase(`/work/${e.id}/`)}>{e.data.title}</a></li>)}
         </ul>
       </section>
     )}
-    <p><a href="/blog/">← All posts</a></p>
+    <p><a href={withBase('/blog/')}>← All posts</a></p>
   </main>
 </BaseLayout>

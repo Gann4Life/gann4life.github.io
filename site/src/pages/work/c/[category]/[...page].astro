@@ -6,6 +6,7 @@ import Pager from '../../../../components/Pager.astro';
 import EditLink from '../../../../components/EditLink.astro';
 import { profile } from '../../../../profile';
 import { embedUrl, getWork, groupByCategory, tileMeta, type Category, type Work } from '../../../../lib/work';
+import { withBase } from '../../../../lib/paths';
 
 // /work/c/<category>/, /work/c/<category>/2/, ... — 24 works per page.
 // (getStaticPaths runs in isolation, so the size is inlined.)
@@ -41,7 +42,7 @@ const title = page.currentPage > 1 ? `${category.label} — page ${page.currentP
 <BaseLayout title={title}>
   <main class="home">
     <header class="hero hero--compact">
-      <p class="hero__kicker"><a href="/">{profile.name}</a> / {category.hobby ? 'Hobbies' : 'Work'}</p>
+      <p class="hero__kicker"><a href={withBase('/')}>{profile.name}</a> / {category.hobby ? 'Hobbies' : 'Work'}</p>
       <h1 class="hero__name">{category.label}</h1>
       <p class="hero__roles">
         {total} {total === 1 ? 'project' : 'projects'}
@@ -53,7 +54,7 @@ const title = page.currentPage > 1 ? `${category.label} — page ${page.currentP
       <ul class="players">
         {listen.map((e, i) => (
           <li style={`--i: ${i}`}>
-            <a class="players__title" href={`/work/${e.id}/`}>
+            <a class="players__title" href={withBase(`/work/${e.id}/`)}>
               {e.data.title}
               <span class="muted">{tileMeta(e, { showKind: false })}{e.data.draft ? ' · Draft' : ''}</span>
             </a>
@@ -68,7 +69,7 @@ const title = page.currentPage > 1 ? `${category.label} — page ${page.currentP
       <div class="grid">
         {tiles.map((entry, i) => (
           <Tile
-            href={`/work/${entry.id}/`}
+            href={withBase(`/work/${entry.id}/`)}
             title={entry.data.title}
             eyebrow={tileMeta(entry, { showKind: category.kinds.length > 1 })}
             subtitle={[entry.data.position, entry.data.draft ? 'Draft' : ''].filter(Boolean).join(' · ') || undefined}
