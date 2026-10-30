@@ -20,6 +20,15 @@ const htmlFiles = (dir) =>
     .filter((rel) => rel.endsWith('.html'))
     .map((rel) => path.join(dir, rel));
 
+const TEXT_OUTPUTS = new Set(['.html', '.js', '.mjs', '.css', '.json', '.xml', '.txt', '.webmanifest']);
+
+const editorTraces = (dir) =>
+  readdirSync(dir, { recursive: true, withFileTypes: true })
+    .filter((entry) => entry.isFile() && TEXT_OUTPUTS.has(path.extname(entry.name).toLowerCase()))
+    .map((entry) => path.join(entry.parentPath, entry.name))
+    .filter((file) => /data-editor|__editor|work-editor|js-yaml/.test(readFileSync(file).toString('latin1')))
+    .map((file) => path.relative(dir, file));
+
 test('staging build exits 0 and every root-absolute href and src sits under /dev/', () => {
   const res = build('staging');
   assert.equal(res.status, 0, res.stdout + res.stderr);
@@ -35,10 +44,12 @@ test('staging build exits 0 and every root-absolute href and src sits under /dev
   }
   assert.ok(checked > 0, 'no root-absolute href or src found, the check proves nothing');
   assert.deepEqual(outside, []);
+  assert.deepEqual(editorTraces(DIST), [], 'the page editor must leave no trace in the staging build');
 });
 
 test('production build exits 0', () => {
   const res = build(null);
   assert.equal(res.status, 0, res.stdout + res.stderr);
   assert.ok(existsSync(path.join(DIST, 'index.html')));
+  assert.deepEqual(editorTraces(DIST), [], 'the page editor must leave no trace in the production build');
 });

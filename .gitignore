@@ -13,3 +13,6 @@ dist/
 # editor / OS
 .DS_Store
 .vscode/
+
+# page editor temp files
+*.editor-tmp

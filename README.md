@@ -31,8 +31,11 @@ Run from the repository root:
 ./
 ├─ astro.config.mjs        # static output, site URL, dev-only Keystatic
 ├─ keystatic.config.ts     # admin fields for `work`, mirrors the Zod schema
+├─ integrations/
+│  └─ work-editor/         # dev-only save endpoint for `work` entries (no UI yet)
 ├─ src/
-│  ├─ content.config.ts    # `work` collection loader + Zod schema
+│  ├─ content.config.ts    # `work` collection loader (schema comes from lib/work-schema.ts)
+│  ├─ lib/work-schema.ts   # `workSchema(image)`, the `work` Zod schema
 │  ├─ content/work/*.md    # one Markdown file per entry
 │  ├─ assets/              # images processed by astro:assets
 │  ├─ components/          # .astro components
@@ -51,7 +54,7 @@ Requires Node `>=22.23.4` (Astro 7).
 
 Entries are Markdown, written by hand or through Keystatic at `/keystatic`
 (dev server only, local mode: it edits files in the working tree; commit them
-yourself). The schema in `src/content.config.ts` is the only gate; Keystatic is
+yourself). The schema (`src/lib/work-schema.ts`, used by `src/content.config.ts`) is the only gate; Keystatic is
 loaded only under `astro dev`, so builds stay static and ship no React. Rules for claims, credits, forks, and AI-built work live in
 `docs/2-content-model.md` and `docs/6-content-rules.md` — follow those, not this file.
 
