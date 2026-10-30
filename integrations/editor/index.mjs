@@ -1,4 +1,3 @@
-import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { handleRequest, MAX_BODY_BYTES } from './file.mjs';
 
@@ -21,27 +20,27 @@ const readLimited = (req) =>
     req.on('error', reject);
   });
 
-export default function workEditor() {
+export default function editor() {
   return {
-    name: 'work-editor',
+    name: 'editor',
     hooks: {
       'astro:config:setup': ({ command, config, updateConfig }) => {
         if (command !== 'dev') return;
         const root = fileURLToPath(config.root);
         const trimmed = String(config.base ?? '/').replace(/^\/+|\/+$/g, '');
         const base = trimmed ? `/${trimmed}/` : '/';
-        const workDir = path.join(root, 'src', 'content', 'work');
         updateConfig({
           vite: {
             plugins: [
               {
-                name: 'work-editor-endpoint',
+                name: 'editor-endpoint',
                 apply: 'serve',
                 configureServer(server) {
-                  const loadSchema = async () => {
+                  const loadRegistry = async () => {
                     const { z } = await server.ssrLoadModule('astro/zod');
+                    const { COLLECTIONS } = await server.ssrLoadModule('/src/lib/content-fields.ts');
                     const { schemaFor } = await server.ssrLoadModule('/src/lib/content-schema.ts');
-                    return schemaFor('work', () => z.string());
+                    return { collections: COLLECTIONS, schemaFor: (name) => schemaFor(name, () => z.string()) };
                   };
                   server.middlewares.use(async (req, res, next) => {
                     let result;
@@ -54,10 +53,10 @@ export default function workEditor() {
                           headers: req.headers,
                           readBody: () => readLimited(req),
                         },
-                        { workDir, base, loadSchema },
+                        { root, base, loadRegistry },
                       );
                     } catch (err) {
-                      console.error('[work-editor]', err);
+                      console.error('[editor]', err);
                       result = { status: 500, body: { error: 'Unexpected error.' }, headers: {} };
                     }
                     if (!result) return next();
