@@ -38,7 +38,10 @@ const work = defineCollection({
         slug: z
           .string()
           .min(1)
-          .refine((s) => s !== 'c' && s !== 'site', 'Slugs "c" (category pages) and "site" (appearance images) are reserved.')
+          .refine(
+            (s) => s !== 'c' && s !== 't' && s !== 'site',
+            'Slugs "c" (category pages), "t" (tool pages) and "site" (appearance images) are reserved.',
+          )
           .optional(),
         kind: z.enum(KINDS),
         context: z.enum(CONTEXTS).default('personal'),
@@ -141,11 +144,13 @@ const blog = defineCollection({
   schema: ({ image }) =>
     z.object({
       title: z.string().min(1),
-      slug: z.string().min(1).optional(),
+      slug: z.string().min(1).refine((s) => s !== 'page', 'Slug "page" is reserved (blog pagination).').optional(),
       date: z.coerce.date(),
       summary: z.string().default(''),
       cover: image().optional(),
       work: z.array(z.string()).default([]),
+      pinned: z.boolean().default(false),
+      featured: z.boolean().default(false),
       draft: z.boolean().default(false),
     }),
 });

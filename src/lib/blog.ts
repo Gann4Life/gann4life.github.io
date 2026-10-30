@@ -54,16 +54,44 @@ async function assertWorkSlugs(posts: Post[]): Promise<void> {
   }
 }
 
+function byDateThenSlug(a: Post, b: Post): number {
+  const diff = b.data.date.getTime() - a.data.date.getTime();
+  if (diff !== 0) return diff;
+  return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+}
+
 /**
  * Blog posts, newest first; drafts only on the dev server.
  * Throws in production when a post names an unknown work slug.
  */
 export async function getPosts(): Promise<Post[]> {
-  const posts = (await getCollection('blog', (p) => import.meta.env.DEV || !p.data.draft)).sort(
-    (a, b) => b.data.date.getTime() - a.data.date.getTime(),
-  );
+  const posts = (await getCollection('blog', (p) => import.meta.env.DEV || !p.data.draft)).sort(byDateThenSlug);
+  if (posts.some((p) => p.id === 'page')) {
+    throw new Error('Post slug "page" is reserved for blog pagination (docs/3-pages.md); rename the post.');
+  }
   if (!import.meta.env.DEV) await assertWorkSlugs(posts);
   return posts;
+}
+
+/**
+ * List order (docs/2-content-model.md "Post order"): pinned newest first, then the rest newest first; ties by slug.
+ * Does not mutate the input.
+ */
+export function listOrder(posts: Post[]): Post[] {
+  const sorted = [...posts].sort(byDateThenSlug);
+  return [...sorted.filter((p) => p.data.pinned), ...sorted.filter((p) => !p.data.pinned)];
+}
+
+/**
+ * Home order (docs/2-content-model.md "Post order"): pinned newest first, then the newest non-pinned featured post, then the rest newest first; no duplicates.
+ * Does not mutate the input.
+ */
+export function homeOrder(posts: Post[]): Post[] {
+  const sorted = [...posts].sort(byDateThenSlug);
+  const pinned = sorted.filter((p) => p.data.pinned);
+  const featured = sorted.find((p) => p.data.featured && !p.data.pinned);
+  const rest = sorted.filter((p) => !p.data.pinned && p !== featured);
+  return [...pinned, ...(featured ? [featured] : []), ...rest];
 }
 
 export const formatDate = (date: Date) =>
