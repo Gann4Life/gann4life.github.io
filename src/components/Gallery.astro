@@ -25,7 +25,7 @@ const full = await Promise.all(
               src={item.image}
               formats={['avif', 'webp']}
               widths={[320, 640]}
-              sizes="(max-width: 40rem) 50vw, 20rem"
+              sizes="(max-width: 40rem) 50vw, (min-width: 64rem) 13rem, 20rem"
               alt={item.caption}
             />
           </a>

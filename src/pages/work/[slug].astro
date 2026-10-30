@@ -45,6 +45,8 @@ const usedIn = data.usedIn.map((slug) => bySlug.get(slug)).filter((e): e is Work
 const features = all.filter((e) => e.data.usedIn.includes(entry.id));
 const posts = listOrder((await getPosts()).filter((p) => !p.data.draft && p.data.work.includes(entry.id)));
 
+const hasAside = data.gallery.length > 0 || posts.length > 0;
+
 const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', width: 1200 })).src : undefined;
 ---
 
@@ -77,8 +79,9 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
         alt=""
       />
     )}
+    <div class:list={['detail__layout', { 'detail__layout--aside': hasAside }]}>
     <Gallery slug={entry.id} items={data.gallery} />
-
+    <div class="detail__main">
     {data.contribution && (
       <section class="detail__section">
         <h2>What I did</h2>
@@ -148,8 +151,9 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
       </section>
     )}
 
+    </div>
     {posts.length > 0 && (
-      <section class="detail__section">
+      <section class="detail__section detail__posts">
         <h2>Posts about this project</h2>
         <ul class="related">
           {posts.map((p) => (
@@ -161,6 +165,7 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
         </ul>
       </section>
     )}
+    </div>
 
     <p><a href={withBase(`/work/c/${category.key}/`)}>← {category.label}</a></p>
   </main>
