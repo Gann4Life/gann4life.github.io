@@ -3,14 +3,36 @@
 Full-width, image-first site. On thumbnails the text only appears on hover/focus (always shown on touch screens, which cannot hover); elements cascade in on load; pages cross-fade (CSS view transitions, no JS).
 
 - Every page: the header shows the profile `logo` if set, else the name as text; `<link rel="icon">` uses the profile `favicon` if set, else `withBase('/favicon.svg')`; the profile `background`, if set, is a fixed, blurred, darkened layer behind the whole page. Fields and fallbacks: [section 2](2-content-model.md) "Site appearance".
-- `/` — banner: name (with the profile `photo` beside it, if set), headline (profile `tagline`), bio and profile links beside the demo reel (profile `reel`); the profile `banner` image, if set, sits full-bleed behind this hero. Then category buttons in two bands — **Work** (Games, Animation, Software, Other) and **Hobbies** (Music, Art) — as plain typographic buttons: categories are collections, not items, so they carry no thumbnails. Then Featured, Latest (4:3 thumbnails) and Tools. Only categories with published work appear.
+- `/` — hero: name (with the profile `photo` beside it, if set), headline (profile `tagline`), bio and profile links beside the demo reel (profile `reel`); the profile `banner` image, if set, sits full-bleed behind this hero, starting at the top of the page behind the header and fading out downwards ([section 2](2-content-model.md) "Banner drawing"). Then, in this order (user decision 2026-10-30), each section omitted when empty:
+  1. **Featured** (4:3 thumbnails) — first section after the hero.
+  2. **Latest** (4:3 thumbnails).
+  3. **Tools** — each tool is a link to its tool page `withBase('/work/t/<tool-slug>/')`.
+  4. **Latest posts** — 3 posts in home order ([section 2](2-content-model.md) "Post order"), as 4:3 tiles like the work tiles (cover as image, date as eyebrow, summary as subtitle), followed by an "All posts" link to `withBase('/blog/')`. Omitted when the build includes no post.
+  The home has no category bands: the former **Work** / **Hobbies** button bands are removed (user decision 2026-10-30). Categories are reached from the header nav, which lists every category with included work.
 - `/work/c/<category>/` — every work in the category as 4:3 thumbnails with the text over the image. Music releases instead get a compact player each, playable in place.
-- `/work/<slug>` — one page per entry: the work first (embed, or cover image), gallery, what I did, description, then links, fork block, credits, tools, related, and last "Posts about this project": published posts whose `work` field includes the entry's slug, newest first, as title + date links (summary under the title when set); the section is omitted when there are none.
-- `/blog/` and `/blog/<slug>/` — posts written in `/keystatic` (Blog); fields in [section 2](2-content-model.md) "Blog posts". The header links to the blog once a post is published.
+- `/work/t/<tool-slug>/` (and `/work/t/<tool-slug>/<n>/` for page n ≥ 2) — every included work entry whose `tools` contains that tool, as the same 4:3 tile grid and pagination as category pages (24 per page, same `Pager`), same order (featured first, then newest `started`); tiles only, no in-place music players. Header kicker `<name> / Tools`, title = the tool name as written, count line "1 project" / "N projects". One page per tool slug ([section 2](2-content-model.md) "Tool pages"); no index page at `/work/t/`. Not in the header nav. In production the sitemap lists the first page of each tool (`/work/t/<tool-slug>/`), like category pages; staging has no sitemap.
+- `/work/<slug>` — one page per entry: the work first (embed, or cover image), gallery, what I did, description, then links, fork block, credits, tools (each a link to its tool page), related, and last "Posts about this project": published posts whose `work` field includes the entry's slug, in list order ([section 2](2-content-model.md) "Post order"), as title + date links (summary under the title when set); the section is omitted when there are none.
+- `/blog/`, `/blog/page/<n>/` (n ≥ 2) and `/blog/<slug>/` — posts written in `/keystatic` (Blog); fields in [section 2](2-content-model.md) "Blog posts". The header links to the blog once a post is published. Layout below ("Blog split view").
 - `/sitemap.xml`, `/robots.txt`, `/404.html`.
 - `/service-worker.js` — self-unregistering worker that removes v2's; never registered by v3 ([section 1](1-stack.md) "Retired v2 service worker").
 - `/keystatic` — CMS (dev server only, not linked publicly).
-- No other top-level paths: other repos publish under this domain (e.g. `/RagAssembler2D/`), so v3 must not create routes that shadow them. The work slugs `c` and `site` are reserved (`site` because `src/assets/site/` holds the appearance images). `/dev/` is reserved for the staging build ([section 1](1-stack.md)), so no repo of this account may be named `dev` with Pages enabled.
+- No other top-level paths: other repos publish under this domain (e.g. `/RagAssembler2D/`), so v3 must not create routes that shadow them. The work slugs `c`, `t` and `site` are reserved (`t` for tool pages; `site` because `src/assets/site/` holds the appearance images), and the post slug `page` (blog list pagination). `/dev/` is reserved for the staging build ([section 1](1-stack.md)), so no repo of this account may be named `dev` with Pages enabled.
+
+**Blog split view** (user decision 2026-10-30)
+
+All blog routes render the same two-pane layout, fully static: no new client-side JS.
+
+- **Panes (≥ 48rem)**: left 1/3 a compact post list, right 2/3 the selected post rendered for reading (grid `minmax(0, 1fr) minmax(0, 2fr)` inside the gutters). The list pane is sticky below the header and scrolls on its own when taller than the viewport.
+- **List**: posts in list order ([section 2](2-content-model.md) "Post order"), 20 per page. Each item: title (link to `withBase('/blog/<slug>/')`), date, and markers ("Pinned", "Featured", "Draft" on the dev server). No covers, no summary. The selected post's item is highlighted and carries `aria-current="page"`. When there is more than one page, the `Pager` sits under the list: page 1 is `/blog/`, page n is `/blog/page/<n>/`.
+- **Reader**: the selected post exactly as today's post page — date (and "Draft"), title, summary, cover, body, "Related work".
+- **Which post is selected**:
+  - `/blog/` — list page 1, reader shows the first post of the list order.
+  - `/blog/page/<n>/` — list page n, reader shows the first post of that page.
+  - `/blog/<slug>/` — that post selected; the list shows the page that contains it, and its pager links lead to `/blog/` and `/blog/page/<n>/`.
+- **Headings and metadata**: on `/blog/<slug>/` the post title is the `h1`, and title, description, canonical and Open Graph image are the post's, as today. On `/blog/` and `/blog/page/<n>/` the page `h1` is "Blog", the post title is an `h2` linked to the post's own URL, and title/description/canonical are the blog's (canonical = the page's own URL); no Open Graph image. The list is a `nav` labelled "Posts".
+- **Phone (< 48rem)**: one pane at a time, by CSS only. `/blog/` and `/blog/page/<n>/` show the list only (the reader pane is not displayed). `/blog/<slug>/` shows the post only, with a "← All posts" link to `withBase('/blog/')` above it; the list pane is not displayed. On wide screens that back link is hidden (the list is visible).
+- **Sitemap** (production): `/blog/` and every `/blog/<slug>/`, as today; `/blog/page/<n>/` is not listed (like later category pages).
+- No published post: `/blog/` shows "No posts yet." and no panes; no `/blog/page/` or post routes exist.
 
 **Base-path rule** (links and asset URLs)
 

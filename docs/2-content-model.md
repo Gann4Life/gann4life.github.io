@@ -29,7 +29,7 @@ status: released      # released | in-development | archived
 started: 2025-06-01   # creation/start date — used for sorting and year filters
 featured: true
 draft: false          # true = local only: dev server, never committed, never published (see "Drafts stay out of git")
-tools: [Unity, C#, Spine]
+tools: [Unity, C#, Spine]   # each tool links to /work/t/<tool-slug>/ (see "Tool pages")
 cover: "../../assets/project-name/cover.png"   # thumbnail, in-repo, see section 1
 gallery:              # any number of extra images, in-repo
   - image: "../../assets/project-name/shot-1.png"
@@ -103,6 +103,22 @@ Byte-identical media files are merged into one copy so the same image, video, au
 - `docs` links a spec/design doc (e.g. DESIGN.md, INSTALL.md) — evidence of design work.
 - `kind` is *what* it is; `context` is *who it was for*. Both drive filters.
 
+**Tool pages** (user decision 2026-10-30)
+
+Every tool named in the `tools` of an entry the build includes gets a page at `/work/t/<tool-slug>/` ([section 3](3-pages.md)). No new field: the page is derived from `tools`.
+
+- **Tool slug rule**, applied to the tool name exactly as written in `tools`, in this order:
+  1. Unicode NFKD, then drop combining marks (`é` → `e`).
+  2. Lower case.
+  3. Replace `#` with ` sharp `, `+` with ` plus `, `&` with ` and ` (each surrounded by spaces).
+  4. Every run of characters outside `a-z` and `0-9` becomes one `-`; leading and trailing `-` are removed.
+- Examples: `C#` → `c-sharp`, `F#` → `f-sharp`, `C++` → `c-plus-plus`, `Node.js` → `node-js`, `.NET` → `net`, `Blender 3D` → `blender-3d`, `Ableton Live` → `ableton-live`, `R&D Tool` → `r-and-d-tool`.
+- **Empty slug** (a name with no letters or digits left, e.g. `★`): the build fails naming the entry and the tool.
+- **Collisions**: two different spellings that give the same slug (e.g. `Unity` and `unity`, or `C#` and `C Sharp`) fail the build, naming both spellings and the entries that use each. Fix the spelling in the entries; the build never merges or picks one silently. Identical spellings in many entries are the normal case, not a collision.
+- Checked on the set of entries the build includes (drafts are dropped first in production; the dev server checks drafts too, so a collision shows up before publishing).
+- The page title is the tool name as written (one spelling per slug, guaranteed by the collision rule).
+- A tool page lists every included entry whose `tools` contains that exact name, `ai-built` entries included (their tile already carries the AI label). This is not the site-wide skills list: the home "Tools" list still comes only from `hand-made` and `ai-assisted` entries ("AI-built (vibe-coded) projects"), so a tool used only by `ai-built` entries has a page, linked from those entries, but is not on the home list.
+
 **Other people's projects**
 - `team: team`, `position` set to the title actually held, `contribution` describes only my part, others go in `credits`.
 - `position` is a real title from that project, not an upgraded one.
@@ -145,17 +161,24 @@ date: 2026-10-29      # required; sorts the list, newest first; shown as "29 Oct
 summary: ""           # optional, one line: list subtitle, page subheading, meta description
 cover: "../../assets/blog/cover.png"   # optional, in-repo image (rule 6)
 work: []              # optional: slugs of related `work` entries
+pinned: false         # optional: listed first everywhere posts are listed (see "Post order")
+featured: false       # optional: promoted on the home page, "Featured" marker on /blog/ (see "Post order")
 draft: false          # same semantics as `work`; see "Drafts stay out of git"
 ---
 
 Post body in Markdown. Body images go in `src/assets/blog/`.
 ```
 
-- Missing `summary` / `work` / `draft` default to `""` / `[]` / `false`; `cover` may be absent. There are no other fields; Keystatic edits exactly these plus the body.
-- `cover`: list thumbnail, decorative cover at the top of the post (`alt=""`), and the post's Open Graph image (1200 px wide PNG). Keystatic stores covers and body images in the shared `src/assets/blog/`; draft-only images there stay local under the asset file rule.
+- Missing `summary` / `work` / `pinned` / `featured` / `draft` default to `""` / `[]` / `false` / `false` / `false`; `cover` may be absent. There are no other fields; Keystatic edits exactly these plus the body. `pinned` and `featured` are Keystatic checkboxes ("Pinned", "Featured"), unticked by default. A post may be both.
+- Adding `pinned` and `featured` (2026-10-30) is not a breaking change: both are optional with a `false` default, existing posts stay valid unchanged; no version bump, no migration.
+- **Post order** (posts the build includes; ties on `date` break by slug, ascending):
+  - **List order** — `/blog/` list, `/work/<slug>` "Posts about this project": pinned posts, newest first; then every other post, newest first. `featured` does not reorder lists; on `/blog/` it only adds the "Featured" marker.
+  - **Home order** — home "Latest posts": pinned posts, newest first; then the newest featured post that is not pinned (one at most); then the remaining posts, newest first; no post appears twice; the first 3 are shown.
+- **Markers**: in the `/blog/` list, "Pinned" for `pinned`, "Featured" for `featured`, and "Draft" for drafts on the dev server. The home section shows no markers.
+- `cover`: thumbnail in the home "Latest posts" tiles, decorative cover at the top of the post (`alt=""`), and the post's Open Graph image (1200 px wide PNG). Keystatic stores covers and body images in the shared `src/assets/blog/`; draft-only images there stay local under the asset file rule.
 - `work`: rendered as "Related work" links at the end of the post. A slug that matches no `work` entry at all fails the build; a slug of a draft `work` entry is skipped without an error (production drops drafts). Checked for every post the build includes (drafts are dropped first); the dev server only skips unknown slugs. Each `work` page lists the published posts that name it ([section 3](3-pages.md)).
 - `draft`: identical to `work`. A missing `draft` means published; Keystatic starts new posts as drafts. Drafts show on the dev server (marked "Draft") and are dropped from production builds, images included. They stay out of git under the same exclude script and hook.
-- Routes: `/blog/` (all published posts as tiles) and `/blog/<slug>/` ([section 3](3-pages.md)). The header "Blog" link and the sitemap's blog URLs appear only when at least one post is published.
+- Routes: `/blog/`, `/blog/page/<n>/` and `/blog/<slug>/`, all one split view (post list + reader) ([section 3](3-pages.md)). The post slug `page` is reserved. The header "Blog" link and the sitemap's blog URLs appear only when at least one post is published.
 - No contribution, role, authorship or credit fields. [Section 6](6-content-rules.md) binds post text: authorship claims follow the entry's `authorship`, and any work by someone else shown in a post is credited in the post itself (name, and link when there is one, next to the work).
 
 **Profile**
@@ -181,7 +204,7 @@ Post body in Markdown. Body images go in `src/assets/blog/`.
 | `photo` | Home hero, next to the name; round, 1:1 crop, decorative (`alt=""`, the name is beside it) | No photo (today's hero) |
 | `logo` | Replaces the name text in the site header; `alt` = profile `name` | Name as text (today's header) |
 | `favicon` | `<link rel="icon">` on every page | `withBase('/favicon.svg')` (today's icon) |
-| `banner` | Full-bleed image behind the home hero (text and reel), with a fixed dark scrim that fades into the page background | Plain hero (today's) |
+| `banner` | Full-bleed image behind the home hero (text and reel), from the very top of the page (behind the sticky header, no gap) to the bottom of the hero, faded vertically: 100 % opaque at the top, 100 % transparent at the bottom (see "Banner drawing") | Plain hero (today's) |
 | `background.image` | Fixed full-viewport layer behind every page, blurred and darkened | Plain `--bg` colour (today's) |
 | `background.darken` | Opacity, 0–100 %, of a `#08080b` overlay over the background image | 70 when a background image is set |
 | `background.blur` | CSS blur radius, 0–40 px | 12 when a background image is set |
@@ -191,5 +214,9 @@ Post body in Markdown. Body images go in `src/assets/blog/`.
 - **Uploads**: Keystatic stores each field's upload in its own folder, `src/assets/site/<field>/` (`photo`, `logo`, `favicon`, `banner`, `background`), and writes the path relative to `src/data/` (`../assets/site/<field>/<name>.<ext>`). The build resolves it to a local file under `src/assets/site/` or `src/assets/shared/` (the duplicate resolver may move it there and rewrite the path); any other location, a missing file, or an extension other than `png`, `jpg`, `jpeg`, `webp`, `avif`, `gif`, `svg` fails the build naming the field and path. Uploads go through `astro:assets` like other images. `favicon` uploads: `svg` or `png` only (`.ico` is not supported).
 - **URLs are used directly** — the one exception to "no hotlinked media" (decision 2026-10-29 "Site appearance"). The URL is emitted as-is in `<img src>`, `<link href>` or CSS `url("…")`; it never goes through `astro:assets` (no `image.domains` / `remotePatterns`), and neither the build nor any script fetches it. Validation is syntax only: `https:` scheme, and none of `"`, `'`, `(`, `)`, `\`, `<`, `>` or whitespace (they could break out of the CSS string or attribute); an invalid URL fails the build. A URL that is unreachable, expired or not an image never fails the build; the page degrades as follows: `background` and `banner` (CSS backgrounds) show today's look under the overlay/scrim; `photo` leaves an empty round slot; `logo` falls back to the browser's alt text (the name); `favicon` falls back to the browser's default icon. No client-side JS is added for fallbacks.
 - **Dark look**: when `background` or `banner` resolves to an image, the page uses the dark palette regardless of `prefers-color-scheme`, so the art shows blurred and darkened in its own colours and text stays on dark. No default background or banner image ships.
+- **Banner drawing** (user decision 2026-10-30):
+  - **Box**: the banner's top edge is the top of the document (y = 0), so it sits behind the sticky header and the header's translucent background shows the banner through it; there is no band of page colour between header and banner. Its bottom edge is the bottom of the hero; it spans the full viewport width (full-bleed past the gutters). It scrolls with the page (not fixed). The header keeps its own translucent background and bottom border. The hero's content does not move: text and reel stay where they are today relative to the header.
+  - **Fade**: the image itself is drawn with a vertical alpha fade, linear from 100 % opaque at the top edge to 100 % transparent at the bottom edge, so its lower part dissolves into whatever is behind it (the `--bg` colour, or the `background` layer when one is set). There is no dark scrim over the banner any more (today's `rgb(8 8 11 / 0.55)` → `--bg` gradient is removed); image colours are not altered.
+  - `cover` sizing and centring stay as today. A URL banner that fails to load leaves the plain hero, as before.
 - `darken` and `blur` are integers; out of range fails the build; ignored when `background` has no image.
 - **Drafts and duplicates**: files under `src/assets/site/` are referenced from `src/data/profile.json`, a non-entry source file, so the asset file rule always makes them committable ("Drafts stay out of git"); `site/` is not a slug folder and the `work` slug `site` is reserved. They are in the duplicate resolver's scope like any `src/assets/` file. A replaced upload left unreferenced gets the usual `WARNING`.
