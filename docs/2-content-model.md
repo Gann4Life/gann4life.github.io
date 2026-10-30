@@ -56,6 +56,21 @@ Long description / devlog in Markdown.
 - `npm run sync` (at the repository root) pulls every work from the profiles in `src/data/profile.json` (itch.io, Bandcamp, DeviantArt, GitHub, YouTube) as drafts. Re-running only adds what is new; edited entries are never touched. A GitHub repo whose homepage is an itch.io game becomes that game's source link.
 - `npm run add -- <url>` imports a single work, e.g. a SoundCloud track (SoundCloud has no public listing). It imports from itch.io, Bandcamp, SoundCloud, YouTube, DeviantArt or GitHub: title, date, cover downloaded into the repo, and the resolved embed. The platform is read once and snapshotted; the site never calls it at build time.
 - Imported entries are `draft: true` with an empty `contribution`. Fill in contribution, roles and authorship in `/keystatic`, then untick Draft. Published entries must have a `contribution` (Keystatic label "What I did"): a published entry without one is left out of the production build (like a draft, with a build-log warning) instead of failing the build (user decision 2026-10-30: a missing field must not interrupt publishing); the dev server renders it with a warning (issue #121).
+- Day-to-day text fixes (title, What I did, description, Draft, Featured; later the meta line) can also be made in place on the entry's page on the dev server ([section 3](3-pages.md) "Edit mode"); it writes the same file in Keystatic's format.
+
+**End date (`ended`)** — planned (page editor phase 3, issue #136); not in the schema yet
+
+```yaml
+started: 2021-03-01
+ended: 2023-05-20     # optional; absent = no end date
+```
+
+- Optional date, `YYYY-MM-DD`, top level, right after `started`. Absent means no end date; there is no empty-string or `null` form in files (Keystatic's date field omits the key when cleared, and the page editor removes it).
+- Schema: `ended: z.coerce.date().optional()` in `workSchema`, plus a refinement: `ended` before `started` fails with path `ended`. Same day or later is valid.
+- Keystatic: `ended: fields.date({ label: 'Ended', description: FIELD_HELP.ended })` placed right after `started`, not required. It must land in the same change as the schema field, because Keystatic writes only the fields of its own config, so it would drop an `ended` it does not know on its next save (expected from how it serialises; to be confirmed by the phase 3 builder with a Keystatic save of an entry carrying `ended`).
+- Order and filters: unchanged. Every list still sorts by `started` (featured first where it applies); `ended` changes no order, no "Latest", no year.
+- Display: one helper, `yearSpan(entry)` in `src/lib/work.ts`, replaces `year(entry)` wherever the year is shown (the `/work/<slug>` meta line and the tile meta line, `tileMeta`): `2021–2023` (en dash, no spaces) when `ended` is set in a later year, `2021` when both fall in the same year. With no `ended`, what shows is a user decision still open ([section 8](8-open-decisions.md) Open: `2021–present` for in-development entries, or the start year alone as today). Years are read in UTC, as `year` does.
+- Migration: none. Optional field, existing entries stay valid unchanged; no version bump. The YAML sample at the top gains the line when the field is built.
 
 **Drafts stay out of git**
 

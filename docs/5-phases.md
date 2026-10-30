@@ -40,6 +40,15 @@ v2 held no project data of its own (everything came from CodersRank, now dropped
 - [ ] Lighthouse pass (performance, accessibility)
 - [ ] Custom domain (optional, deferred)
 
+### Phase 6 — In-page editor (dev only, issue #136)
+Specified in [section 1](1-stack.md) "Dev-only page editor" and [section 3](3-pages.md) "Edit mode". Keystatic stays for everything not listed here. "Editor phase N" in those sections: phase 1 = 6.1 + 6.2, phase 2 = 6.3, phase 3 = 6.4 + 6.5, phase 4 = 6.6.
+- [ ] 6.1 Shared `workSchema`, `js-yaml` writer and the dev-only save endpoint (no UI)
+- [ ] 6.2 Edit mode on `/work/<slug>`: title, What I did, description, Draft, Featured
+- [ ] 6.3 Meta line in place (kind, context, status, team, started) and cover thumbnail in the edit bar
+- [ ] 6.4 `ended` field: schema, Keystatic, year range display ([section 2](2-content-model.md) "End date"; display rule pending a user decision)
+- [ ] 6.5 `ended` date input in edit mode
+- [ ] 6.6 Lists in place (roles, tools, links) — not yet specified
+
 ### Later (optional)
 - [ ] `buy` links to a storefront (Gumroad / Ko-fi / Lemon Squeezy / itch) for asset packs
 - [x] Devlog / blog collection (`/blog/`, written in `/keystatic`)
