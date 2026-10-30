@@ -29,7 +29,7 @@ status: released      # released | in-development | archived
 started: 2025-06-01   # creation/start date — used for sorting and year filters
 featured: true
 draft: false          # true = local only: dev server, never committed, never published (see "Drafts stay out of git")
-tools: [Unity, C#, Spine]   # each tool links to /work/t/<tool-slug>/ (see "Tool pages"); Keystatic offers the names in TOOLS (src/vocab.ts) as a picker
+tools: [Unity, C#, Spine]   # each tool links to /work/t/<tool-slug>/ (see "Tool pages"); only names in TOOLS (src/vocab.ts), offered as a picker
 cover: "../../assets/project-name/cover.png"   # thumbnail, in-repo, see section 1
 gallery:              # any number of extra images, in-repo
   - image: "../../assets/project-name/shot-1.png"
@@ -56,18 +56,19 @@ Long description / devlog in Markdown.
 - `npm run sync` (at the repository root) pulls every work from the profiles in `src/data/profile.json` (itch.io, Bandcamp, DeviantArt, GitHub, YouTube) as drafts. Re-running only adds what is new; edited entries are never touched. A GitHub repo whose homepage is an itch.io game becomes that game's source link.
 - `npm run add -- <url>` imports a single work, e.g. a SoundCloud track (SoundCloud has no public listing). It imports from itch.io, Bandcamp, SoundCloud, YouTube, DeviantArt or GitHub: title, date, cover downloaded into the repo, and the resolved embed. The platform is read once and snapshotted; the site never calls it at build time.
 - Imported entries are `draft: true` with an empty `contribution`. Fill in contribution, roles and authorship in `/keystatic`, then untick Draft. Published entries must have a `contribution` (Keystatic label "What I did"): a published entry without one is left out of the production build (like a draft, with a build-log warning) instead of failing the build (user decision 2026-10-30: a missing field must not interrupt publishing); the dev server renders it with a warning (issue #121).
-- Day-to-day text fixes (title, What I did, description, Draft, Featured; later the meta line) can also be made in place on the entry's page on the dev server ([section 3](3-pages.md) "Edit mode"); it writes the same file in Keystatic's format.
+- Editing: on the dev server, "Edit" on an entry's page or tile edits every field in place, images included ([section 3](3-pages.md) "Edit mode"); it writes the same file in Keystatic's format. Keystatic remains for creating entries, changing a slug, and as "Edit in Keystatic".
+- **Field registry**: the fields of `work` and `blog` (type, label, help, options, order) are defined once in `src/lib/content-fields.ts`; the Zod schema, the Keystatic form and the in-site editor are built from it ([section 1](1-stack.md) "Field registry"). The YAML samples in this section stay the reference for the file format; the registry must match them.
 
-**End date (`ended`)** — planned (page editor phase 3, issue #136); not in the schema yet
+**End date (`ended`)** — planned (issue #141); not in the schema yet
 
 ```yaml
 started: 2021-03-01
 ended: 2023-05-20     # optional; absent = no end date
 ```
 
-- Optional date, `YYYY-MM-DD`, top level, right after `started`. Absent means no end date; there is no empty-string or `null` form in files (Keystatic's date field omits the key when cleared, and the page editor removes it).
-- Schema: `ended: z.coerce.date().optional()` in `workSchema`, plus a refinement: `ended` before `started` fails with path `ended`. Same day or later is valid.
-- Keystatic: `ended: fields.date({ label: 'Ended', description: FIELD_HELP.ended })` placed right after `started`, not required. It must land in the same change as the schema field, because Keystatic writes only the fields of its own config, so it would drop an `ended` it does not know on its next save (expected from how it serialises; to be confirmed by the phase 3 builder with a Keystatic save of an entry carrying `ended`).
+- Optional date, `YYYY-MM-DD`, top level, right after `started`. Absent means no end date; there is no empty-string or `null` form in files (Keystatic's date field omits the key when cleared, and the in-site editor removes it).
+- Schema: `ended: z.coerce.date().optional()` in the work schema (after step 6.2, the registry field and the work `refine`), plus a refinement: `ended` before `started` fails with path `ended`. Same day or later is valid.
+- Keystatic: a `fields.date` labelled "Ended" right after `started`, not required, help "When work stopped. Leave empty if there is no end date." Once the field registry exists this is one registry field (`type: 'date'`, after `started`), which gives the schema, Keystatic and the in-site editor at once; before it, schema and Keystatic change together. Either way they must land in the same change, because Keystatic writes only the fields of its own config, so it would drop an `ended` it does not know on its next save (expected from how it serialises; to be confirmed by the builder with a Keystatic save of an entry carrying `ended`).
 - Order and filters: unchanged. Every list still sorts by `started` (featured first where it applies); `ended` changes no order, no "Latest", no year.
 - Display: one helper, `yearSpan(entry)` in `src/lib/work.ts`, replaces `year(entry)` wherever the year is shown (the `/work/<slug>` meta line and the tile meta line, `tileMeta`): `2021–2023` (en dash, no spaces) when `ended` is set in a later year, `2021` when both fall in the same year. With no `ended`, what shows is a user decision still open ([section 8](8-open-decisions.md) Open: `2021–present` for in-development entries, or the start year alone as today). Years are read in UTC, as `year` does.
 - Migration: none. Optional field, existing entries stay valid unchanged; no version bump. The YAML sample at the top gains the line when the field is built.
@@ -185,13 +186,13 @@ draft: false          # same semantics as `work`; see "Drafts stay out of git"
 Post body in Markdown. Body images go in `src/assets/blog/`.
 ```
 
-- Missing `summary` / `work` / `pinned` / `featured` / `draft` default to `""` / `[]` / `false` / `false` / `false`; `cover` may be absent. There are no other fields; Keystatic edits exactly these plus the body. `pinned` and `featured` are Keystatic checkboxes ("Pinned", "Featured"), unticked by default. A post may be both.
+- Missing `summary` / `work` / `pinned` / `featured` / `draft` default to `""` / `[]` / `false` / `false` / `false`; `cover` may be absent. There are no other fields; Keystatic and the in-site editor ([section 3](3-pages.md) "Edit mode", on `/blog/<slug>/`) edit exactly these plus the body; posts are created in Keystatic. `pinned` and `featured` are Keystatic checkboxes ("Pinned", "Featured"), unticked by default. A post may be both.
 - Adding `pinned` and `featured` (2026-10-30) is not a breaking change: both are optional with a `false` default, existing posts stay valid unchanged; no version bump, no migration.
 - **Post order** (posts the build includes; ties on `date` break by slug, ascending):
   - **List order** — `/blog/` list, `/work/<slug>` "Posts about this project": pinned posts, newest first; then every other post, newest first. `featured` does not reorder lists; on `/blog/` it only adds the "Featured" marker.
   - **Home order** — home "Blog" feed: the same as list order (pinned posts, newest first; then every other post, newest first); the first 3 are shown. `featured` plays no part (issue #111).
 - **Markers**: in the `/blog/` list, "Pinned" for `pinned`, "Featured" for `featured`, and "Draft" for drafts on the dev server. The home "Blog" feed shows "Pinned" (with its highlight, [section 3](3-pages.md) `/`) and "Draft" (dev server); the `/blog/` reader shows only "Draft". Neither shows "Featured".
-- `cover`: decorative cover (`alt=""`) above the body wherever the post is rendered in full (post page, `/blog/` reader, home "Blog" feed), and the post's Open Graph image (1200 px wide PNG). Keystatic stores covers and body images in the shared `src/assets/blog/`; draft-only images there stay local under the asset file rule.
+- `cover`: decorative cover (`alt=""`) above the body wherever the post is rendered in full (post page, `/blog/` reader, home "Blog" feed), and the post's Open Graph image (1200 px wide PNG). Keystatic and the in-site editor store covers and body images in the post's folder under the shared `src/assets/blog/` (`src/assets/blog/<slug>/`); draft-only images there stay local under the asset file rule.
 - `work`: rendered as "Related work" links at the end of the post. A slug that matches no published `work` entry is skipped: the link is left out and the production build logs a warning instead of failing (user decision 2026-10-30; draft entries are git-excluded, so in CI a draft's slug matches nothing). The link appears once the entry is published. The dev server skips unknown slugs silently. Each `work` page lists the published posts that name it ([section 3](3-pages.md)).
 - `draft`: identical to `work`. A missing `draft` means published; Keystatic starts new posts as drafts. Drafts show on the dev server (marked "Draft") and are dropped from production builds, images included. They stay out of git under the same exclude script and hook.
 - Routes: `/blog/`, `/blog/page/<n>/` and `/blog/<slug>/`, all one split view (post list + reader) ([section 3](3-pages.md)). The post slug `page` is reserved. The header "Blog" link and the sitemap's blog URLs appear only when at least one post is published.

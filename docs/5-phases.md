@@ -40,14 +40,15 @@ v2 held no project data of its own (everything came from CodersRank, now dropped
 - [ ] Lighthouse pass (performance, accessibility)
 - [ ] Custom domain (optional, deferred)
 
-### Phase 6 — In-page editor (dev only, issue #136)
-Specified in [section 1](1-stack.md) "Dev-only page editor" and [section 3](3-pages.md) "Edit mode". Keystatic stays for everything not listed here. "Editor phase N" in those sections: phase 1 = 6.1 + 6.2, phase 2 = 6.3, phase 3 = 6.4 + 6.5, phase 4 = 6.6.
-- [x] 6.1 Shared `workSchema`, `js-yaml` writer and the dev-only save endpoint (no UI) — built (#138); unit-tested with a stand-in schema; not yet run against the real schema on a live dev server, Keystatic round trip not checked by hand
-- [ ] 6.2 Edit mode on `/work/<slug>`: title, What I did, description, Draft, Featured
-- [ ] 6.3 Meta line in place (kind, context, status, team, started) and cover thumbnail in the edit bar
-- [ ] 6.4 `ended` field: schema, Keystatic, year range display ([section 2](2-content-model.md) "End date"; display rule pending a user decision)
-- [ ] 6.5 `ended` date input in edit mode
-- [ ] 6.6 Lists in place (roles, tools, links) — not yet specified
+### Phase 6 — In-site editor (dev only, issue #136; re-planned 2026-10-30)
+Specified in [section 1](1-stack.md) "In-site editor" and [section 3](3-pages.md) "Edit mode". Goal: on the dev server, "Edit" edits any work entry or post completely on its own page; Keystatic is the secondary path. Each step is usable on its own; until 6.5 lands, images are changed through "Edit in Keystatic". Replaces the earlier plan and its issues #139 (in progress, not merged: close it; its control styling can be reused in 6.3), #140, #142 and #143; #141 is unaffected (6.6).
+- [x] 6.1 `js-yaml` writer and the dev-only save endpoint for `work` (no UI) — built (#138); generalised in 6.3
+- [ ] 6.2 Field registry: `src/lib/content-fields.ts` + `schemaFor`; `src/content.config.ts` and `keystatic.config.ts` built from it; label maps move to `src/vocab.ts`; `FIELD_HELP` and `src/lib/work-schema.ts` removed. Usable result: Keystatic's form follows the page's reading order. Checks: every entry parses to the same data as before; a Keystatic save of an unchanged entry gives identical bytes; record how Keystatic writes cleared fields and where it stores gallery images (needed by 6.3 and 6.5)
+- [ ] 6.3 Edit work entries in place, every field except images: generic endpoint `__editor/<collection>/<id>`, module renamed to `integrations/editor/`, generic client and field panel, `editHooks` on the work page, one "Edit" (in place on the page; `?edit` links from tiles and category players), "Edit in Keystatic" in the bar
+- [ ] 6.4 Edit blog posts in place: `blog` hooks in `PostArticle` (`editable` on `/blog/<slug>/`), "Edit" links from the home feed and the `/blog/` reader. No editor code change expected: a registry and hooks step
+- [ ] 6.5 Images in both collections: uploads in the save, cover, gallery (add, replace, remove, reorder, captions), images in list items, "Insert image" in the body, deletion of replaced files
+- [ ] 6.6 `ended` field (#141): one registry field after 6.2, plus `yearSpan` display ([section 2](2-content-model.md) "End date"; display rule pending a user decision)
+- Later, only if wanted: create a work entry or a post from the site (today Keystatic, or `npm run sync` / `npm run add`); edit the Profile in the site
 
 ### Later (optional)
 - [ ] `buy` links to a storefront (Gumroad / Ko-fi / Lemon Squeezy / itch) for asset packs
