@@ -15,6 +15,7 @@ contribution: >
 status: released
 started: 2025-01-01
 featured: true
+draft: false
 tools: [Spine]
 cover: ../../assets/spine-demo-reel/cover.jpg
 gallery: []

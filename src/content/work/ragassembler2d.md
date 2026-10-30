@@ -1,12 +1,15 @@
 ---
-title: "RagAssembler2D"
+title: RagAssembler2D
 kind: software
 context: personal
-position: "Director / Designer"
-roles: [director, designer, spec-author]
+position: Director / Designer
+roles:
+  - director
+  - designer
+  - spec-author
+  - maintainer
 authorship: ai-built
 origin: original
-upstream: ""
 team: solo
 credits: []
 contribution: >
@@ -16,24 +19,31 @@ contribution: >
 status: in-development
 started: 2026-10-14
 featured: true
-tools: [JavaScript, PIXI.js, LiquidFun, Node.js]
+draft: false
+tools:
+  - JavaScript
+  - PIXI.js
+  - LiquidFun
+  - Node.js
+cover: ../../assets/ragassembler2d/cover.gif
 gallery: []
 media:
   - type: webgl
-    src: "https://gann4life.github.io/RagAssembler2D/"
-    caption: "The live editor. Open it full screen from the link below for the best experience."
+    src: https://gann4life.github.io/RagAssembler2D/
+    caption: >-
+      The live editor. Open it full screen from the link below for the best
+      experience.
 links:
-  - label: "Open the editor"
+  - label: Open the editor
     type: play
-    url: "https://gann4life.github.io/RagAssembler2D/"
-  - label: "Design spec (DESIGN.md)"
+    url: https://gann4life.github.io/RagAssembler2D/
+  - label: Design spec (DESIGN.md)
     type: docs
-    url: "https://github.com/Gann4Life/RagAssembler2D/blob/main/DESIGN.md"
+    url: https://github.com/Gann4Life/RagAssembler2D/blob/main/DESIGN.md
   - type: source
-    url: "https://github.com/Gann4Life/RagAssembler2D"
+    url: https://github.com/Gann4Life/RagAssembler2D
 usedIn: []
 ---
-
 Browser-based editor for building and animating active ragdolls for games that
 use LiquidFun (Box2D) with PIXI.js rendering. It ships with RagImporter, a
 runtime library that loads exported ragdolls into any game.

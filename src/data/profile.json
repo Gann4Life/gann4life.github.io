@@ -1,10 +1,8 @@
 {
   "hero": {
-    "banner": {
-      "upload": "../assets/shared/82ed58f0594dba18.png"
-    },
+    "banner": {},
     "photo": {
-      "upload": "../assets/site/photo/hero/photo/upload.gif"
+      "upload": "../assets/shared/ff92653a2d95eb6f.gif"
     },
     "reel": "https://www.youtube.com/watch?v=9vX-9SAaqUo",
     "name": "Gann4Life",
@@ -42,11 +40,9 @@
     "darken": 90
   },
   "chrome": {
-    "logo": {
-      "upload": "../assets/site/logo/chrome/logo/upload.png"
-    },
+    "logo": {},
     "favicon": {
-      "upload": "../assets/site/favicon/chrome/favicon/upload.png"
+      "upload": "../assets/shared/ff92653a2d95eb6f.gif"
     }
   }
 }
