@@ -68,7 +68,7 @@ A `draft: true` entry and its assets live only on the dev machine until publishe
 - It runs automatically before `npm run dev` and `npm run build` (npm `predev` / `prebuild` scripts) and from the pre-commit hook. In CI it finds no drafts and is harmless.
 - **Asset file rule** (per file, `work` and `blog` alike): every file under `src/assets/` and `public/media/` is judged on its own. It is excluded only when at least one draft entry references it and no published entry and no non-content source file does. It becomes committable as soon as any published entry or any file under `src/` that is not an entry (components, layouts, data, config) references it.
   - **Reference by text**: a file references an asset when its text contains the asset's path from the tree root — `assets/<path>` for `src/assets/<path>`, `media/<path>` for `public/media/<path>` (forward slashes) — preceded by `/`, a quote, `(` or whitespace, and not followed by a letter, digit, `.`, `_` or `-` (so `assets/x/a.png` does not match `assets/x/a.png.bak`).
-  - **Reference by slug folder**: an entry also references every file under `src/assets/<slug>/` and `public/media/<slug>/` whose folder name equals its slug (file name, or explicit `slug:`), so images an import downloaded but no field lists yet stay with their draft. The folders `blog/` and `shared/` are not slug folders: their files count only explicit text references.
+  - **Reference by slug folder**: an entry also references every file under `src/assets/<slug>/` and `public/media/<slug>/` whose folder name equals its slug (file name, or explicit `slug:`), so images an import downloaded but no field lists yet stay with their draft. The folders `blog/`, `shared/` and `site/` are not slug folders: their files count only explicit text references.
   - So a file used only by drafts is excluded; a file used by a draft and a published entry is committed; other files in the same folder are judged separately. A file referenced by nothing is **not** excluded and **not** blocked by the hook: the script prints a `WARNING` line naming each unreferenced file (so it can be deleted or linked) and still exits 0.
   - Blog covers and body images may stay in the shared `src/assets/blog/`: draft-only images there are excluded file by file.
 - **Pre-commit hook** (`.githooks/pre-commit`, committed; enabled per clone with `git config core.hooksPath .githooks`, documented in the README setup): first runs the duplicate resolver in fix mode (see "Duplicate media files"), then re-runs the script, then blocks the commit if any staged added/copied/modified/renamed file is a draft entry or an excluded asset file. This covers files already tracked and `git add -f`. Staged deletions are always allowed, so `git rm --cached` of a draft goes through. The error names each blocked file and how to unstage it.
@@ -159,4 +159,34 @@ Post body in Markdown. Body images go in `src/assets/blog/`.
 - No contribution, role, authorship or credit fields. [Section 6](6-content-rules.md) binds post text: authorship claims follow the entry's `authorship`, and any work by someone else shown in a post is credited in the post itself (name, and link when there is one, next to the work).
 
 **Profile**
-- One `profile` file (`src/data/profile.json`): name, tagline, bio and a list of profile links (label + url), edited from the panel and shown on the home page and footer.
+- One `profile` file (`src/data/profile.json`): name, tagline, bio, demo reel (`reel`, YouTube/Vimeo URL) and a list of profile links (label + url), edited from the panel (Profile) and shown on the home page and footer; plus the optional `appearance` group below.
+
+**Site appearance** (`appearance` in `src/data/profile.json`, group "Appearance" in the Profile panel)
+
+```json
+"appearance": {
+  "photo":      { "file": "../assets/site/photo/<name>.png", "url": "" },
+  "logo":       { "file": null, "url": "https://example.com/logo.svg" },
+  "favicon":    { "file": null, "url": "" },
+  "banner":     { "file": null, "url": "" },
+  "background": { "file": null, "url": "", "darken": 70, "blur": 12 }
+}
+```
+
+| Field | Shown | Empty means |
+|---|---|---|
+| `photo` | Home hero, next to the name; round, 1:1 crop, decorative (`alt=""`, the name is beside it) | No photo (today's hero) |
+| `logo` | Replaces the name text in the site header; `alt` = profile `name` | Name as text (today's header) |
+| `favicon` | `<link rel="icon">` on every page | `withBase('/favicon.svg')` (today's icon) |
+| `banner` | Full-bleed image behind the home hero (text and reel), with a fixed dark scrim that fades into the page background | Plain hero (today's) |
+| `background` | Fixed full-viewport layer behind every page, blurred and darkened | Plain `--bg` colour (today's) |
+| `background.darken` | Opacity, 0–100 %, of a `#08080b` overlay over the background image | 70 when a background image is set |
+| `background.blur` | CSS blur radius, 0–40 px | 12 when a background image is set |
+
+- Every field, the whole group, and `profile.json` without an `appearance` key are optional; each empty field renders exactly today's look. Adding the group is not a breaking change: no version bump, no migration.
+- **Image source per field**: `file` (an upload from the panel) or `url` (an `https://` address), alternatives. **When both are set, `file` wins** and `url` is ignored. Neither set = empty.
+- **Uploads**: Keystatic stores each field's upload in its own folder, `src/assets/site/<field>/` (`photo`, `logo`, `favicon`, `banner`, `background`), and writes the path relative to `src/data/` (`../assets/site/<field>/<name>.<ext>`). The build resolves it to a local file under `src/assets/site/` or `src/assets/shared/` (the duplicate resolver may move it there and rewrite the path); any other location, a missing file, or an extension other than `png`, `jpg`, `jpeg`, `webp`, `avif`, `gif`, `svg` fails the build naming the field and path. Uploads go through `astro:assets` like other images. `favicon` uploads: `svg` or `png` only (`.ico` is not supported).
+- **URLs are used directly** — the one exception to "no hotlinked media" (decision 2026-10-29 "Site appearance"). The URL is emitted as-is in `<img src>`, `<link href>` or CSS `url("…")`; it never goes through `astro:assets` (no `image.domains` / `remotePatterns`), and neither the build nor any script fetches it. Validation is syntax only: `https:` scheme, and none of `"`, `'`, `(`, `)`, `\`, `<`, `>` or whitespace (they could break out of the CSS string or attribute); an invalid URL fails the build. A URL that is unreachable, expired or not an image never fails the build; the page degrades as follows: `background` and `banner` (CSS backgrounds) show today's look under the overlay/scrim; `photo` leaves an empty round slot; `logo` falls back to the browser's alt text (the name); `favicon` falls back to the browser's default icon. No client-side JS is added for fallbacks.
+- **Dark look**: when `background` or `banner` resolves to an image, the page uses the dark palette regardless of `prefers-color-scheme`, so the art shows blurred and darkened in its own colours and text stays on dark. No default background or banner image ships.
+- `darken` and `blur` are integers; out of range fails the build; ignored when `background` has no image.
+- **Drafts and duplicates**: files under `src/assets/site/` are referenced from `src/data/profile.json`, a non-entry source file, so the asset file rule always makes them committable ("Drafts stay out of git"); `site/` is not a slug folder and the `work` slug `site` is reserved. They are in the duplicate resolver's scope like any `src/assets/` file. A replaced upload left unreferenced gets the usual `WARNING`.
