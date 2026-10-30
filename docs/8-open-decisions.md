@@ -6,8 +6,6 @@
 - Domain name (only worth it to decouple the URL from the repo name)
 - Banner legibility without a scrim (2026-10-30): if a chosen banner leaves the hero text below WCAG AA contrast, add an optional uniform tint (e.g. reuse a `darken`-style 0–100 % field on `hero`) or keep the image as is? Recommendation: decide after `ui-ux-designer` checks the real banner at desktop and phone width.
 
-- Work pages with no gallery and no posts (2026-10-30, issue #119): with the side column limited to gallery and posts, these pages keep the single narrow text column and the empty right side the user reported (the reported page, `/work/ragassembler2d/`, has neither, and so do most published entries today). Options: (a) keep as is; (b) move Links, Tools, Credits and Related into the side column on wide screens, so every entry with any of them gets two columns; (c) center the single column. User's call.
-
 ## Known issues
 
 Recorded, not specified; investigation belongs in a separate bug issue.
@@ -24,6 +22,13 @@ Recorded, not specified; investigation belongs in a separate bug issue.
 - **Rejected**: CSS `order` or `display: contents` to place the columns (visual order would differ from reading order; `display: contents` has had accessibility bugs); a sticky side column (see Reason); a 1/4–3/4 split like the blog (thumbnails too small); moving the lightbox overlays out of the gallery markup (not needed while the column is not sticky).
 - **Migration**: none. No data format change, no version bump.
 - **Affects**: [section 3](3-pages.md) `/work/<slug>` item and new "Work page layout".
+- **Amendment (user decision 2026-10-30, option (b) of the former Open item "Work pages with no gallery and no posts")**: the side column becomes the project sheet and applies to every work page that has one. Supersedes, in the Decision above, the left/right contents, the "only with gallery or posts" condition and "the document order is unchanged".
+  - **Decision**: the page body is two blocks in document order: the narrative (What I did, description, Fork), then the project sheet (Links, Tools, Credits, Related, gallery, "Posts about this project"). At ≥ 64rem the narrative wrapper is grid column 1 (2/3) and the sheet wrapper column 2 (1/3), one row, same grid and gap as before. With an empty sheet the page stays one 48rem column. Below 64rem: one column, work → What I did → description → Fork → Links → Tools → Credits → Related → gallery → posts. Related goes in the sheet (it is derived from `usedIn`, not prose; on phones it keeps its place after Tools). Fork stays in the narrative, right after the description, so the fork attribution is read with the text it qualifies ([section 6](6-content-rules.md)). Not sticky; lightbox constraints unchanged.
+  - **Reason**: the reported page (`/work/ragassembler2d/`) and most published entries have neither gallery nor posts, so the first version left them unchanged; the user chose (b) over (a) keeping them as is and (c) centering the single column. Wrapping each block and placing the wrappers keeps visual, keyboard and reading order identical, which the earlier interleaved placement (gallery first in the DOM, shown on the right) did not fully do.
+  - **Trade-offs**: on phones and below 64rem the gallery moves from right after the work to near the end, after Related, so visitors on phones see screenshots later; Links (play/download/source) also come after the description and Fork instead of right after the description. On a page with a long description and a short sheet the right column ends early, leaving space under it. A page whose narrative is empty (no contribution, empty body, not a fork) but has a sheet shows an empty left column; no published entry is in that case today (to be checked by the builder).
+  - **Rejected**: CSS `order`, `display: contents` or per-section grid placement to keep the old phone order (visual order would differ from document order); keeping Related in the narrative (on phones it would land before Links, between Fork and the sheet).
+  - **Migration**: none. No data format change, no version bump.
+  - **Affects**: [section 3](3-pages.md) `/work/<slug>` item and "Work page layout"; Open list (item removed).
 
 ### 2026-10-30 — Blog split view: list pane 1/4 (issue #106)
 
