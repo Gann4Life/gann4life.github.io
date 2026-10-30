@@ -5,4 +5,4 @@ if ! command -v node >/dev/null 2>&1; then
   echo "pre-commit: node not found on PATH; drafts cannot be checked." >&2
   exit 1
 fi
-exec node site/scripts/exclude-drafts.mjs --staged
+exec node scripts/exclude-drafts.mjs --staged

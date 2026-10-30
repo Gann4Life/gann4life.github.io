@@ -4,9 +4,9 @@ Project instructions for OpenCode. Read this and `DESIGN.md` (the index) before 
 
 ## What this repo is
 
-- `main` is the live Portfolio v2: a Create React App published to GitHub Pages at `https://gann4life.github.io`.
-- `dev` (formerly `astro-rewrite`) is the rebuild and staging branch, deployed to `https://gann4life.github.io/dev/`: Astro project in `site/`, static output, git-based content. `DESIGN.md` plus `docs/` is the spec.
-- v2 stays intact and deployable until v3 renders equivalent content. Do not delete v2 files to "clean up".
+- `main` is production at `https://gann4life.github.io`: a static maintenance page until the v3 cutover.
+- `dev` (formerly `astro-rewrite`) is the rebuild and staging branch, deployed to `https://gann4life.github.io/dev/`: Astro project at the repo root, static output, git-based content. `DESIGN.md` plus `docs/` is the spec.
+- v2 (Create React App) is retired; it lives in git history and the tag `archive/v2`.
 
 ## Hard rules
 
@@ -22,7 +22,7 @@ Project instructions for OpenCode. Read this and `DESIGN.md` (the index) before 
 1. One issue, one branch: a Conventional Branch (`<type>/issue-<n>-<slug>`) cut from `dev`. `/next` creates it. Releases are a PR from `dev` to `main`.
 2. Read `docs/1-stack.md` and `docs/2-content-model.md` before writing code or content; read `docs/6-content-rules.md` before writing claims.
 3. Keep changes small and single-purpose. One Conventional Commit per coherent step (`<type>(<scope>): <description>`, scopes from the table below).
-4. Verify before committing: run the build script that exists (`npm run build` for v2 today; `npx astro build` once Astro is installed) and, when content changed, validate frontmatter against the schema.
+4. Verify before committing: run `npm run build` at the repo root and, when content changed, validate frontmatter against the schema.
 5. Commit locally. Then report what changed, what was verified, and what is still unproven.
 
 The lead and every agent follow `.claude/github-workflow.md`: branch and commit conventions, the no-comments rule, and `TODO` / `ISSUE` in a user message (or new work found mid-task) going to `planner` as a new issue.
@@ -43,7 +43,7 @@ Subagents cannot launch subagents, so the main session (the lead) orchestrates. 
 | Opus — decides | `ux-reviewer` | After visual changes: screenshots at desktop and phone width, navigation and design findings | No |
 | Opus — decides | `security-auditor` | Before publishing, after new dependencies, workflows or bulk imports: secrets, build leaks, deps, embeds, CI | No |
 | Sonnet — measures | `perf-auditor` | After bulk content or before release: page weight, images, JS, Lighthouse on the built site | No |
-| Sonnet — executes | `astro-builder` | One issue for Astro code in `site/` | Yes, only the files the issue lists |
+| Sonnet — executes | `astro-builder` | One issue for Astro code | Yes, only the files the issue lists |
 | Sonnet — executes | `content-migrator` | One issue for `work` entries | Yes, only the files the issue lists |
 | Sonnet — executes | `doc-writer` | After implementation: README, docs, CHANGELOG/TODO in sync with the code | Docs only |
 | Haiku — reads | `reader` | Lookups: where something is, what a file holds, which entries use a field | No — returns excerpts |
@@ -64,16 +64,16 @@ Executors never decide. A prompt without a work order gets `NEEDS ORDER`; an inc
 | Scopes | `site`, `content`, `docs`, `ci`, `agents` |
 | Remote writes allowed | **Yes** (hard rule 1): `planner` writes the backlog; the lead pushes branches and merges PRs. No force-push |
 | Agents may commit | **No**: the lead commits |
-| Dev server | `npm run dev` in `site/` → `http://localhost:4321` (CMS at `/keystatic`) |
-| Production preview | `npm run build && npm run preview` in `site/`; staging: `$env:DEPLOY_TARGET='staging'` first, every URL must sit under `/dev/` |
+| Dev server | `npm run dev` at the repo root → `http://localhost:4321` (CMS at `/keystatic`) |
+| Production preview | `npm run build && npm run preview` at the repo root; staging: `$env:DEPLOY_TARGET='staging'` first, every URL must sit under `/dev/` |
 | Headless browser | Helium (Chromium): `$env:LOCALAPPDATA\imput\Helium\Application\chrome.exe --headless=new --screenshot=<file> --window-size=W,H --virtual-time-budget=10000 <url>` |
 
 ### OpenCode set
 
 | Agent | Use when | Writes? |
 |---|---|---|
-| `astro-builder` | Astro routes, layouts, components, collection schemas, Pages workflow | Yes, except legacy v2 files, `DESIGN.md`, and `docs/` |
-| `content-migrator` | Turning legacy v2 data into `work` entries, with honest roles and fork credit | Yes, content files |
+| `astro-builder` | Astro routes, layouts, components, collection schemas, Pages workflow | Yes, except `DESIGN.md` and `docs/` |
+| `content-migrator` | Turning legacy data into `work` entries, with honest roles and fork credit | Yes, content files |
 | `design-auditor` | Before committing/merging, or when asked to check drift against the spec (`DESIGN.md` + `docs/`) | No — review only |
 | `media-inspector` | New images/art with no alt text or caption | No — returns text |
 
