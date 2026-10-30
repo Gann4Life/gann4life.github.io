@@ -96,11 +96,11 @@ const work = defineCollection({
         usedIn: z.array(z.string()).default([]),
       })
       .superRefine((entry, ctx) => {
-        if (!entry.draft && !entry.contribution.trim()) {
+        if (!import.meta.env.DEV && !entry.draft && !entry.contribution.trim()) {
           ctx.addIssue({
             code: 'custom',
             path: ['contribution'],
-            message: 'Published entries need `contribution`: what I actually did.',
+            message: 'Published entries need "What I did" (`contribution`) in Keystatic, or tick Draft.',
           });
         }
         if (entry.authorship === 'ai-built') {

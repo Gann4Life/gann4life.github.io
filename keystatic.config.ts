@@ -87,8 +87,8 @@ export default config({
           { label: 'Credits', itemLabel: (props) => props.fields.name.value || 'Credit' },
         ),
         contribution: fields.text({
-          label: 'Contribution',
-          description: 'Exactly what I built/made. On team projects, only my part. Required to publish.',
+          label: 'What I did',
+          description: 'One or two sentences on what you made yourself (not the game description, not the roles). On team projects, only your part. Required to publish.',
           multiline: true,
         }),
         status: fields.select({ label: 'Status', options: options(STATUSES), defaultValue: 'in-development' }),
@@ -157,11 +157,12 @@ export default config({
       schema: {
         title: titleWithSlug('URL of the post: /blog/<slug>.', ['page']),
         date: fields.date({ label: 'Date', defaultValue: { kind: 'today' }, validation: { isRequired: true } }),
-        summary: fields.text({ label: 'Summary', description: 'One line: home tile subtitle, post subheading and page description.' }),
+        summary: fields.text({ label: 'Summary', description: 'One line: post subheading and page description.' }),
         cover: fields.image({ label: 'Cover', directory: 'src/assets/blog', publicPath: '../../assets/blog/' }),
-        work: fields.array(fields.text({ label: 'Work slug' }), {
+        work: fields.array(fields.relationship({ label: 'Project', collection: 'work', validation: { isRequired: true } }), {
           label: 'Related work',
-          itemLabel: (props) => props.value || 'Slug',
+          description: 'Projects this post is about; the post is listed on their pages.',
+          itemLabel: (props) => props.value ?? 'Choose a project',
         }),
         pinned: fields.checkbox({ label: 'Pinned', description: 'Listed above all other posts on the home page and the blog list, newest pinned first.' }),
         featured: fields.checkbox({
