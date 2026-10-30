@@ -6,9 +6,67 @@ type Link = Work['data']['links'][number];
 
 /** Work entries, newest first; drafts only on the dev server. */
 export async function getWork(): Promise<Work[]> {
-  return (await getCollection('work', (e) => import.meta.env.DEV || !e.data.draft)).sort(
+  const entries = (await getCollection('work', (e) => import.meta.env.DEV || !e.data.draft)).sort(
     (a, b) => b.data.started.getTime() - a.data.started.getTime(),
   );
+  assertToolSlugs(entries);
+  return entries;
+}
+
+/** URL slug of a tool name (docs/2-content-model.md "Tool pages"); may be empty. */
+export function toolSlug(name: string): string {
+  return name
+    .normalize('NFKD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase()
+    .replace(/#/g, ' sharp ')
+    .replace(/\+/g, ' plus ')
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function assertToolSlugs(entries: Work[]): void {
+  const spellings = new Map<string, Map<string, string[]>>();
+  for (const entry of entries) {
+    for (const tool of entry.data.tools) {
+      const slug = toolSlug(tool);
+      const byName = spellings.get(slug) ?? new Map<string, string[]>();
+      const ids = byName.get(tool) ?? [];
+      if (!ids.includes(entry.id)) ids.push(entry.id);
+      byName.set(tool, ids);
+      spellings.set(slug, byName);
+    }
+  }
+  const problems: string[] = [];
+  for (const [slug, byName] of spellings) {
+    if (slug === '') {
+      for (const [name, ids] of byName) problems.push(`  "${name}" has no letters or digits: ${ids.join(', ')}`);
+    } else if (byName.size > 1) {
+      problems.push(`  "${slug}": ${[...byName].map(([name, ids]) => `"${name}" (${ids.join(', ')})`).join(', ')}`);
+    }
+  }
+  if (problems.length > 0)
+    throw new Error(
+      `Tool names fail the slug rule (docs/2-content-model.md, "Tool pages"); fix the spelling in the entries:\n${problems.join('\n')}`,
+    );
+}
+
+/** Tools that have entries, one group per slug, each with its entries (featured first); groups sorted by slug. */
+export function toolGroups(entries: Work[]): { slug: string; name: string; entries: Work[] }[] {
+  assertToolSlugs(entries);
+  const groups = new Map<string, { slug: string; name: string; entries: Work[] }>();
+  for (const entry of entries) {
+    for (const tool of entry.data.tools) {
+      const slug = toolSlug(tool);
+      const group = groups.get(slug) ?? { slug, name: tool, entries: [] };
+      if (!group.entries.includes(entry)) group.entries.push(entry);
+      groups.set(slug, group);
+    }
+  }
+  return [...groups.values()]
+    .map((g) => ({ ...g, entries: g.entries.sort((a, b) => Number(b.data.featured) - Number(a.data.featured)) }))
+    .sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0));
 }
 
 /** Home categories (docs/3-pages.md): each groups kinds and has a page at /work/c/<key>/; hobby categories are shown apart from professional work. */
