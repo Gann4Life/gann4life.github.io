@@ -82,18 +82,6 @@ export function listOrder(posts: Post[]): Post[] {
   return [...sorted.filter((p) => p.data.pinned), ...sorted.filter((p) => !p.data.pinned)];
 }
 
-/**
- * Home order (docs/2-content-model.md "Post order"): pinned newest first, then the newest non-pinned featured post, then the rest newest first; no duplicates.
- * Does not mutate the input.
- */
-export function homeOrder(posts: Post[]): Post[] {
-  const sorted = [...posts].sort(byDateThenSlug);
-  const pinned = sorted.filter((p) => p.data.pinned);
-  const featured = sorted.find((p) => p.data.featured && !p.data.pinned);
-  const rest = sorted.filter((p) => !p.data.pinned && p !== featured);
-  return [...pinned, ...(featured ? [featured] : []), ...rest];
-}
-
 /** Posts per list page in the blog split view. */
 export const POSTS_PER_PAGE = 20;
 

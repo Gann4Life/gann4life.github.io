@@ -163,7 +163,7 @@ summary: ""           # optional, one line: list subtitle, page subheading, meta
 cover: "../../assets/blog/cover.png"   # optional, in-repo image (rule 6)
 work: []              # optional: slugs of related `work` entries
 pinned: false         # optional: listed first everywhere posts are listed (see "Post order")
-featured: false       # optional: promoted on the home page, "Featured" marker on /blog/ (see "Post order")
+featured: false       # optional: "Featured" marker in the /blog/ list only; no effect on order or on the home (see "Post order")
 draft: false          # same semantics as `work`; see "Drafts stay out of git"
 ---
 
@@ -174,9 +174,9 @@ Post body in Markdown. Body images go in `src/assets/blog/`.
 - Adding `pinned` and `featured` (2026-10-30) is not a breaking change: both are optional with a `false` default, existing posts stay valid unchanged; no version bump, no migration.
 - **Post order** (posts the build includes; ties on `date` break by slug, ascending):
   - **List order** — `/blog/` list, `/work/<slug>` "Posts about this project": pinned posts, newest first; then every other post, newest first. `featured` does not reorder lists; on `/blog/` it only adds the "Featured" marker.
-  - **Home order** — home "Latest posts": pinned posts, newest first; then the newest featured post that is not pinned (one at most); then the remaining posts, newest first; no post appears twice; the first 3 are shown.
-- **Markers**: in the `/blog/` list, "Pinned" for `pinned`, "Featured" for `featured`, and "Draft" for drafts on the dev server. The home section shows no markers.
-- `cover`: thumbnail in the home "Latest posts" tiles, decorative cover at the top of the post (`alt=""`), and the post's Open Graph image (1200 px wide PNG). Keystatic stores covers and body images in the shared `src/assets/blog/`; draft-only images there stay local under the asset file rule.
+  - **Home order** — home "Blog" feed: the same as list order (pinned posts, newest first; then every other post, newest first); the first 3 are shown. `featured` plays no part (issue #111).
+- **Markers**: in the `/blog/` list, "Pinned" for `pinned`, "Featured" for `featured`, and "Draft" for drafts on the dev server. The `/blog/` reader and the home "Blog" feed show only "Draft" (dev server), never "Pinned" or "Featured".
+- `cover`: decorative cover (`alt=""`) above the body wherever the post is rendered in full (post page, `/blog/` reader, home "Blog" feed), and the post's Open Graph image (1200 px wide PNG). Keystatic stores covers and body images in the shared `src/assets/blog/`; draft-only images there stay local under the asset file rule.
 - `work`: rendered as "Related work" links at the end of the post. A slug that matches no `work` entry at all fails the build; a slug of a draft `work` entry is skipped without an error (production drops drafts). Checked for every post the build includes (drafts are dropped first); the dev server only skips unknown slugs. Each `work` page lists the published posts that name it ([section 3](3-pages.md)).
 - `draft`: identical to `work`. A missing `draft` means published; Keystatic starts new posts as drafts. Drafts show on the dev server (marked "Draft") and are dropped from production builds, images included. They stay out of git under the same exclude script and hook.
 - Routes: `/blog/`, `/blog/page/<n>/` and `/blog/<slug>/`, all one split view (post list + reader) ([section 3](3-pages.md)). The post slug `page` is reserved. The header "Blog" link and the sitemap's blog URLs appear only when at least one post is published.

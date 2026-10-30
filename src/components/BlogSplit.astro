@@ -1,11 +1,8 @@
 ---
-import { Picture } from 'astro:assets';
-import { render } from 'astro:content';
-import EditLink from './EditLink.astro';
 import Pager from './Pager.astro';
+import PostArticle from './PostArticle.astro';
 import { profile } from '../profile';
 import { formatDate, type Post } from '../lib/blog';
-import { getWork } from '../lib/work';
 import { withBase } from '../lib/paths';
 
 /** Blog split view (docs/3-pages.md): list pane + reader for the selected post; mode 'index' for /blog/ and /blog/page/<n>/, 'post' for /blog/<slug>/. */
@@ -18,10 +15,6 @@ interface Props {
 }
 
 const { mode, posts, selected, current, last } = Astro.props;
-const { data } = selected;
-const { Content } = await render(selected);
-const related = (await getWork()).filter((e) => data.work.includes(e.id));
-const RelatedHeading = mode === 'post' ? 'h2' : 'h3';
 ---
 
 <main class:list={['blog', mode === 'index' ? 'blog--index' : 'blog--post']}>
@@ -50,38 +43,7 @@ const RelatedHeading = mode === 'post' ? 'h2' : 'h3';
     </aside>
     <article class="blog__reader">
       {mode === 'post' && <p class="blog__back"><a href={withBase('/blog/')}>← All posts</a></p>}
-      <EditLink path={`collection/blog/item/${selected.id}`} />
-      <p class="detail__meta">
-        <time datetime={data.date.toISOString()}>{formatDate(data.date)}</time>
-        {data.draft && <span class="draft-note">Draft</span>}
-      </p>
-      {mode === 'index' ? (
-        <h2 class="blog__post-title"><a href={withBase(`/blog/${selected.id}/`)}>{data.title}</a></h2>
-      ) : (
-        <h1 class="blog__post-title">{data.title}</h1>
-      )}
-      {data.summary && <p class="detail__position">{data.summary}</p>}
-      {data.cover && (
-        <Picture
-          class="detail__cover"
-          src={data.cover}
-          formats={['avif', 'webp']}
-          widths={[640, 1280, 1920]}
-          sizes="(max-width: 48rem) 100vw, 60vw"
-          alt=""
-        />
-      )}
-      <div class="prose">
-        <Content />
-      </div>
-      {related.length > 0 && (
-        <section class="detail__section">
-          <RelatedHeading>Related work</RelatedHeading>
-          <ul class="related">
-            {related.map((e) => <li><a href={withBase(`/work/${e.id}/`)}>{e.data.title}</a></li>)}
-          </ul>
-        </section>
-      )}
+      <PostArticle post={selected} level={mode === 'post' ? 1 : 2} link={mode === 'index'} />
     </article>
   </div>
 </main>
