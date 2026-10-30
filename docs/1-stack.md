@@ -93,13 +93,13 @@ Edits the everyday fields of a `work` entry on its own rendered page (`/work/<sl
 **Request checks** (all requests; any failure → `403`, nothing read or written)
 - Remote address is loopback: `127.0.0.1`, `::1` or `::ffff:127.0.0.1`. So `astro dev --host` on a LAN still refuses other machines.
 - `Host` header hostname is `localhost`, `127.0.0.1` or `[::1]` (blocks DNS rebinding).
-- `PUT` only: `Origin` present and equal to `http://<Host>`; `Content-Type` is `application/json` (cross-origin pages cannot send it without a preflight, and the middleware never answers preflights or sets CORS headers); `Sec-Fetch-Site`, when sent, is `same-origin`.
+- `PUT` only: `Origin` present and equal to `http://<Host>`; `Content-Type` is `application/json` (cross-origin pages cannot send it without a preflight, and the middleware never answers preflights or sets CORS headers; it sits ahead of Vite's own CORS middleware, which would otherwise answer both for any localhost origin); `Sec-Fetch-Site`, when sent, is `same-origin`.
 - No other methods: `405`.
 
 **Files touched**
 - `<id>` must match `^[a-z0-9]+(?:-[a-z0-9]+)*$`. The file is found among the top-level `src/content/work/*.md` files by the id rule of the glob loader: explicit top-level `slug:` (read as in [section 2](2-content-model.md) "Frontmatter parsing"), else the file name without `.md`. Nested folders are not supported (`404`). The resolved real path (symlinks followed) must sit inside `src/content/work/`; anything else is `404`.
 - The editor only edits existing entries: it never creates, renames or deletes an entry or any other file. Changing the title does not change the slug or the file name.
-- Write: to a temporary file `.<file name>.editor-tmp` in the same folder (no `.md` ending, so the content loader and the exclude script ignore it; `.gitignore` lists `*.editor-tmp`), then renamed over the entry. No shell, no `child_process`, no `eval`, no dynamic import of request data.
+- Write: to a temporary file `.<file name>.<random UUID>.editor-tmp` in the same folder, created exclusively (`wx`, so an existing file or symlink at that name is never followed) (no `.md` ending, so the content loader and the exclude script ignore it; `.gitignore` lists `*.editor-tmp`), then renamed over the entry. No shell, no `child_process`, no `eval`, no dynamic import of request data.
 
 **File format** (what a save writes)
 - The file is split at the leading `---` block ([section 2](2-content-model.md) "Frontmatter parsing" boundaries; CRLF accepted on read). The frontmatter is read with `js-yaml` `load` (default schema, as Keystatic), the allowed keys are replaced in place (a key not yet present is appended at the end; `ended: null` removes the key), and the whole entry is validated with `workSchema(z.string())` before anything is written.
