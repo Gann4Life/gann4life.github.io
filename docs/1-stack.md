@@ -42,7 +42,7 @@ One repo, one Pages site (GitHub Pages serves a single site per repo), two envir
 - The file is identical on `main` and `dev`: GitHub runs the copy on the pushed branch, so both branches must carry it.
 - Every run builds **both** branches, whichever was pushed: it checks out `main` and `dev` into separate directories, builds each, and assembles one artifact with the `main` output at the root and the `dev` output in `dev/`. Then `actions/upload-pages-artifact` and `actions/deploy-pages` publish it. If either build fails, nothing is deployed and the previous deployment stays live.
 - Build detection, per checkout:
-  - if the root `package.json` exists and lists `astro` in `dependencies` or `devDependencies`, it is the Astro site: `npm ci && npm run build` at the checkout root, output `dist/`;
+  - if the root `package.json` exists and lists `astro` in `dependencies` or `devDependencies`, it is the Astro site: `npm ci && npm run dupes && npm run build` at the checkout root, output `dist/` (`npm run dupes` is the duplicate-media check, [section 2](2-content-model.md) "Duplicate media files": it fails the run on duplicates and never writes);
   - otherwise, if the checkout root has an `index.html`, it is a static site: the checkout's files are published as-is, minus `.git/` and `.github/` (no install, no build);
   - otherwise the run fails.
 - So until cutover `main` publishes the static maintenance page and `dev` builds Astro; after cutover both build Astro. Staging is only ever built from Astro: a `dev` checkout detected as static, or with neither case, fails the run. v2 is never built: a root `package.json` without `astro` (e.g. `react-scripts`) is ignored by detection.
