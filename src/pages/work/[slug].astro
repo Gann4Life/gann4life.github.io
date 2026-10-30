@@ -17,7 +17,7 @@ import {
   year,
   type Work,
 } from '../../lib/work';
-import { formatDate, getPosts } from '../../lib/blog';
+import { formatDate, getPosts, listOrder } from '../../lib/blog';
 import { withBase } from '../../lib/paths';
 import { profile } from '../../profile';
 
@@ -42,7 +42,7 @@ const { Content } = await render(entry);
 const bySlug = new Map(all.map((e) => [e.id, e]));
 const usedIn = data.usedIn.map((slug) => bySlug.get(slug)).filter((e): e is Work => Boolean(e));
 const features = all.filter((e) => e.data.usedIn.includes(entry.id));
-const posts = (await getPosts()).filter((p) => !p.data.draft && p.data.work.includes(entry.id));
+const posts = listOrder((await getPosts()).filter((p) => !p.data.draft && p.data.work.includes(entry.id)));
 
 const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', width: 1200 })).src : undefined;
 ---
