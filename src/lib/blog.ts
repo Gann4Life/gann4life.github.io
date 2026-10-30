@@ -94,5 +94,19 @@ export function homeOrder(posts: Post[]): Post[] {
   return [...pinned, ...(featured ? [featured] : []), ...rest];
 }
 
+/** Posts per list page in the blog split view. */
+export const POSTS_PER_PAGE = 20;
+
+/**
+ * List order cut into pages of POSTS_PER_PAGE posts; an empty array when there are no posts.
+ * Does not mutate the input.
+ */
+export function listPages(posts: Post[]): Post[][] {
+  const ordered = listOrder(posts);
+  const pages: Post[][] = [];
+  for (let i = 0; i < ordered.length; i += POSTS_PER_PAGE) pages.push(ordered.slice(i, i + POSTS_PER_PAGE));
+  return pages;
+}
+
 export const formatDate = (date: Date) =>
   date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });

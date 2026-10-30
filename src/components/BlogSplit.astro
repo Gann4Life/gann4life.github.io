@@ -1,0 +1,87 @@
+---
+import { Picture } from 'astro:assets';
+import { render } from 'astro:content';
+import EditLink from './EditLink.astro';
+import Pager from './Pager.astro';
+import { profile } from '../profile';
+import { formatDate, type Post } from '../lib/blog';
+import { getWork } from '../lib/work';
+import { withBase } from '../lib/paths';
+
+/** Blog split view (docs/3-pages.md): list pane + reader for the selected post; mode 'index' for /blog/ and /blog/page/<n>/, 'post' for /blog/<slug>/. */
+interface Props {
+  mode: 'index' | 'post';
+  posts: Post[];
+  selected: Post;
+  current: number;
+  last: number;
+}
+
+const { mode, posts, selected, current, last } = Astro.props;
+const { data } = selected;
+const { Content } = await render(selected);
+const related = (await getWork()).filter((e) => data.work.includes(e.id));
+const RelatedHeading = mode === 'post' ? 'h2' : 'h3';
+---
+
+<main class:list={['blog', mode === 'index' ? 'blog--index' : 'blog--post']}>
+  <div class="blog__split">
+    <aside class="blog__side">
+      <p class="hero__kicker"><a href={withBase('/')}>{profile.name}</a> / Blog</p>
+      {mode === 'index' ? <h1 class="blog__title">Blog</h1> : <p class="blog__title">Blog</p>}
+      <nav aria-label="Posts">
+        <ol class="post-list">
+          {posts.map((p) => (
+            <li>
+              <a href={withBase(`/blog/${p.id}/`)} aria-current={p.id === selected.id ? 'page' : undefined}>
+                <span class="post-list__title">{p.data.title}</span>
+                <span class="post-list__meta">
+                  <time datetime={p.data.date.toISOString()}>{formatDate(p.data.date)}</time>
+                  {p.data.pinned && <span class="mark mark--pinned">Pinned</span>}
+                  {p.data.featured && <span class="mark mark--featured">Featured</span>}
+                  {p.data.draft && <span class="mark mark--draft">Draft</span>}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+      <Pager compact current={current} last={last} href={(n) => withBase(n === 1 ? '/blog/' : `/blog/page/${n}/`)} />
+    </aside>
+    <article class="blog__reader">
+      {mode === 'post' && <p class="blog__back"><a href={withBase('/blog/')}>← All posts</a></p>}
+      <EditLink path={`collection/blog/item/${selected.id}`} />
+      <p class="detail__meta">
+        <time datetime={data.date.toISOString()}>{formatDate(data.date)}</time>
+        {data.draft && <span class="draft-note">Draft</span>}
+      </p>
+      {mode === 'index' ? (
+        <h2 class="blog__post-title"><a href={withBase(`/blog/${selected.id}/`)}>{data.title}</a></h2>
+      ) : (
+        <h1 class="blog__post-title">{data.title}</h1>
+      )}
+      {data.summary && <p class="detail__position">{data.summary}</p>}
+      {data.cover && (
+        <Picture
+          class="detail__cover"
+          src={data.cover}
+          formats={['avif', 'webp']}
+          widths={[640, 1280, 1920]}
+          sizes="(max-width: 48rem) 100vw, 60vw"
+          alt=""
+        />
+      )}
+      <div class="prose">
+        <Content />
+      </div>
+      {related.length > 0 && (
+        <section class="detail__section">
+          <RelatedHeading>Related work</RelatedHeading>
+          <ul class="related">
+            {related.map((e) => <li><a href={withBase(`/work/${e.id}/`)}>{e.data.title}</a></li>)}
+          </ul>
+        </section>
+      )}
+    </article>
+  </div>
+</main>

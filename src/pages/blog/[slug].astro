@@ -1,60 +1,31 @@
 ---
-import { Picture, getImage } from 'astro:assets';
-import { render } from 'astro:content';
+import { getImage } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import EditLink from '../../components/EditLink.astro';
-import { formatDate, getPosts, type Post } from '../../lib/blog';
-import { getWork } from '../../lib/work';
-import { withBase } from '../../lib/paths';
+import BlogSplit from '../../components/BlogSplit.astro';
+import { getPosts, listPages, type Post } from '../../lib/blog';
 
 export async function getStaticPaths() {
-  return (await getPosts()).map((post) => ({ params: { slug: post.id }, props: { post } }));
+  const pages = listPages(await getPosts());
+  return pages.flatMap((posts, i) =>
+    posts.map((post) => ({
+      params: { slug: post.id },
+      props: { post, posts, current: i + 1, last: pages.length },
+    })),
+  );
 }
 
 interface Props {
   post: Post;
+  posts: Post[];
+  current: number;
+  last: number;
 }
 
-const { post } = Astro.props;
+const { post, posts, current, last } = Astro.props;
 const { data } = post;
-const { Content } = await render(post);
-const related = (await getWork()).filter((e) => data.work.includes(e.id));
 const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', width: 1200 })).src : undefined;
 ---
 
 <BaseLayout title={data.title} description={data.summary || undefined} image={ogImage}>
-  <main class="page post">
-    <header class="detail__header">
-      <EditLink path={`collection/blog/item/${post.id}`} />
-      <p class="detail__meta">
-        <a href={withBase('/blog/')}>Blog</a>
-        <time datetime={data.date.toISOString()}>{formatDate(data.date)}</time>
-        {data.draft && <span class="draft-note">Draft</span>}
-      </p>
-      <h1>{data.title}</h1>
-      {data.summary && <p class="detail__position">{data.summary}</p>}
-    </header>
-    {data.cover && (
-      <Picture
-        class="detail__cover"
-        src={data.cover}
-        formats={['avif', 'webp']}
-        widths={[640, 1280, 1920]}
-        sizes="(max-width: 64rem) 100vw, 60rem"
-        alt=""
-      />
-    )}
-    <article class="prose">
-      <Content />
-    </article>
-    {related.length > 0 && (
-      <section class="detail__section">
-        <h2>Related work</h2>
-        <ul class="related">
-          {related.map((e) => <li><a href={withBase(`/work/${e.id}/`)}>{e.data.title}</a></li>)}
-        </ul>
-      </section>
-    )}
-    <p><a href={withBase('/blog/')}>← All posts</a></p>
-  </main>
+  <BlogSplit mode="post" posts={posts} selected={post} current={current} last={last} />
 </BaseLayout>
