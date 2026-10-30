@@ -3,7 +3,6 @@ import { getWork, groupByCategory } from '../lib/work';
 import { getPosts } from '../lib/blog';
 import { withBase } from '../lib/paths';
 
-// Static sitemap of every published page (drafts never reach the build).
 export const GET: APIRoute = async ({ site }) => {
   const work = await getWork();
   const posts = await getPosts();

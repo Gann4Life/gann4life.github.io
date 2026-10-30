@@ -1,16 +1,10 @@
 import { z } from 'astro/zod';
 import data from './data/profile.json';
 
-/*
- * Site profile — docs/2-content-model.md, "Profile". Edited from the
- * Keystatic "Profile" singleton; validated here so a bad edit fails the build.
- */
-
 const schema = z.object({
   name: z.string().min(1),
   tagline: z.string().default(''),
   bio: z.string().default(''),
-  // YouTube/Vimeo URL shown as the home page banner.
   reel: z.union([z.url(), z.literal('')]).default(''),
   links: z
     .array(
@@ -22,4 +16,5 @@ const schema = z.object({
     .default([]),
 });
 
+/** Site profile from src/data/profile.json, validated at build time; reel is a YouTube/Vimeo URL shown as the home banner. */
 export const profile = schema.parse(data);

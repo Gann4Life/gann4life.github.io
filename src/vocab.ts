@@ -1,10 +1,3 @@
-/*
- * Closed vocabularies for the `work` collection — docs/2-content-model.md.
- * Shared by the Zod schema (src/content.config.ts) and the Keystatic admin
- * (keystatic.config.ts) so both always offer the same values. Filtering by
- * kind, context and role depends on these lists staying closed.
- */
-
 export const KINDS = [
   'software',
   'game',
@@ -31,7 +24,7 @@ export const ROLES = [
   'musician',
 ] as const;
 
-// Roles that claim hands-on implementation; never allowed on ai-built entries.
+/** Roles that claim hands-on implementation; never allowed on ai-built entries. */
 export const IMPLEMENTATION_ROLES: readonly (typeof ROLES)[number][] = ['programmer', 'animator', 'artist', 'musician'];
 
 export const AUTHORSHIP =['hand-made', 'ai-assisted', 'ai-built'] as const;
@@ -56,7 +49,7 @@ export const LINK_TYPES = [
   'other',
 ] as const;
 
-// Text shown when a link has no custom `label`.
+/** Text shown when a link has no custom label. */
 export const LINK_LABELS: Record<(typeof LINK_TYPES)[number], string> = {
   source: 'Source code',
   play: 'Play',

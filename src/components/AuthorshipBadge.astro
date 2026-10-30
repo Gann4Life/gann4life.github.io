@@ -3,15 +3,14 @@ import type { CollectionEntry } from 'astro:content';
 
 type Authorship = CollectionEntry<'work'>['data']['authorship'];
 
+/** AI authorship badge; hand-made gets none. explain adds the one-line explanation from docs/2-content-model.md. */
 interface Props {
   authorship?: Authorship | null;
-  // Detail pages add the one-line explanation from docs/2-content-model.md.
   explain?: boolean;
 }
 
 const { authorship, explain = false } = Astro.props;
 
-// Hand-made is the default and gets no label; only AI involvement is flagged.
 const LABELS: Partial<Record<Authorship, string>> = {
   'ai-assisted': 'AI-assisted',
   'ai-built': 'AI-built',

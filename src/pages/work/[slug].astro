@@ -38,7 +38,6 @@ const { data } = entry;
 const category = categoryOf(entry);
 const { Content } = await render(entry);
 
-// usedIn works both ways (docs/2-content-model.md).
 const bySlug = new Map(all.map((e) => [e.id, e]));
 const usedIn = data.usedIn.map((slug) => bySlug.get(slug)).filter((e): e is Work => Boolean(e));
 const features = all.filter((e) => e.data.usedIn.includes(entry.id));
@@ -64,7 +63,6 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
       <AuthorshipBadge authorship={data.authorship} explain />
     </header>
 
-    {/* The work itself comes first: embeds, then the cover when there is nothing to embed. */}
     <Media items={data.media} title={data.title} />
     {data.media.length === 0 && data.cover && (
       <Picture

@@ -4,18 +4,14 @@ import { LINK_LABELS } from '../vocab';
 export type Work = CollectionEntry<'work'>;
 type Link = Work['data']['links'][number];
 
-// Newest first; featured order follows the same rule. Drafts only on the dev server.
+/** Work entries, newest first; drafts only on the dev server. */
 export async function getWork(): Promise<Work[]> {
   return (await getCollection('work', (e) => import.meta.env.DEV || !e.data.draft)).sort(
     (a, b) => b.data.started.getTime() - a.data.started.getTime(),
   );
 }
 
-/*
- * Home categories (docs/3-pages.md): each groups one or more kinds and has a
- * page at /work/c/<key>/. Only categories with entries are shown.
- */
-// `hobby` categories are shown apart from professional work on the home page.
+/** Home categories (docs/3-pages.md): each groups kinds and has a page at /work/c/<key>/; hobby categories are shown apart from professional work. */
 export const CATEGORIES = [
   { key: 'games', label: 'Games', kinds: ['game'], hobby: false, noun: ['game', 'games'] },
   { key: 'animation', label: 'Animation', kinds: ['animation'], hobby: false, noun: ['animation', 'animations'] },
@@ -30,7 +26,7 @@ export type Category = (typeof CATEGORIES)[number];
 export const categoryOf = (entry: Work): Category =>
   CATEGORIES.find((c) => (c.kinds as readonly string[]).includes(entry.data.kind)) ?? CATEGORIES[CATEGORIES.length - 1];
 
-// Categories that have entries, each with its entries (newest first, featured first).
+/** Categories that have entries, each with its entries, featured first. */
 export function groupByCategory(entries: Work[]) {
   return CATEGORIES.map((category) => ({
     category,
@@ -40,7 +36,7 @@ export function groupByCategory(entries: Work[]) {
   })).filter((g) => g.entries.length > 0);
 }
 
-// Line shown over a thumbnail. Authorship is flagged only when AI was involved.
+/** Line shown over a thumbnail; authorship appears only when AI was involved. */
 export function tileMeta(entry: Work, { showKind = true } = {}) {
   const d = entry.data;
   return [
@@ -56,7 +52,7 @@ export function tileMeta(entry: Work, { showKind = true } = {}) {
 
 export const linkText = (link: Link) => link.label || LINK_LABELS[link.type];
 
-// Dates are stored as UTC midnight, so read the year in UTC.
+/** Start year, read in UTC (dates are stored as UTC midnight). */
 export const year = (entry: Work) => entry.data.started.getUTCFullYear();
 
 export const KIND_LABELS: Record<Work['data']['kind'], string> = {
@@ -98,10 +94,7 @@ export const STATUS_LABELS: Record<Work['data']['status'], string> = {
   archived: 'Archived',
 };
 
-/*
- * Site-wide skills: tools from hand-made and ai-assisted entries only
- * (docs/2-content-model.md). ai-built tools never count. Most used first.
- */
+/** Site-wide skills: tools of hand-made and ai-assisted entries only, most used first. */
 export function skills(entries: Work[]): string[] {
   const counts = new Map<string, number>();
   for (const entry of entries) {
@@ -111,10 +104,7 @@ export function skills(entries: Work[]): string[] {
   return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([tool]) => tool);
 }
 
-/*
- * Embed URL for a media src, or null when it should render natively
- * (local file) or only as a link (unknown host).
- */
+/** Embed URL for a media src, or null when it renders natively (local file) or only as a link (unknown host, itch.io page). */
 export function embedUrl(type: string, src: string): string | null {
   let url: URL;
   try {
@@ -136,11 +126,9 @@ export function embedUrl(type: string, src: string): string | null {
     if (host === 'soundcloud.com')
       return `https://w.soundcloud.com/player/?url=${encodeURIComponent(src)}&color=%23ff5500&visual=false`;
     if (host === 'w.soundcloud.com') return src;
-    // Bandcamp only embeds through its EmbeddedPlayer URL ("Share/Embed" on the album page).
     if (host === 'bandcamp.com' && url.pathname.startsWith('/EmbeddedPlayer')) return src;
   }
   if (type === 'webgl') {
-    // itch.io pages cannot be framed; `npm run add` stores the embed-upload URL.
     if (host.endsWith('.itch.io')) return null;
     return src;
   }

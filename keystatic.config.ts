@@ -12,21 +12,11 @@ import {
   TEAMS,
 } from './src/vocab';
 
-/*
- * Keystatic admin — docs/1-stack.md (local mode).
- * `work` fields mirror src/content.config.ts; that Zod schema stays the source
- * of truth and still validates whatever Keystatic writes at build time.
- */
-
 const options = (values: readonly string[]) => values.map((value) => ({ label: value, value }));
 
-// Images land in src/assets/<slug>/... and are stored as paths relative to the
-// entry file, which is what astro:assets reads.
 const entryImage = (label: string) =>
   fields.image({ label, directory: 'src/assets', publicPath: '../../assets/' });
 
-// Title plus a slug generated from it while typing; the slug stays editable.
-// `c` is reserved for the category pages (/work/c/<category>/).
 const titleWithSlug = (description: string) =>
   fields.slug({
     name: { label: 'Title', validation: { isRequired: true } },
@@ -44,8 +34,6 @@ export default config({
     work: collection({
       label: 'Work',
       path: 'src/content/work/*',
-      // `slug` is written to frontmatter and also names the file.
-      // The slug is generated from the title (editable) and becomes the file name.
       slugField: 'title',
       format: { contentField: 'body' },
       columns: ['kind', 'draft', 'status'],

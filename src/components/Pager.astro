@@ -1,10 +1,7 @@
 ---
 import type { Page } from 'astro';
 
-/*
- * Page navigation for paginated collections. Shows first, last, and the
- * pages around the current one; renders nothing when there is one page.
- */
+/** Page navigation for paginated collections: first, last and pages around the current one; renders nothing for a single page. */
 interface Props {
   page: Page<unknown>;
 }
@@ -12,7 +9,6 @@ interface Props {
 const { page } = Astro.props;
 const { currentPage: current, lastPage: last } = page;
 
-// /work/c/art/ is page 1; /work/c/art/2/ onwards.
 const base = page.url.current.replace(/\/\d+\/?$/, '').replace(/\/$/, '');
 const href = (n: number) => (n === 1 ? `${base}/` : `${base}/${n}/`);
 

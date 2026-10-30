@@ -14,16 +14,6 @@ import {
   TEAMS,
 } from './vocab';
 
-/*
- * `work` collection schema — docs/2-content-model.md, field-for-field.
- * Enums are closed (src/vocab.ts): filtering depends on a fixed vocabulary.
- */
-
-/*
- * Production builds drop drafts from the content store. Astro bundles every
- * image an entry in the store references, so filtering drafts only in
- * getWork()/getPosts() still shipped their images. The dev server keeps them.
- */
 const keepDrafts = import.meta.env.DEV;
 function withoutDrafts(loader: Loader): Loader {
   return {
@@ -45,8 +35,6 @@ const work = defineCollection({
     z
       .object({
         title: z.string().min(1),
-        // Optional: the file name is the slug (entry.id). Older files still carry it.
-        // `c` is taken by the category pages at /work/c/<category>/.
         slug: z
           .string()
           .min(1)
@@ -54,12 +42,10 @@ const work = defineCollection({
           .optional(),
         kind: z.enum(KINDS),
         context: z.enum(CONTEXTS).default('personal'),
-        // Free-text title actually held, e.g. on someone else's project.
         position: z.string().default(''),
         roles: z.array(z.enum(ROLES)).default([]),
         authorship: z.enum(AUTHORSHIP),
         origin: z.enum(ORIGINS),
-        // Empty for original work; required for forks (enforced below).
         upstream: z.union([z.url(), z.literal('')]).default(''),
         team: z.enum(TEAMS),
         credits: z
@@ -71,16 +57,12 @@ const work = defineCollection({
             }),
           )
           .default([]),
-        // Required once published; drafts from the importer start empty.
         contribution: z.string().default(''),
         status: z.enum(STATUSES),
         started: z.coerce.date(),
         featured: z.boolean(),
-        // Drafts show on the dev server only and never ship.
         draft: z.boolean().default(false),
         tools: z.array(z.string()).default([]),
-        // Local image only: docs/1-stack.md keeps images in the repo and
-        // rule 6 forbids hotlinked media.
         cover: image().optional(),
         gallery: z
           .array(
@@ -94,14 +76,11 @@ const work = defineCollection({
           .array(
             z.object({
               type: z.enum(MEDIA_TYPES),
-              // Embed URL or a local path in public/ (e.g. an MP4).
               src: z.string().min(1),
               caption: z.string().default(''),
             }),
           )
           .default([]),
-        // All optional, any mix: `type` picks icon and default label,
-        // `label` overrides the text.
         links: z
           .array(
             z.object({
@@ -121,8 +100,6 @@ const work = defineCollection({
             message: 'Published entries need `contribution`: what I actually did.',
           });
         }
-        // docs/2-content-model.md, "AI-built (vibe-coded) projects": the
-        // generated part is never claimed as implementation work.
         if (entry.authorship === 'ai-built') {
           const claimed = entry.roles.filter((role) => IMPLEMENTATION_ROLES.includes(role));
           if (claimed.length > 0) {
@@ -140,8 +117,6 @@ const work = defineCollection({
             });
           }
         }
-        // docs/2-content-model.md, "Forks": upstream link plus credit to the
-        // original authors. Both are honesty requirements, not new fields.
         if (entry.origin === 'fork') {
           if (!entry.upstream) {
             ctx.addIssue({
@@ -161,21 +136,15 @@ const work = defineCollection({
       }),
 });
 
-/*
- * `blog` collection — devlogs and posts, written in /keystatic.
- * One file per post: src/content/blog/<slug>.md.
- */
 const blog = defineCollection({
   loader: withoutDrafts(glob({ pattern: '**/*.md', base: './src/content/blog' })),
   schema: ({ image }) =>
     z.object({
       title: z.string().min(1),
-      // Optional: the file name is the slug (entry.id).
       slug: z.string().min(1).optional(),
       date: z.coerce.date(),
       summary: z.string().default(''),
       cover: image().optional(),
-      // Slugs of related `work` entries, linked at the end of the post.
       work: z.array(z.string()).default([]),
       draft: z.boolean().default(false),
     }),

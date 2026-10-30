@@ -12,11 +12,7 @@ import {
   type SimpleIcon,
 } from 'simple-icons';
 
-/*
- * Profile/platform links as icons (simple-icons, CC0, inlined — no CDN).
- * The label stays as the accessible name and tooltip. Unknown hosts fall
- * back to the text label.
- */
+/** Profile links as inlined simple-icons (no CDN); the label is the accessible name and tooltip; unknown hosts show the text label. */
 interface Props {
   links: { label: string; url: string }[];
   class?: string;
