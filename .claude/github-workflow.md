@@ -50,7 +50,7 @@ feature | bug | chore | docs | spike
 
 ## Capturing new work
 
-- **`TODO` / `ISSUE` in a user message** (any case, as a marker, e.g. "TODO: tiles need captions") means: file it. The lead hands the text to `planner`, which turns it into an issue under the remote-write policy, then the lead continues the current task. No confirmation needed unless the item is ambiguous enough that the issue could not be written.
+- **`/issue <what>`** (the `issue` skill) files a request as an issue. A `TODO` / `ISSUE` marker in a user message (any case, e.g. "TODO: tiles need captions") means the same. The lead hands the text to `planner`, which turns it into an issue under the remote-write policy, then the lead continues the current task. No confirmation needed unless the item is ambiguous enough that the issue could not be written.
 - **Work discovered during a task** is not done on the current branch: it goes to `planner` the same way.
 
 ## General rules
