@@ -21,9 +21,6 @@ function resolve(field: string, source: Source): AppearanceSource {
     if (!EXTENSIONS.includes(extension)) {
       throw new Error(`appearance.${field}.file "${file}": unsupported extension; use ${EXTENSIONS.join(', ')}.`);
     }
-    if (field === 'favicon' && extension !== 'svg' && extension !== 'png') {
-      throw new Error(`appearance.favicon.file "${file}": favicon uploads must be svg or png.`);
-    }
     const image = images[path];
     if (!image) {
       throw new Error(`appearance.${field}.file "${file}": resolved to ${path}, which is not a file under src/assets/site/ or src/assets/shared/.`);
