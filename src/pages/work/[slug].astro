@@ -61,6 +61,9 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
       </p>
       <EditLink path={`collection/work/item/${entry.id}`} />
       {data.draft && <p class="draft-note">Draft — visible on the dev server only.</p>}
+      {import.meta.env.DEV && !data.draft && !data.contribution.trim() && (
+        <p class="draft-note">"What I did" is empty — fill it in or tick Draft; the build rejects this entry.</p>
+      )}
       <h1>{data.title}</h1>
       {data.position && <p class="detail__position">{data.position}</p>}
       <AuthorshipBadge authorship={data.authorship} explain />

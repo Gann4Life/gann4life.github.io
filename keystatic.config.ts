@@ -87,8 +87,8 @@ export default config({
           { label: 'Credits', itemLabel: (props) => props.fields.name.value || 'Credit' },
         ),
         contribution: fields.text({
-          label: 'Contribution',
-          description: 'Exactly what I built/made. On team projects, only my part. Required to publish.',
+          label: 'What I did',
+          description: 'One or two sentences on what you made yourself (not the game description, not the roles). On team projects, only your part. Required to publish.',
           multiline: true,
         }),
         status: fields.select({ label: 'Status', options: options(STATUSES), defaultValue: 'in-development' }),
