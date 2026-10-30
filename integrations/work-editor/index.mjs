@@ -40,8 +40,8 @@ export default function workEditor() {
                 configureServer(server) {
                   const loadSchema = async () => {
                     const { z } = await server.ssrLoadModule('astro/zod');
-                    const { workSchema } = await server.ssrLoadModule('/src/lib/work-schema.ts');
-                    return workSchema(() => z.string());
+                    const { schemaFor } = await server.ssrLoadModule('/src/lib/content-schema.ts');
+                    return schemaFor('work', () => z.string());
                   };
                   server.middlewares.use(async (req, res, next) => {
                     let result;

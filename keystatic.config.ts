@@ -1,30 +1,17 @@
 import { config, collection, fields, singleton } from '@keystatic/core';
-import {
-  AUTHORSHIP,
-  CONTEXTS,
-  FIELD_HELP,
-  KINDS,
-  LINK_LABELS,
-  LINK_TYPES,
-  MEDIA_TYPES,
-  ORIGINS,
-  ROLES,
-  STATUSES,
-  TEAMS,
-  TOOLS,
-} from './src/vocab';
+import { COLLECTIONS, type CollectionDef, type CollectionName, type Field } from './src/lib/content-fields.ts';
 
-const options = (values: readonly string[]) => values.map((value) => ({ label: value, value }));
+const required = (field: Field) => (field.required ? { isRequired: true } : undefined);
 
-const entryImage = (label: string) =>
-  fields.image({ label, directory: 'src/assets', publicPath: '../../assets/' });
+const plainValues = (props: { fields: Record<string, { value: unknown }> }) =>
+  Object.fromEntries(Object.entries(props.fields).map(([key, field]) => [key, field.value]));
 
-const titleWithSlug = (description: string, reserved: string[], nameHelp?: string) =>
+const titleWithSlug = (collectionName: string, reserved: readonly string[], nameHelp: string) =>
   fields.slug({
     name: { label: 'Title', description: nameHelp, validation: { isRequired: true } },
     slug: {
       label: 'Slug',
-      description: `${description} Generated from the title; edit if needed.`,
+      description: `URL: /${collectionName}/<slug>. Generated from the title; edit if needed.`,
       validation: {
         pattern: {
           regex: new RegExp(`^(?!(?:${reserved.join('|')})$)[a-z0-9]+(?:-[a-z0-9]+)*$`),
@@ -34,6 +21,75 @@ const titleWithSlug = (description: string, reserved: string[], nameHelp?: strin
     },
   });
 
+const toField = (field: Field, assets: string, publicPath: string): any => {
+  const { label, help: description, options } = field;
+  switch (field.type) {
+    case 'text':
+      return fields.text({ label, description, validation: required(field) });
+    case 'longtext':
+      return fields.text({ label, description, validation: required(field), multiline: true });
+    case 'markdown':
+      return fields.markdoc({ label, description, extension: 'md', options: { image: { directory: assets, publicPath } } });
+    case 'boolean':
+      return fields.checkbox({ label, description, defaultValue: (field.initial ?? field.default ?? false) as boolean });
+    case 'enum':
+      return fields.select({
+        label,
+        description,
+        options: [...options!],
+        defaultValue: (field.initial ?? field.default ?? options![0].value) as string,
+      });
+    case 'date':
+      return fields.date({
+        label,
+        description,
+        validation: required(field),
+        defaultValue: field.initial === 'today' ? { kind: 'today' } : undefined,
+      });
+    case 'url':
+      return fields.url({ label, description, validation: required(field) });
+    case 'tags':
+      return fields.multiselect({ label, description, options: [...options!] });
+    case 'refs':
+      return fields.array(fields.relationship({ label: 'Project', collection: field.collection!, validation: { isRequired: true } }), {
+        label,
+        description,
+        itemLabel: (props) => props.value ?? 'Choose a project',
+      });
+    case 'list':
+      return fields.array(
+        fields.object(Object.fromEntries(field.fields!.map((item) => [item.name, toField(item, assets, publicPath)]))),
+        {
+          label,
+          description,
+          itemLabel: (props: any) => (field.itemLabel ? field.itemLabel(plainValues(props)) : label),
+        },
+      );
+    case 'image':
+      return fields.image({ label, description, directory: assets, publicPath });
+    default:
+      throw new Error(`Field "${field.name}" has an unknown type.`);
+  }
+};
+
+const toKeystatic = (name: CollectionName, def: CollectionDef) => {
+  const publicPath = `../../${def.assets.replace(/^src\//, '')}/`;
+  return collection({
+    label: def.label,
+    path: `${def.dir}/*`,
+    slugField: 'title',
+    format: { contentField: 'body' },
+    columns: [...def.columns],
+    schema: Object.fromEntries(
+      def.fields.map((field) => [
+        field.name,
+        field.name === 'title'
+          ? titleWithSlug(name, def.reserved, field.help)
+          : toField(field, def.assets, publicPath),
+      ]),
+    ),
+  });
+};
 const imageSource = (label: string, description: string, field: string) =>
   fields.object(
     {
@@ -51,141 +107,8 @@ export default config({
   storage: { kind: 'local' },
   ui: { brand: { name: 'Portfolio' } },
   collections: {
-    work: collection({
-      label: 'Work',
-      path: 'src/content/work/*',
-      slugField: 'title',
-      format: { contentField: 'body' },
-      columns: ['kind', 'draft', 'status'],
-      schema: {
-        title: titleWithSlug('URL of the page: /work/<slug>.', ['c', 't', 'site', 'all'], FIELD_HELP.title),
-        draft: fields.checkbox({
-          label: 'Draft',
-          description: FIELD_HELP.draft,
-          defaultValue: true,
-        }),
-        featured: fields.checkbox({ label: 'Featured', description: FIELD_HELP.featured }),
-        cover: entryImage('Cover (thumbnail)'),
-        media: fields.array(
-          fields.object({
-            type: fields.select({ label: 'Type', options: options(MEDIA_TYPES), defaultValue: 'video' }),
-            src: fields.text({
-              label: 'Source',
-              description:
-                'YouTube / Vimeo / SoundCloud URL works as-is. itch.io and Bandcamp need their embed URL: use `npm run add <url>`. Local files: path in public/.',
-              validation: { isRequired: true },
-            }),
-            caption: fields.text({ label: 'Caption' }),
-          }),
-          { label: 'Media (embeds)', itemLabel: (props) => `${props.fields.type.value}: ${props.fields.src.value}` },
-        ),
-        contribution: fields.text({
-          label: 'What I did',
-          description: FIELD_HELP.contribution,
-          multiline: true,
-        }),
-        roles: fields.multiselect({ label: 'Roles', description: 'Drives the filters.', options: options(ROLES) }),
-        position: fields.text({
-          label: 'Position',
-          description: 'Optional. Title actually held, e.g. "Unity Game Developer" on someone else\'s project.',
-        }),
-        links: fields.array(
-          fields.object({
-            label: fields.text({ label: 'Label', description: 'Button text. Empty uses the type default.' }),
-            type: fields.select({
-              label: 'Type',
-              description: 'Icon and default label.',
-              options: LINK_TYPES.map((value) => ({ label: `${value} (${LINK_LABELS[value]})`, value })),
-              defaultValue: 'other',
-            }),
-            url: fields.url({ label: 'URL', validation: { isRequired: true } }),
-          }),
-          {
-            label: 'Links',
-            itemLabel: (props) =>
-              `${props.fields.label.value || LINK_LABELS[props.fields.type.value]}: ${props.fields.url.value ?? ''}`,
-          },
-        ),
-        tools: fields.multiselect({
-          label: 'Tools',
-          description: 'Engines, programs, languages and libraries you used. Each one gets a page listing its projects. Missing one? Ask Claude to add it.',
-          options: options(TOOLS),
-        }),
-        gallery: fields.array(
-          fields.object({
-            image: entryImage('Image'),
-            caption: fields.text({ label: 'Caption' }),
-          }),
-          { label: 'Gallery', itemLabel: (props) => props.fields.caption.value || 'Image' },
-        ),
-        credits: fields.array(
-          fields.object({
-            name: fields.text({ label: 'Name', validation: { isRequired: true } }),
-            role: fields.text({ label: 'Role', validation: { isRequired: true } }),
-            url: fields.url({ label: 'URL' }),
-          }),
-          { label: 'Credits', itemLabel: (props) => props.fields.name.value || 'Credit' },
-        ),
-        body: fields.markdoc({ label: 'Description', description: FIELD_HELP.body, extension: 'md' }),
-        kind: fields.select({ label: 'Kind', description: FIELD_HELP.kind, options: options(KINDS), defaultValue: 'software' }),
-        context: fields.select({
-          label: 'Context',
-          description: FIELD_HELP.context,
-          options: options(CONTEXTS),
-          defaultValue: 'personal',
-        }),
-        status: fields.select({
-          label: 'Status',
-          description: FIELD_HELP.status,
-          options: options(STATUSES),
-          defaultValue: 'in-development',
-        }),
-        started: fields.date({ label: 'Started', description: FIELD_HELP.started, validation: { isRequired: true } }),
-        team: fields.select({ label: 'Team', description: FIELD_HELP.team, options: options(TEAMS), defaultValue: 'solo' }),
-        authorship: fields.select({
-          label: 'Authorship',
-          description: 'ai-built entries take designer/spec roles, not programmer (docs/2-content-model.md).',
-          options: options(AUTHORSHIP),
-          defaultValue: 'hand-made',
-        }),
-        origin: fields.select({ label: 'Origin', options: options(ORIGINS), defaultValue: 'original' }),
-        upstream: fields.url({ label: 'Upstream', description: 'Required for forks.' }),
-        usedIn: fields.array(fields.relationship({ label: 'Project', collection: 'work', validation: { isRequired: true } }), {
-          label: 'Used in',
-          description: 'Other projects this one was used in, e.g. a song used in a game. Both pages link to each other.',
-          itemLabel: (props) => props.value ?? 'Choose a project',
-        }),
-      },
-    }),
-    blog: collection({
-      label: 'Blog',
-      path: 'src/content/blog/*',
-      slugField: 'title',
-      format: { contentField: 'body' },
-      columns: ['date', 'pinned', 'featured', 'draft'],
-      schema: {
-        title: titleWithSlug('URL of the post: /blog/<slug>.', ['page']),
-        draft: fields.checkbox({ label: 'Draft', description: 'Shown on the dev server only. Untick to publish.', defaultValue: true }),
-        pinned: fields.checkbox({ label: 'Pinned', description: 'Listed above all other posts on the home page and the blog list, newest pinned first.' }),
-        featured: fields.checkbox({
-          label: 'Featured',
-          description: 'Adds a "Featured" marker on the blog list. Does not change the order or the home page.',
-        }),
-        summary: fields.text({ label: 'Summary', description: 'One line: post subheading and page description.' }),
-        cover: fields.image({ label: 'Cover', directory: 'src/assets/blog', publicPath: '../../assets/blog/' }),
-        body: fields.markdoc({
-          label: 'Post',
-          extension: 'md',
-          options: { image: { directory: 'src/assets/blog', publicPath: '../../assets/blog/' } },
-        }),
-        work: fields.array(fields.relationship({ label: 'Project', collection: 'work', validation: { isRequired: true } }), {
-          label: 'Related work',
-          description: 'Projects this post is about; the post is listed on their pages.',
-          itemLabel: (props) => props.value ?? 'Choose a project',
-        }),
-        date: fields.date({ label: 'Date', defaultValue: { kind: 'today' }, validation: { isRequired: true } }),
-      },
-    }),
+    work: toKeystatic('work', COLLECTIONS.work),
+    blog: toKeystatic('blog', COLLECTIONS.blog),
   },
   singletons: {
     profile: singleton({

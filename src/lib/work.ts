@@ -1,5 +1,6 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
-import { LINK_LABELS } from '../vocab';
+import { CONTEXT_LABELS, KIND_LABELS, LINK_LABELS } from '../vocab.ts';
+export { KIND_LABELS, CONTEXT_LABELS, ROLE_LABELS, STATUS_LABELS } from '../vocab.ts';
 
 export type Work = CollectionEntry<'work'>;
 type Link = Work['data']['links'][number];
@@ -112,45 +113,6 @@ export const linkText = (link: Link) => link.label || LINK_LABELS[link.type];
 
 /** Start year, read in UTC (dates are stored as UTC midnight). */
 export const year = (entry: Work) => entry.data.started.getUTCFullYear();
-
-export const KIND_LABELS: Record<Work['data']['kind'], string> = {
-  software: 'Software',
-  game: 'Game',
-  app: 'App',
-  web: 'Web',
-  art2d: '2D art',
-  art3d: '3D',
-  animation: 'Animation',
-  music: 'Music',
-  other: 'Other',
-};
-
-export const CONTEXT_LABELS: Record<Work['data']['context'], string> = {
-  personal: 'Personal',
-  commission: 'Commission',
-  client: 'Client',
-  job: 'Job',
-  jam: 'Game jam',
-  study: 'Study',
-};
-
-export const ROLE_LABELS: Record<Work['data']['roles'][number], string> = {
-  programmer: 'Programmer',
-  animator: 'Animator',
-  artist: 'Artist',
-  director: 'Director',
-  designer: 'Designer',
-  'spec-author': 'Spec author',
-  'technical-direction': 'Technical direction',
-  maintainer: 'Maintainer',
-  musician: 'Musician',
-};
-
-export const STATUS_LABELS: Record<Work['data']['status'], string> = {
-  released: 'Released',
-  'in-development': 'In development',
-  archived: 'Archived',
-};
 
 /** Site-wide skills: tools of hand-made and ai-assisted entries only, most used first. */
 export function skills(entries: Work[]): string[] {

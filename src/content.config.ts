@@ -1,7 +1,6 @@
 import { defineCollection } from 'astro:content';
 import { glob, type Loader } from 'astro/loaders';
-import { z } from 'astro/zod';
-import { workSchema } from './lib/work-schema';
+import { schemaFor } from './lib/content-schema.ts';
 
 const keepDrafts = import.meta.env.DEV;
 function withoutDrafts(loader: Loader, { needsContribution = false } = {}): Loader {
@@ -25,23 +24,12 @@ function withoutDrafts(loader: Loader, { needsContribution = false } = {}): Load
 
 const work = defineCollection({
   loader: withoutDrafts(glob({ pattern: '**/*.md', base: './src/content/work' }), { needsContribution: true }),
-  schema: ({ image }) => workSchema(image),
+  schema: ({ image }) => schemaFor('work', image),
 });
 
 const blog = defineCollection({
   loader: withoutDrafts(glob({ pattern: '**/*.md', base: './src/content/blog' })),
-  schema: ({ image }) =>
-    z.object({
-      title: z.string().min(1),
-      slug: z.string().min(1).refine((s) => s !== 'page', 'Slug "page" is reserved (blog pagination).').optional(),
-      date: z.coerce.date(),
-      summary: z.string().default(''),
-      cover: image().optional(),
-      work: z.array(z.string()).default([]),
-      pinned: z.boolean().default(false),
-      featured: z.boolean().default(false),
-      draft: z.boolean().default(false),
-    }),
+  schema: ({ image }) => schemaFor('blog', image),
 });
 
 export const collections = { work, blog };
