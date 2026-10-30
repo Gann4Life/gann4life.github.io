@@ -83,7 +83,19 @@ export default config({
           description: 'One or two sentences on what you made yourself (not the game description, not the roles). On team projects, only your part. Required to publish.',
           multiline: true,
         }),
-        roles: fields.multiselect({ label: 'Roles', description: 'Drives the filters.', options: options(ROLES) }),
+        roles: fields.array(fields.select({ label: 'Role', options: options(ROLES), defaultValue: 'programmer' }), {
+          label: 'Roles',
+          description: 'What you were on this project. Drives the filters.',
+          itemLabel: (props) => props.value,
+        }),
+        authorship: fields.select({
+          label: 'Authorship',
+          description: 'ai-built entries take designer/spec roles, not programmer (docs/2-content-model.md).',
+          options: options(AUTHORSHIP),
+          defaultValue: 'hand-made',
+        }),
+        origin: fields.select({ label: 'Origin', options: options(ORIGINS), defaultValue: 'original' }),
+        upstream: fields.url({ label: 'Upstream', description: 'Required for forks.' }),
         position: fields.text({
           label: 'Position',
           description: 'Optional. Title actually held, e.g. "Unity Game Developer" on someone else\'s project.',
@@ -105,17 +117,17 @@ export default config({
               `${props.fields.label.value || LINK_LABELS[props.fields.type.value]}: ${props.fields.url.value ?? ''}`,
           },
         ),
-        tools: fields.multiselect({
+        tools: fields.array(fields.select({ label: 'Tool', options: options(TOOLS), defaultValue: 'Unity' }), {
           label: 'Tools',
           description: 'Engines, programs, languages and libraries you used. Each one gets a page listing its projects. Missing one? Ask Claude to add it.',
-          options: options(TOOLS),
+          itemLabel: (props) => props.value,
         }),
         gallery: fields.array(
           fields.object({
             image: entryImage('Image'),
             caption: fields.text({ label: 'Caption' }),
           }),
-          { label: 'Gallery', itemLabel: (props) => props.fields.caption.value || 'Image' },
+          { label: 'Gallery', itemLabel: (props) => props.fields.caption.value || props.fields.image.value?.filename || 'Image' },
         ),
         credits: fields.array(
           fields.object({
@@ -125,7 +137,6 @@ export default config({
           }),
           { label: 'Credits', itemLabel: (props) => props.fields.name.value || 'Credit' },
         ),
-        body: fields.markdoc({ label: 'Description', description: 'The text under What I did on the project page.', extension: 'md' }),
         kind: fields.select({ label: 'Kind', description: 'What it is.', options: options(KINDS), defaultValue: 'software' }),
         context: fields.select({
           label: 'Context',
@@ -136,19 +147,12 @@ export default config({
         status: fields.select({ label: 'Status', options: options(STATUSES), defaultValue: 'in-development' }),
         started: fields.date({ label: 'Started', validation: { isRequired: true } }),
         team: fields.select({ label: 'Team', options: options(TEAMS), defaultValue: 'solo' }),
-        authorship: fields.select({
-          label: 'Authorship',
-          description: 'ai-built entries take designer/spec roles, not programmer (docs/2-content-model.md).',
-          options: options(AUTHORSHIP),
-          defaultValue: 'hand-made',
-        }),
-        origin: fields.select({ label: 'Origin', options: options(ORIGINS), defaultValue: 'original' }),
-        upstream: fields.url({ label: 'Upstream', description: 'Required for forks.' }),
         usedIn: fields.array(fields.relationship({ label: 'Project', collection: 'work', validation: { isRequired: true } }), {
           label: 'Used in',
           description: 'Other projects this one was used in, e.g. a song used in a game. Both pages link to each other.',
           itemLabel: (props) => props.value ?? 'Choose a project',
         }),
+        body: fields.markdoc({ label: 'Description', description: 'The text under What I did on the project page.', extension: 'md' }),
       },
     }),
     blog: collection({
@@ -167,17 +171,17 @@ export default config({
         }),
         summary: fields.text({ label: 'Summary', description: 'One line: post subheading and page description.' }),
         cover: fields.image({ label: 'Cover', directory: 'src/assets/blog', publicPath: '../../assets/blog/' }),
-        body: fields.markdoc({
-          label: 'Post',
-          extension: 'md',
-          options: { image: { directory: 'src/assets/blog', publicPath: '../../assets/blog/' } },
-        }),
         work: fields.array(fields.relationship({ label: 'Project', collection: 'work', validation: { isRequired: true } }), {
           label: 'Related work',
           description: 'Projects this post is about; the post is listed on their pages.',
           itemLabel: (props) => props.value ?? 'Choose a project',
         }),
         date: fields.date({ label: 'Date', defaultValue: { kind: 'today' }, validation: { isRequired: true } }),
+        body: fields.markdoc({
+          label: 'Post',
+          extension: 'md',
+          options: { image: { directory: 'src/assets/blog', publicPath: '../../assets/blog/' } },
+        }),
       },
     }),
   },
