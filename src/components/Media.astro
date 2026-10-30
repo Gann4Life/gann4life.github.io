@@ -8,7 +8,7 @@ interface Props {
 }
 
 const { items, title } = Astro.props;
-const isLocal = (src: string) => src.startsWith('/');
+const isLocal = (src: string) => src.startsWith('/') && !src.startsWith('//');
 ---
 
 {items.length > 0 && (
