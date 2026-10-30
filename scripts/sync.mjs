@@ -132,7 +132,7 @@ async function attachSource(repo) {
 }
 
 const sources = [];
-for (const { url } of profile.links) {
+for (const { url } of profile.hero?.links ?? []) {
   const host = new URL(url).hostname.replace(/^www\./, '');
   if (host.endsWith('.itch.io')) sources.push(['itch', url]);
   else if (host.endsWith('.bandcamp.com')) sources.push(['bandcamp', url]);

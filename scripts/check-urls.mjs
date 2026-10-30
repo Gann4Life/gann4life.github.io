@@ -10,7 +10,7 @@ const LABELS = ['type:bug', 'scope:content', 'priority:medium', 'status:ready'];
 const TIMEOUT_MS = 10_000;
 const RETRY_DELAY_MS = 30_000;
 const MAX_PARALLEL = 4;
-const APPEARANCE_FIELDS = [['hero', 'banner'], ['hero', 'photo'], ['background', 'image'], ['header', 'logo'], ['tab', 'favicon']];
+const APPEARANCE_FIELDS = [['hero', 'banner'], ['hero', 'photo'], ['background', 'image'], ['chrome', 'logo'], ['chrome', 'favicon']];
 
 const posix = (p) => p.split(path.sep).join('/');
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -64,17 +64,19 @@ const collect = () => {
     const lineOf = (url) => rawLines.findIndex((l) => l.includes(url)) + 1;
     for (const [section, name] of APPEARANCE_FIELDS) {
       const field = profile[section]?.[name];
-      if (field?.discriminant === 'link' && typeof field.value === 'string' && field.value.trim() !== '') {
-        add(field.value.trim(), profileRel, lineOf(field.value), `.`, true);
+      const upload = typeof field?.upload === 'string' ? field.upload.trim() : '';
+      const link = typeof field?.link === 'string' ? field.link.trim() : '';
+      if (upload === '' && link !== '') {
+        add(link, profileRel, lineOf(field.link), `${section}.${name}`, true);
       }
     }
     const reel = profile.hero?.reel;
     if (typeof reel === 'string' && /^https?:\/\//.test(reel)) {
       add(reel, profileRel, lineOf(reel), 'hero.reel', false);
     }
-    for (const link of profile.links ?? []) {
+    for (const link of profile.hero?.links ?? []) {
       if (typeof link.url === 'string' && /^https?:\/\//.test(link.url)) {
-        add(link.url, profileRel, lineOf(link.url), 'links', false);
+        add(link.url, profileRel, lineOf(link.url), 'hero.links', false);
       }
     }
   }

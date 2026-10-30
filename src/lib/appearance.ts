@@ -14,8 +14,8 @@ export type AppearanceSource = { kind: 'asset'; image: ImageMetadata } | { kind:
 type Source = typeof profile.appearance.photo;
 
 function resolve(field: string, source: Source): AppearanceSource {
-  if (source.discriminant === 'upload') {
-    const file = source.value;
+  if (source.upload) {
+    const file = source.upload;
     const path = posix.normalize(posix.join('/src/data', file));
     const extension = path.split('.').pop()?.toLowerCase() ?? '';
     if (!EXTENSIONS.includes(extension)) {
@@ -30,7 +30,7 @@ function resolve(field: string, source: Source): AppearanceSource {
     }
     return { kind: 'asset', image };
   }
-  if (source.discriminant === 'link' && source.value) return { kind: 'url', src: source.value };
+  if (source.link) return { kind: 'url', src: source.link };
   return null;
 }
 
