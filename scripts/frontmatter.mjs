@@ -1,8 +1,3 @@
-/*
- * Draft `work` entry as Markdown — the shape in docs/2-content-model.md.
- * Strings are JSON-quoted, which is valid YAML for any content.
- */
-
 const q = (s) => JSON.stringify(s ?? '');
 const list = (items) => `[${items.map(q).join(', ')}]`;
 
@@ -18,6 +13,7 @@ const block = (name, items, fields) =>
         )
         .join('\n')}`;
 
+/** Draft work entry as Markdown in the docs/2-content-model.md shape; strings are JSON-quoted, valid YAML. */
 export function frontmatter(e) {
   return `---
 title: ${q(e.title)}

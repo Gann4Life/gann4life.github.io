@@ -1,10 +1,3 @@
-/*
- * Platform readers shared by `npm run add` and `npm run sync`.
- * docs/2-content-model.md ("Adding work"), docs/4-media.md.
- *
- * Platforms are read once and snapshotted into the repo (AGENTS.md rule 4).
- * Every entry written here is a draft with an empty `contribution`.
- */
 import { mkdir, writeFile, readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -14,14 +7,11 @@ export const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const WORK_DIR = join(ROOT, 'src/content/work');
 const ASSETS_DIR = join(ROOT, 'src/assets');
 
-// Some platforms serve a stripped page to unknown clients.
 const HEADERS = {
   'user-agent':
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36',
   'accept-language': 'en',
 };
-
-/* ---------- helpers ---------- */
 
 export const slugify = (s) =>
   s
@@ -59,7 +49,6 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export async function get(url, as = 'text', retries = 4) {
   const res = await fetch(url, { headers: HEADERS, redirect: 'follow' });
-  // Rate limited (GitHub social cards after a few dozen requests): wait and retry.
   if (res.status === 429 && retries > 0) {
     await sleep((Number(res.headers.get('retry-after')) || 15) * 1000);
     return get(url, as, retries - 1);
@@ -68,14 +57,10 @@ export async function get(url, as = 'text', retries = 4) {
   return as === 'json' ? res.json() : as === 'raw' ? res : res.text();
 }
 
-/* ---------- single items: URL -> partial entry ---------- */
-
 export async function itchGame(url, known = {}) {
   const html = await get(url);
   const upload = html.match(/(?:html-classic\.itch\.zone|hwcdn\.net|itch\.zone)\/html\/(\d+)/)?.[1];
-  // itch labels it "Release date" or "Published" depending on the page; "Updated" is the fallback.
   const dateOf = (label) => html.match(new RegExp(`<td>${label}</td>\\s*<td[^>]*>\\s*<abbr title=["']([^"'@]+)`))?.[1];
-  // Some pages show no date row: fall back to the earliest date anywhere on the page (devlogs, uploads).
   const anyDate = [...html.matchAll(/title=["'](\d{1,2} \w+ \d{4}) @/g)]
     .map((m) => new Date(m[1]))
     .filter((d) => !Number.isNaN(d.getTime()))
@@ -216,14 +201,9 @@ export function readerFor(url) {
   return genericPage;
 }
 
-/* ---------- writing ---------- */
-
 const EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif', 'image/avif': 'avif' };
 
-/*
- * Entries without a cover get one from what they already link to:
- * YouTube thumbnail, or the itch/Bandcamp page image.
- */
+/** Gives entries without a cover one from what they link to (YouTube thumbnail, itch.io or Bandcamp page image), downloaded into the repo. */
 export async function backfillCovers() {
   const done = [];
   for (const file of await readdir(WORK_DIR)) {
@@ -239,7 +219,6 @@ export async function backfillCovers() {
       const host = new URL(u).hostname.replace(/^www\./, '');
       const yt = u.match(/(?:v=|youtu\.be\/)([\w-]{11})/)?.[1];
       if (yt) candidates.push(`https://i.ytimg.com/vi/${yt}/maxresdefault.jpg`, `https://i.ytimg.com/vi/${yt}/hqdefault.jpg`);
-      // GitHub's social card is a white text banner, not a picture of the work: skipped.
       else if (host.endsWith('itch.io') && !u.includes('/embed')) candidates.push(async () => meta(await get(u), 'og:image'));
       else if (host.endsWith('bandcamp.com') && !u.includes('EmbeddedPlayer')) candidates.push(async () => meta(await get(u), 'og:image'));
     }
@@ -251,9 +230,7 @@ export async function backfillCovers() {
         await writeFile(path, text.replace(/^gallery:/m, `cover: ${cover}\ngallery:`));
         done.push(`cover ${slug}`);
         break;
-      } catch {
-        // try the next source
-      }
+      } catch {}
     }
   }
   return done;
@@ -269,7 +246,7 @@ async function downloadCover(src, slug) {
   return `../../assets/${slug}/cover.${ext}`;
 }
 
-// Every URL already referenced by an entry, so re-running never duplicates work.
+/** Every URL already referenced by an entry, so re-runs never duplicate work. */
 export async function knownUrls() {
   const urls = new Set();
   const slugs = new Set();
@@ -284,15 +261,11 @@ export async function knownUrls() {
 
 export const normalizeUrl = (u) => u.replace(/^http:/, 'https:').replace(/\/+$/, '').toLowerCase();
 
-/*
- * Write one draft. Returns a status line. `seen` comes from knownUrls() and is
- * updated so a batch never writes the same work twice.
- */
+/** Writes one draft and returns a status line; updates seen so a batch never writes the same work twice. */
 export async function writeDraft(data, seen, { force = false } = {}) {
   if (!data.title) throw new Error('no title found');
   let slug = slugify(data.title);
   if (seen.slugs.has(slug) && !force) {
-    // Same title from another platform (e.g. a game and its repo): keep both, distinct slugs.
     const base = slug;
     for (let n = 2; seen.slugs.has(slug); n++) slug = `${base}-${n}`;
   }

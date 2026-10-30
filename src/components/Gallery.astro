@@ -2,6 +2,7 @@
 import { Picture, getImage } from 'astro:assets';
 import type { Work } from '../lib/work';
 
+/** Gallery with a CSS-only lightbox: each thumbnail targets an overlay by #id (:target). */
 interface Props {
   slug: string;
   items: Work['data']['gallery'];
@@ -9,7 +10,6 @@ interface Props {
 
 const { slug, items } = Astro.props;
 
-// Lightbox without JS: each thumbnail targets an overlay by #id (CSS :target).
 const full = await Promise.all(
   items.map((item) => getImage({ src: item.image, format: 'webp', width: Math.min(item.image.width, 1920) })),
 );

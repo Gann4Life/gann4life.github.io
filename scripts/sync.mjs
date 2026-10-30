@@ -1,12 +1,4 @@
 #!/usr/bin/env node
-/*
- * npm run sync
- *
- * Pulls every work listed on the profiles in src/data/profile.json (itch.io,
- * Bandcamp, DeviantArt, GitHub, YouTube) into draft entries. Safe to re-run:
- * anything already referenced by an entry is skipped, and edited entries are
- * never touched. Publish by unticking Draft in /keystatic.
- */
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
@@ -42,12 +34,8 @@ async function each(items, read) {
   }
 }
 
-/* ---------- listings: profile URL -> [{ url, ...known }] ---------- */
-
 async function itchListing(profileUrl) {
   const html = await get(profileUrl);
-  // The profile page also shows collections of other people's assets; keep only
-  // pages hosted under this profile. Team projects go in with `npm run add`.
   const ownHost = new URL(profileUrl).hostname;
   return html
     .split(/class="game_cell\b/)
@@ -69,13 +57,11 @@ async function bandcampListing(profileUrl) {
   const base = new URL(profileUrl).origin;
   const html = await get(`${base}/music`);
   const items = new Map();
-  // Grid items rendered in the HTML.
   for (const m of html.matchAll(
     /data-item-id="(album|track)-(\d+)"[\s\S]*?href="(\/(?:album|track)\/[^"]+)"[\s\S]*?class="title"[^>]*>\s*([^<]+)/g,
   )) {
     items.set(m[3], { url: base + m[3], type: m[1], id: m[2], title: decode(m[4]) });
   }
-  // Extra items Bandcamp ships as JSON for lazy loading.
   const json = html.match(/data-client-items="([^"]+)"/)?.[1];
   if (json) {
     for (const it of JSON.parse(decode(json))) {
@@ -107,9 +93,7 @@ async function deviantartListing(profileUrl) {
 async function githubListing(profileUrl) {
   const user = new URL(profileUrl).pathname.split('/')[1];
   const repos = await get(`https://api.github.com/users/${user}/repos?per_page=100&type=owner`, 'json');
-  // The profile README repo (same name as the user) is not a project.
   const list = repos.filter((r) => r.name.toLowerCase() !== user.toLowerCase());
-  // Forks need `parent`, which only the single-repo endpoint returns.
   return Promise.all(
     list.map(async (r) => ({ url: r.html_url, repo: r.fork ? await get(r.url, 'json') : r })),
   );
@@ -127,10 +111,6 @@ async function youtubeListing(profileUrl) {
   }));
 }
 
-/*
- * A repo whose homepage is an itch.io page that already has an entry becomes
- * that entry's source link instead of a second entry.
- */
 async function attachSource(repo) {
   if (!repo.homepage) return false;
   const target = normalizeUrl(repo.homepage);
@@ -151,8 +131,6 @@ async function attachSource(repo) {
   return false;
 }
 
-/* ---------- run ---------- */
-
 const sources = [];
 for (const { url } of profile.links) {
   const host = new URL(url).hostname.replace(/^www\./, '');
@@ -163,7 +141,6 @@ for (const { url } of profile.links) {
   else if (host === 'youtube.com') sources.push(['youtube', url]);
   else if (host === 'soundcloud.com') log.push('note  SoundCloud has no public listing; add tracks with `npm run add -- <track url>`.');
 }
-// Games before repos, so repos can attach to their game's entry.
 sources.sort(([a], [b]) => (a === 'github') - (b === 'github'));
 
 for (const [platform, url] of sources) {

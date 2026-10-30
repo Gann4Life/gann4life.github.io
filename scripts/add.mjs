@@ -1,10 +1,4 @@
 #!/usr/bin/env node
-/*
- * npm run add -- <url> [<url> ...]
- *
- * One-off import of specific works (any platform in scripts/platforms.mjs).
- * To pull everything from your profiles at once, use `npm run sync`.
- */
 import { knownUrls, normalizeUrl, readerFor, writeDraft } from './platforms.mjs';
 
 const urls = process.argv.slice(2).filter((a) => !a.startsWith('--'));

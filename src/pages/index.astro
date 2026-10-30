@@ -15,7 +15,6 @@ const bands = [
   { id: 'hobbies', title: 'Hobbies', items: groups.filter((g) => g.category.hobby) },
 ].filter((band) => band.items.length > 0);
 
-// The reel is the banner, so its entry is not repeated under Featured.
 const reel = profile.reel ? embedUrl('video', profile.reel) : null;
 const isReel = (e: (typeof entries)[number]) => e.data.media.some((m) => m.src === profile.reel);
 const featured = entries.filter((e) => e.data.featured && !isReel(e));

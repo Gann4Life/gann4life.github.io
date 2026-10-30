@@ -8,8 +8,6 @@ import { profile } from '../../../../profile';
 import { embedUrl, getWork, groupByCategory, tileMeta, type Category, type Work } from '../../../../lib/work';
 import { withBase } from '../../../../lib/paths';
 
-// /work/c/<category>/, /work/c/<category>/2/, ... — 24 works per page.
-// (getStaticPaths runs in isolation, so the size is inlined.)
 export const getStaticPaths = (async ({ paginate }) =>
   groupByCategory(await getWork()).flatMap(({ category, entries }) =>
     paginate(entries, { params: { category: category.key }, props: { category, total: entries.length }, pageSize: category.key === 'music' ? 8 : 24 }),
@@ -24,11 +22,6 @@ interface Props {
 const { category, total, page } = Astro.props;
 const entries = page.data;
 
-/*
- * Music is listened to, not looked at: each release gets a compact player
- * right on the category page. Bandcamp's tracklist player is swapped for the
- * slim one here; the full player stays on the entry page.
- */
 const player = (e: Work) => {
   const audio = e.data.media.find((m) => m.type === 'audio');
   const url = audio && embedUrl('audio', audio.src);
