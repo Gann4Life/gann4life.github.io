@@ -1,6 +1,5 @@
 ---
 title: "Spine Animation Demo Reel 2025"
-slug: spine-demo-reel
 kind: animation
 context: personal
 position: "2D Animator"

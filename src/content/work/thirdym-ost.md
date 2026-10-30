@@ -1,6 +1,5 @@
 ---
 title: "Thirdym OST"
-slug: thirdym-ost
 kind: music
 context: personal
 position: ""

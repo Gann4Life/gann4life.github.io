@@ -1,6 +1,5 @@
 ---
 title: "Time Machine"
-slug: time-machine
 kind: art2d
 context: personal
 position: ""
