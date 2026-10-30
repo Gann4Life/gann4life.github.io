@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { readdir, readFile, realpath, rename, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { dump, load } from 'js-yaml';
@@ -191,9 +191,9 @@ async function renameWithRetry(from, to) {
 }
 
 export async function writeEntry(file, text) {
-  const tmp = path.join(path.dirname(file), `.${path.basename(file)}.editor-tmp`);
+  const tmp = path.join(path.dirname(file), `.${path.basename(file)}.${randomUUID()}.editor-tmp`);
   try {
-    await writeFile(tmp, text, 'utf8');
+    await writeFile(tmp, text, { encoding: 'utf8', flag: 'wx' });
     await renameWithRetry(tmp, file);
   } catch (err) {
     console.error('[work-editor]', err);

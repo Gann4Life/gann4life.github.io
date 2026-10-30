@@ -26,7 +26,7 @@ const editorTraces = (dir) =>
   readdirSync(dir, { recursive: true, withFileTypes: true })
     .filter((entry) => entry.isFile() && TEXT_OUTPUTS.has(path.extname(entry.name).toLowerCase()))
     .map((entry) => path.join(entry.parentPath, entry.name))
-    .filter((file) => /data-editor|__editor/.test(readFileSync(file).toString('latin1')))
+    .filter((file) => /data-editor|__editor|work-editor|js-yaml/.test(readFileSync(file).toString('latin1')))
     .map((file) => path.relative(dir, file));
 
 test('staging build exits 0 and every root-absolute href and src sits under /dev/', () => {
