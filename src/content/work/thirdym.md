@@ -24,7 +24,7 @@ started: 2022-02-14
 featured: true
 draft: false
 tools: ["Unity", "C#", "Blender", "Clip Studio Paint"]
-cover: ../../assets/thirdym/banner.png
+cover: ../../assets/shared/82ed58f0594dba18.png
 gallery:
   - image: ../../assets/thirdym/screenshot-03.png
     caption: ""

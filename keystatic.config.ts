@@ -28,26 +28,16 @@ const titleWithSlug = (description: string) =>
   });
 
 const imageSource = (label: string, description: string, field: string) =>
-  fields.conditional(
-    fields.select({
-      label,
-      description,
-      options: [
-        { label: 'None', value: 'none' },
-        { label: 'Upload', value: 'upload' },
-        { label: 'Link', value: 'link' },
-      ],
-      defaultValue: 'none',
-    }),
+  fields.object(
     {
-      none: fields.empty(),
       upload: fields.image({
         label: 'Upload',
         directory: `src/assets/site/${field}`,
         publicPath: `../assets/site/${field}/`,
       }),
-      link: fields.url({ label: 'Link (https)' }),
+      link: fields.url({ label: 'Or link (https)' }),
     },
+    { label, description: `${description}. Upload or link; if both are set, the upload wins.`, layout: [6, 6] },
   );
 
 export default config({
@@ -185,53 +175,47 @@ export default config({
       schema: {
         hero: fields.object(
           {
-            banner: imageSource('Banner', 'Behind the top of the home page', 'banner'),
-            photo: imageSource('Photo', 'Beside your name', 'photo'),
-            reel: fields.url({ label: 'Demo reel', description: 'YouTube or Vimeo; plays beside your name' }),
+            banner: imageSource('Banner', 'Behind the top of the home page. Wide, ≥1920 px', 'banner'),
+            photo: imageSource('Photo', 'Beside your name. Square, ≥400 px; shown round', 'photo'),
+            reel: fields.url({ label: 'Demo reel', description: 'YouTube or Vimeo. Empty = no reel' }),
             name: fields.text({ label: 'Name', description: 'Big title', validation: { isRequired: true } }),
             tagline: fields.text({ label: 'Tagline', description: 'Under the name' }),
             bio: fields.text({ label: 'Bio', description: 'Paragraph under the tagline', multiline: true }),
+            links: fields.array(
+              fields.object({
+                label: fields.text({ label: 'Label', validation: { isRequired: true } }),
+                url: fields.url({ label: 'URL', validation: { isRequired: true } }),
+              }),
+              {
+                label: 'Links under the bio',
+                itemLabel: (p) => `${p.fields.label.value || 'Link'} — ${p.fields.url.value ?? ''}`,
+              },
+            ),
           },
-          { label: 'Top of the home page' },
+          { label: 'Top of the home page', layout: [12, 12, 12, 6, 6, 12, 12] },
         ),
         background: fields.object(
           {
-            image: imageSource('Image', 'Behind the whole site, blurred and darkened', 'background'),
+            image: imageSource('Image', 'Behind the whole site, blurred and darkened. ≥1920 px', 'background'),
             darken: fields.integer({
               label: 'Darken (%)',
-              description: 'Empty = 70',
+              description: '0–100. Empty = 70. Only with an image',
               validation: { min: 0, max: 100 },
             }),
             blur: fields.integer({
               label: 'Blur (px)',
-              description: 'Empty = 12',
+              description: '0–40 px. Empty = 12. Only with an image',
               validation: { min: 0, max: 40 },
             }),
           },
-          { label: 'Page background' },
+          { label: 'Page background', layout: [12, 6, 6] },
         ),
-        header: fields.object(
+        chrome: fields.object(
           {
-            logo: imageSource('Logo', 'Replaces the name at the top left of every page', 'logo'),
+            logo: imageSource('Logo', 'Top left of every page. svg or transparent png', 'logo'),
+            favicon: imageSource('Favicon', 'Tab icon. Square svg or png (no .ico)', 'favicon'),
           },
-          { label: 'Header' },
-        ),
-        links: fields.array(
-          fields.object({
-            label: fields.text({ label: 'Label', validation: { isRequired: true } }),
-            url: fields.url({ label: 'URL', validation: { isRequired: true } }),
-          }),
-          {
-            label: 'Profile links',
-            description: 'Icons under the bio',
-            itemLabel: (props) => props.fields.label.value || 'Link',
-          },
-        ),
-        tab: fields.object(
-          {
-            favicon: imageSource('Favicon', 'Tab icon; svg or png', 'favicon'),
-          },
-          { label: 'Browser tab' },
+          { label: 'Header and browser tab' },
         ),
       },
     }),

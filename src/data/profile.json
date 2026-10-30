@@ -1,27 +1,53 @@
 {
   "hero": {
-    "banner": { "discriminant": "none" },
-    "photo": { "discriminant": "none" },
+    "banner": {
+      "upload": "../assets/shared/82ed58f0594dba18.png"
+    },
+    "photo": {
+      "upload": "../assets/site/photo/hero/photo/upload.gif"
+    },
     "reel": "https://www.youtube.com/watch?v=9vX-9SAaqUo",
     "name": "Gann4Life",
     "tagline": "Unity Game Developer & 2D Animator",
-    "bio": "Skeletal and cutout animation in Spine with mesh deformation, bringing other artists' art to life."
+    "bio": "Skeletal and cutout animation in Spine with mesh deformation, bringing other artists' art to life.",
+    "links": [
+      {
+        "label": "GitHub",
+        "url": "https://github.com/gann4life"
+      },
+      {
+        "label": "itch.io",
+        "url": "https://gann4life.itch.io"
+      },
+      {
+        "label": "SoundCloud",
+        "url": "https://soundcloud.com/gann4life"
+      },
+      {
+        "label": "Bandcamp",
+        "url": "https://gann4life.bandcamp.com"
+      },
+      {
+        "label": "DeviantArt",
+        "url": "https://gann4life.deviantart.com"
+      },
+      {
+        "label": "YouTube",
+        "url": "https://www.youtube.com/@gann4life"
+      }
+    ]
   },
   "background": {
-    "image": { "discriminant": "none" }
+    "image": {
+      "upload": "../assets/site/background/background/image/upload.png"
+    }
   },
-  "header": {
-    "logo": { "discriminant": "none" }
-  },
-  "links": [
-    { "label": "GitHub", "url": "https://github.com/gann4life" },
-    { "label": "itch.io", "url": "https://gann4life.itch.io" },
-    { "label": "SoundCloud", "url": "https://soundcloud.com/gann4life" },
-    { "label": "Bandcamp", "url": "https://gann4life.bandcamp.com" },
-    { "label": "DeviantArt", "url": "https://gann4life.deviantart.com" },
-    { "label": "YouTube", "url": "https://www.youtube.com/@gann4life" }
-  ],
-  "tab": {
-    "favicon": { "discriminant": "none" }
+  "chrome": {
+    "logo": {
+      "upload": "../assets/site/logo/chrome/logo/upload.png"
+    },
+    "favicon": {
+      "upload": "../assets/site/favicon/chrome/favicon/upload.png"
+    }
   }
 }
