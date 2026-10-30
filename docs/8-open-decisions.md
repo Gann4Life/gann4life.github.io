@@ -4,8 +4,19 @@
 
 - Single-page home vs separate sections
 - Domain name (only worth it to decouple the URL from the repo name)
+- **Blog: content rules** (issue #14). Does [section 6](6-content-rules.md) bind post text (e.g. a devlog about an `ai-built` project describing "my code")? Recommended: yes, the authorship and credit rules apply to any claim in a post; no new fields.
+- **Blog: draft images in the shared `src/assets/blog/` folder** (issue #14). All posts share one asset folder, so under the asset folder rule it is committed as soon as one published post references it, and images used only by draft posts get committed with it. This contradicts "a draft entry and its assets live only on the dev machine". Recommended: per-post folders `src/assets/blog/<slug>/` (Keystatic config change; existing published paths, if any, migrate). Until decided, keep draft-only post images out of commits by hand.
+- **Blog: unknown `work` slugs** (issue #14). A slug in `work` that matches no published entry is silently skipped (an existing draft post already holds a placeholder value). Recommended: fail the build for slugs that match no entry at all; keep skipping slugs of draft `work` entries, since production drops them.
+- **Blog: link back from `work` pages** (issue #14). `work` → posts is one-way today. Recommended: leave as is until there are posts worth linking.
 
 ## Decided
+
+### 2026-10-29 — `blog` collection specified as built (issue #14)
+
+- **Decision**: the content model has two collections. `blog` is specified field-for-field as `src/content.config.ts` defines it (`title`, optional `slug`, `date`, `summary`, `cover`, `work`, `draft`), with the same draft semantics as `work`, routes `/blog/` and `/blog/<slug>/`, and blog URLs in the sitemap only when a post is published. No behavior change.
+- **Reason**: the spec said "one collection" while the code, CMS and phase list already shipped a blog.
+- **Open follow-ups**: content rules for posts, shared asset folder vs draft exclusion, unknown `work` slugs, back-links (listed under Open).
+- **Affects**: [section 2](2-content-model.md) intro and "Blog posts"; [section 3](3-pages.md) blog route and "Base-path rule" (`related` → `work`).
 
 ### 2026-10-29 — Hotfix path (issue #17)
 

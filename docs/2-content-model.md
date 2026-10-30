@@ -1,6 +1,7 @@
 # 2. Content model
 
-One collection: `work`. One file per entry: `src/content/work/<slug>.md`.
+Two collections: `work` (below) and `blog` (see "Blog posts"). One file per
+`work` entry: `src/content/work/<slug>.md`.
 Any project fits: software, games, apps, web demos, art, models, animation,
 music — personal, commissioned, client or job work. Every entry gets its own
 page at `/work/<slug>` ([section 3](3-pages.md)).
@@ -115,6 +116,31 @@ A `draft: true` entry and its assets live only on the dev machine until publishe
 - Keep the original license notice (e.g. MIT copyright).
 - `contribution` lists exactly what I added or changed.
 - Make sure the linked README/docs are current before publishing the entry.
+
+**Blog posts**
+
+Collection `blog`: devlogs and posts, written in `/keystatic` (Blog). One file per post: `src/content/blog/<slug>.md`.
+
+```yaml
+---
+title: "Post title"   # required; the file name is the slug: post-title.md -> /blog/post-title/
+                      # Keystatic generates it from the title (editable); an explicit `slug:` is optional
+date: 2026-10-29      # required; sorts the list, newest first; shown as "29 October 2026" (UTC)
+summary: ""           # optional, one line: list subtitle, page subheading, meta description
+cover: "../../assets/blog/cover.png"   # optional, in-repo image (rule 6)
+work: []              # optional: slugs of related `work` entries
+draft: false          # same semantics as `work`; see "Drafts stay out of git"
+---
+
+Post body in Markdown. Body images go in `src/assets/blog/`.
+```
+
+- Missing `summary` / `work` / `draft` default to `""` / `[]` / `false`; `cover` may be absent. There are no other fields; Keystatic edits exactly these plus the body.
+- `cover`: list thumbnail, decorative cover at the top of the post (`alt=""`), and the post's Open Graph image (1200 px wide PNG). Keystatic stores covers and body images in `src/assets/blog/`.
+- `work`: rendered as "Related work" links at the end of the post. One-way: `work` pages do not list posts. A slug that matches no published `work` entry is skipped without an error.
+- `draft`: identical to `work`. A missing `draft` means published; Keystatic starts new posts as drafts. Drafts show on the dev server (marked "Draft") and are dropped from production builds, images included. They stay out of git under the same exclude script and hook.
+- Routes: `/blog/` (all published posts as tiles) and `/blog/<slug>/` ([section 3](3-pages.md)). The header "Blog" link and the sitemap's blog URLs appear only when at least one post is published.
+- No contribution, role, authorship or credit fields. Whether [section 6](6-content-rules.md) applies to post text is open ([section 8](8-open-decisions.md)).
 
 **Profile**
 - One `profile` file (`src/data/profile.json`): name, tagline, bio and a list of profile links (label + url), edited from the panel and shown on the home page and footer.
