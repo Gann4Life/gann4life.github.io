@@ -30,9 +30,9 @@ started: 2025-06-01   # creation/start date — used for sorting and year filter
 featured: true
 draft: false          # true = local only: dev server, never committed, never published (see "Drafts stay out of git")
 tools: [Unity, C#, Spine]   # each tool links to /work/t/<tool-slug>/ (see "Tool pages"); only names in TOOLS (src/vocab.ts), offered as a picker
-cover: "../../assets/project-name/cover.png"   # thumbnail, in-repo, see section 1
+cover: "../../assets/project-name/cover.png"   # thumbnail, in-repo, named after the field (section 1 "Uploads")
 gallery:              # any number of extra images, in-repo
-  - image: "../../assets/project-name/shot-1.png"
+  - image: "../../assets/project-name/gallery/0/image.png"   # Keystatic's name: field, item index, sub-field (section 1 "Uploads")
     caption: ""
 media:                # embeds and players, see section 4
   - type: video       # video | audio | webgl
@@ -88,7 +88,7 @@ A `draft: true` entry and its assets live only on the dev machine until publishe
   - **Reference by slug folder**: an entry also references every file under `src/assets/<slug>/` and `public/media/<slug>/` whose folder name equals its slug (file name, or explicit `slug:`), so images an import downloaded but no field lists yet stay with their draft. The folders `blog/`, `shared/` and `site/` are not slug folders: their files count only explicit text references.
   - So a file used only by drafts is excluded; a file used by a draft and a published entry is committed; other files in the same folder are judged separately. A file referenced by nothing is **not** excluded and **not** blocked by the hook: the script prints a `WARNING` line naming each unreferenced file (so it can be deleted or linked) and still exits 0.
   - Blog covers and body images may stay in the shared `src/assets/blog/`: draft-only images there are excluded file by file.
-- **Pre-commit hook** (`.githooks/pre-commit`, committed; enabled per clone with `git config core.hooksPath .githooks`, documented in the README setup): first runs the duplicate resolver in fix mode (see "Duplicate media files"), then re-runs the script, then blocks the commit if any staged added/copied/modified/renamed file is a draft entry or an excluded asset file. This covers files already tracked and `git add -f`. Staged deletions are always allowed, so `git rm --cached` of a draft goes through. The error names each blocked file and how to unstage it.
+- **Pre-commit hook** (`.githooks/pre-commit`, committed; enabled per clone with `git config core.hooksPath .githooks`, documented in the README setup): first runs the duplicate resolver in report mode (see "Duplicate media files"), then re-runs the script, then blocks the commit if any staged added/copied/modified/renamed file is a draft entry or an excluded asset file. This covers files already tracked and `git add -f`. Staged deletions are always allowed, so `git rm --cached` of a draft goes through. The error names each blocked file and how to unstage it.
 - **Windows constraint**: the hook runs under Git for Windows `sh`. It is a POSIX `sh` script that only calls `git` and `node`, has LF line endings (pinned in `.gitattributes`) and the executable bit set in the index.
 - **Publishing** = set `draft: false` (untick Draft). On the next commit the script drops the entry and the asset files it references from the exclude block, and they are committed together.
 - **Unpublishing** a committed entry (back to `draft: true`) does not untrack it: `.git/info/exclude` never applies to tracked files. The hook then blocks further changes to it until it is removed with `git rm --cached`; the script reports tracked drafts.
@@ -108,6 +108,7 @@ Byte-identical media files are merged into one copy so the same image, video, au
 - **Exit codes**: report mode exits 1 when any mergeable or `SKIPPED` group exists, else 0; fix mode exits 1 only when something is left unmerged.
 - **Drafts**: the kept copy follows the asset file rule like any other file: if only draft entries reference it, it stays local; a draft reference adds no exposure, since a published entry already referenced the same bytes or the file stays excluded.
 - **Pre-commit hook (report only)**: runs the report and never changes files or blocks the commit (decision 2026-10-30: Keystatic copies images into each entry's own folder on save, so automatic merging fought the panel and once dropped the banner). Merge by hand with `npm run dupes -- --fix` when wanted; `src/assets/site/` (panel images) is never merged.
+- **Per-entry copies are expected**: Keystatic and the in-site editor keep every frontmatter image under the entry's own folder and field name (`src/assets/<slug>/cover.<ext>`, `.../gallery/<index>/image.<ext>`; [section 1](1-stack.md) "Uploads"), and each save copies an image back there from wherever its field points. So merging such a file into `shared/` lasts only until that entry's next save, which copies the bytes back and leaves the shared copy unreferenced (`WARNING`). The same image used by two entries is reported as a duplicate and may stay one.
 - **CI (report only)**: the Pages workflow runs `npm run dupes` before every Astro build ([section 1](1-stack.md)) and prints duplicates without failing the run. CI never rewrites, commits or pushes.
 
 **Rules**
@@ -176,14 +177,14 @@ title: "Post title"   # required; the file name is the slug: post-title.md -> /b
                       # Keystatic generates it from the title (editable); an explicit `slug:` is optional
 date: 2026-10-29      # required; sorts the list, newest first; shown as "29 October 2026" (UTC)
 summary: ""           # optional, one line: list subtitle, page subheading, meta description
-cover: "../../assets/blog/cover.png"   # optional, in-repo image (rule 6)
+cover: "../../assets/blog/post-title/cover.png"   # optional, in-repo image (rule 6), in the post's own folder
 work: []              # optional: slugs of related `work` entries
 pinned: false         # optional: listed first everywhere posts are listed (see "Post order")
 featured: false       # optional: "Featured" marker in the /blog/ list only; no effect on order or on the home (see "Post order")
 draft: false          # same semantics as `work`; see "Drafts stay out of git"
 ---
 
-Post body in Markdown. Body images go in `src/assets/blog/`.
+Post body in Markdown. Body images go in `src/assets/blog/<slug>/`.
 ```
 
 - Missing `summary` / `work` / `pinned` / `featured` / `draft` default to `""` / `[]` / `false` / `false` / `false`; `cover` may be absent. There are no other fields; Keystatic and the in-site editor ([section 3](3-pages.md) "Edit mode", on `/blog/<slug>/`) edit exactly these plus the body; posts are created in Keystatic. `pinned` and `featured` are Keystatic checkboxes ("Pinned", "Featured"), unticked by default. A post may be both.
@@ -192,7 +193,7 @@ Post body in Markdown. Body images go in `src/assets/blog/`.
   - **List order** — `/blog/` list, `/work/<slug>` "Posts about this project": pinned posts, newest first; then every other post, newest first. `featured` does not reorder lists; on `/blog/` it only adds the "Featured" marker.
   - **Home order** — home "Blog" feed: the same as list order (pinned posts, newest first; then every other post, newest first); the first 3 are shown. `featured` plays no part (issue #111).
 - **Markers**: in the `/blog/` list, "Pinned" for `pinned`, "Featured" for `featured`, and "Draft" for drafts on the dev server. The home "Blog" feed shows "Pinned" (with its highlight, [section 3](3-pages.md) `/`) and "Draft" (dev server); the `/blog/` reader shows only "Draft". Neither shows "Featured".
-- `cover`: decorative cover (`alt=""`) above the body wherever the post is rendered in full (post page, `/blog/` reader, home "Blog" feed), and the post's Open Graph image (1200 px wide PNG). Keystatic and the in-site editor store covers and body images in the post's folder under the shared `src/assets/blog/` (`src/assets/blog/<slug>/`); draft-only images there stay local under the asset file rule.
+- `cover`: decorative cover (`alt=""`) above the body wherever the post is rendered in full (post page, `/blog/` reader, home "Blog" feed), and the post's Open Graph image (1200 px wide PNG). Keystatic and the in-site editor store covers and body images in the post's folder under the shared `src/assets/blog/` (`src/assets/blog/<slug>/`, the cover as `cover.<ext>`; body image names per [section 1](1-stack.md) "Uploads", still to be measured for Keystatic); draft-only images there stay local under the asset file rule.
 - `work`: rendered as "Related work" links at the end of the post. A slug that matches no published `work` entry is skipped: the link is left out and the production build logs a warning instead of failing (user decision 2026-10-30; draft entries are git-excluded, so in CI a draft's slug matches nothing). The link appears once the entry is published. The dev server skips unknown slugs silently. Each `work` page lists the published posts that name it ([section 3](3-pages.md)).
 - `draft`: identical to `work`. A missing `draft` means published; Keystatic starts new posts as drafts. Drafts show on the dev server (marked "Draft") and are dropped from production builds, images included. They stay out of git under the same exclude script and hook.
 - Routes: `/blog/`, `/blog/page/<n>/` and `/blog/<slug>/`, all one split view (post list + reader) ([section 3](3-pages.md)). The post slug `page` is reserved. The header "Blog" link and the sitemap's blog URLs appear only when at least one post is published.
