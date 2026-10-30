@@ -637,6 +637,11 @@ h2 {
   .tile:not(.tile--plain):focus-visible .tile__text {
     opacity: 1;
   }
+
+  .tile:not(.tile--plain):hover .tile__image,
+  .tile:not(.tile--plain):focus-visible .tile__image {
+    filter: brightness(0.55) blur(4px);
+  }
 }
 
 .tile:focus-visible {
