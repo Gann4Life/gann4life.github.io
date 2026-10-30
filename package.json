@@ -12,7 +12,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "add": "node scripts/add.mjs",
-    "sync": "node scripts/sync.mjs"
+    "sync": "node scripts/sync.mjs",
+    "check-urls": "node scripts/check-urls.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^7.1.2",
