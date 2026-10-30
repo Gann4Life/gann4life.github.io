@@ -108,6 +108,7 @@ const bannerSrc =
             <Tile href={withBase(`/work/${e.id}/`)} title={e.data.title} eyebrow={tileMeta(e)} subtitle={e.data.position || undefined} image={e.data.cover} index={i} edit={`work/item/${e.id}`} />
           ))}
         </div>
+        <p class="band__more"><a class="button" href={withBase('/work/all/')}>View all →</a></p>
       </section>
     )}
 
