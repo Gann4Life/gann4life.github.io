@@ -3,6 +3,7 @@ import { rmSync } from 'node:fs';
 import { defineConfig, envField } from 'astro/config';
 import react from '@astrojs/react';
 import keystatic from '@keystatic/astro';
+import workEditor from './integrations/work-editor/index.mjs';
 
 const isDev = process.argv.includes('dev');
 const isStaging = process.env.DEPLOY_TARGET === 'staging';
@@ -22,7 +23,7 @@ export default defineConfig({
     },
   },
   integrations: [
-    ...(isDev ? [react(), keystatic()] : []),
+    ...(isDev ? [react(), keystatic(), workEditor()] : []),
     ...(isStaging
       ? [
           {

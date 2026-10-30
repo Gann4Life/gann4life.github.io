@@ -81,6 +81,21 @@ export const LINK_TYPES = [
   'other',
 ] as const;
 
+export const FIELD_HELP = {
+  title: 'Name shown on the page and in lists. Once the entry exists, changing the title does not change its URL.',
+  body: 'The text under What I did on the project page.',
+  contribution:
+    'One or two sentences on what you made yourself (not the game description, not the roles). On team projects, only your part. Required to publish.',
+  draft: 'Shown on the dev server only. Untick to publish.',
+  featured: 'Shown in the Featured band at the top of the home page.',
+  kind: 'What it is.',
+  context: 'Who it was for.',
+  status: 'Where the project stands today.',
+  team: 'Whether you made it alone or with others.',
+  started: 'When work began. Its year is shown on the page and it sets the sort order.',
+  ended: 'When work stopped. Leave empty if there is no end date.',
+} as const;
+
 /** Text shown when a link has no custom label. */
 export const LINK_LABELS: Record<(typeof LINK_TYPES)[number], string> = {
   source: 'Source code',

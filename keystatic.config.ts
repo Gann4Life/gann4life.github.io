@@ -2,6 +2,7 @@ import { config, collection, fields, singleton } from '@keystatic/core';
 import {
   AUTHORSHIP,
   CONTEXTS,
+  FIELD_HELP,
   KINDS,
   LINK_LABELS,
   LINK_TYPES,
@@ -18,9 +19,9 @@ const options = (values: readonly string[]) => values.map((value) => ({ label: v
 const entryImage = (label: string) =>
   fields.image({ label, directory: 'src/assets', publicPath: '../../assets/' });
 
-const titleWithSlug = (description: string, reserved: string[]) =>
+const titleWithSlug = (description: string, reserved: string[], nameHelp?: string) =>
   fields.slug({
-    name: { label: 'Title', validation: { isRequired: true } },
+    name: { label: 'Title', description: nameHelp, validation: { isRequired: true } },
     slug: {
       label: 'Slug',
       description: `${description} Generated from the title; edit if needed.`,
@@ -57,13 +58,13 @@ export default config({
       format: { contentField: 'body' },
       columns: ['kind', 'draft', 'status'],
       schema: {
-        title: titleWithSlug('URL of the page: /work/<slug>.', ['c', 't', 'site', 'all']),
+        title: titleWithSlug('URL of the page: /work/<slug>.', ['c', 't', 'site', 'all'], FIELD_HELP.title),
         draft: fields.checkbox({
           label: 'Draft',
-          description: 'Shown on the dev server only. Untick to publish.',
+          description: FIELD_HELP.draft,
           defaultValue: true,
         }),
-        featured: fields.checkbox({ label: 'Featured', description: 'Shown in the Featured band at the top of the home page.' }),
+        featured: fields.checkbox({ label: 'Featured', description: FIELD_HELP.featured }),
         cover: entryImage('Cover (thumbnail)'),
         media: fields.array(
           fields.object({
@@ -80,7 +81,7 @@ export default config({
         ),
         contribution: fields.text({
           label: 'What I did',
-          description: 'One or two sentences on what you made yourself (not the game description, not the roles). On team projects, only your part. Required to publish.',
+          description: FIELD_HELP.contribution,
           multiline: true,
         }),
         roles: fields.multiselect({ label: 'Roles', description: 'Drives the filters.', options: options(ROLES) }),
@@ -125,17 +126,22 @@ export default config({
           }),
           { label: 'Credits', itemLabel: (props) => props.fields.name.value || 'Credit' },
         ),
-        body: fields.markdoc({ label: 'Description', description: 'The text under What I did on the project page.', extension: 'md' }),
-        kind: fields.select({ label: 'Kind', description: 'What it is.', options: options(KINDS), defaultValue: 'software' }),
+        body: fields.markdoc({ label: 'Description', description: FIELD_HELP.body, extension: 'md' }),
+        kind: fields.select({ label: 'Kind', description: FIELD_HELP.kind, options: options(KINDS), defaultValue: 'software' }),
         context: fields.select({
           label: 'Context',
-          description: 'Who it was for.',
+          description: FIELD_HELP.context,
           options: options(CONTEXTS),
           defaultValue: 'personal',
         }),
-        status: fields.select({ label: 'Status', options: options(STATUSES), defaultValue: 'in-development' }),
-        started: fields.date({ label: 'Started', validation: { isRequired: true } }),
-        team: fields.select({ label: 'Team', options: options(TEAMS), defaultValue: 'solo' }),
+        status: fields.select({
+          label: 'Status',
+          description: FIELD_HELP.status,
+          options: options(STATUSES),
+          defaultValue: 'in-development',
+        }),
+        started: fields.date({ label: 'Started', description: FIELD_HELP.started, validation: { isRequired: true } }),
+        team: fields.select({ label: 'Team', description: FIELD_HELP.team, options: options(TEAMS), defaultValue: 'solo' }),
         authorship: fields.select({
           label: 'Authorship',
           description: 'ai-built entries take designer/spec roles, not programmer (docs/2-content-model.md).',
