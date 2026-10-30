@@ -17,13 +17,18 @@ const options = (values: readonly string[]) => values.map((value) => ({ label: v
 const entryImage = (label: string) =>
   fields.image({ label, directory: 'src/assets', publicPath: '../../assets/' });
 
-const titleWithSlug = (description: string) =>
+const titleWithSlug = (description: string, reserved: string[]) =>
   fields.slug({
     name: { label: 'Title', validation: { isRequired: true } },
     slug: {
       label: 'Slug',
       description: `${description} Generated from the title; edit if needed.`,
-      validation: { pattern: { regex: /^(?!(?:c|site)$)[a-z0-9]+(?:-[a-z0-9]+)*$/, message: 'Lowercase words joined by hyphens ("c" and "site" are reserved).' } },
+      validation: {
+        pattern: {
+          regex: new RegExp(`^(?!(?:${reserved.join('|')})$)[a-z0-9]+(?:-[a-z0-9]+)*$`),
+          message: `Lowercase letters, digits and hyphens (e.g. my-slug). Taken by site URLs: ${reserved.map((r) => `"${r}"`).join(', ')}.`,
+        },
+      },
     },
   });
 
@@ -51,7 +56,7 @@ export default config({
       format: { contentField: 'body' },
       columns: ['kind', 'draft', 'status'],
       schema: {
-        title: titleWithSlug('URL of the page: /work/<slug>.'),
+        title: titleWithSlug('URL of the page: /work/<slug>.', ['c', 't', 'site']),
         kind: fields.select({ label: 'Kind', description: 'What it is.', options: options(KINDS), defaultValue: 'software' }),
         context: fields.select({
           label: 'Context',
@@ -148,17 +153,22 @@ export default config({
       path: 'src/content/blog/*',
       slugField: 'title',
       format: { contentField: 'body' },
-      columns: ['date', 'draft'],
+      columns: ['date', 'pinned', 'featured', 'draft'],
       schema: {
-        title: titleWithSlug('URL of the post: /blog/<slug>.'),
+        title: titleWithSlug('URL of the post: /blog/<slug>.', ['page']),
         date: fields.date({ label: 'Date', defaultValue: { kind: 'today' }, validation: { isRequired: true } }),
-        summary: fields.text({ label: 'Summary', description: 'One line, shown on the blog list.' }),
+        summary: fields.text({ label: 'Summary', description: 'One line: home tile subtitle, post subheading and page description.' }),
         cover: fields.image({ label: 'Cover', directory: 'src/assets/blog', publicPath: '../../assets/blog/' }),
         work: fields.array(fields.text({ label: 'Work slug' }), {
           label: 'Related work',
           itemLabel: (props) => props.value || 'Slug',
         }),
-        draft: fields.checkbox({ label: 'Draft', description: 'Untick to publish.', defaultValue: true }),
+        pinned: fields.checkbox({ label: 'Pinned', description: 'Listed above all other posts on the home page and the blog list, newest pinned first.' }),
+        featured: fields.checkbox({
+          label: 'Featured',
+          description: 'The home page shows the newest featured post right after the pinned ones (one at a time); "Featured" marker on the blog list.',
+        }),
+        draft: fields.checkbox({ label: 'Draft', description: 'Shown on the dev server only. Untick to publish.', defaultValue: true }),
         body: fields.markdoc({
           label: 'Post',
           extension: 'md',
