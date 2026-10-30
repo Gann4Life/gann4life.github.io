@@ -4,17 +4,16 @@ import Tile from '../components/Tile.astro';
 import ProfileLinks from '../components/ProfileLinks.astro';
 import EditLink from '../components/EditLink.astro';
 import { profile } from '../profile';
-import { embedUrl, getWork, groupByCategory, skills, tileMeta } from '../lib/work';
+import { embedUrl, getWork, groupByCategory, skills, tileMeta, toolSlug } from '../lib/work';
+import { formatDate, getPosts, homeOrder } from '../lib/blog';
 import { withBase } from '../lib/paths';
 import { getImage, Image } from 'astro:assets';
 import { siteAppearance } from '../lib/appearance';
 
 const entries = await getWork();
-const groups = groupByCategory(entries);
-const bands = [
-  { id: 'work', title: 'Work', items: groups.filter((g) => !g.category.hobby) },
-  { id: 'hobbies', title: 'Hobbies', items: groups.filter((g) => g.category.hobby) },
-].filter((band) => band.items.length > 0);
+const posts = await getPosts();
+const latestPosts = homeOrder(posts).slice(0, 3);
+const chips = groupByCategory(entries).map((g) => g.category);
 
 const reel = profile.reel ? embedUrl('video', profile.reel) : null;
 const isReel = (e: (typeof entries)[number]) => e.data.media.some((m) => m.src === profile.reel);
@@ -80,19 +79,14 @@ const bannerSrc =
       )}
     </section>
 
-    {bands.map((band) => (
-      <section class="band" aria-labelledby={`${band.id}-title`}>
-        <h2 class="band__title" id={`${band.id}-title`}>{band.title}</h2>
-        <nav class="category-links" aria-label={band.title}>
-          {band.items.map(({ category, entries: items }, i) => (
-            <a href={withBase(`/work/c/${category.key}/`)} style={`--i: ${i}`}>
-              <span class="category-links__label">{category.label}</span>
-              <span class="category-links__count">{items.length}</span>
-            </a>
-          ))}
-        </nav>
-      </section>
-    ))}
+    {(chips.length > 0 || posts.length > 0) && (
+      <nav class="home-chips" aria-label="Browse">
+        <ul class="pills">
+          {chips.map((c) => <li><a href={withBase(`/work/c/${c.key}/`)}>{c.label}</a></li>)}
+          {posts.length > 0 && <li><a href={withBase('/blog/')}>Blog</a></li>}
+        </ul>
+      </nav>
+    )}
 
     {featured.length > 0 && (
       <section class="band" aria-labelledby="featured-title">
@@ -119,7 +113,19 @@ const bannerSrc =
     {skillList.length > 0 && (
       <section class="band" aria-labelledby="skills-title">
         <h2 class="band__title" id="skills-title">Tools</h2>
-        <ul class="pills pills--quiet">{skillList.map((s) => <li>{s}</li>)}</ul>
+        <ul class="pills">{skillList.map((s) => <li><a href={withBase(`/work/t/${toolSlug(s)}/`)}>{s}</a></li>)}</ul>
+      </section>
+    )}
+
+    {latestPosts.length > 0 && (
+      <section class="band" aria-labelledby="posts-title">
+        <h2 class="band__title" id="posts-title">Latest posts</h2>
+        <div class="grid">
+          {latestPosts.map((p, i) => (
+            <Tile href={withBase(`/blog/${p.id}/`)} title={p.data.title} eyebrow={formatDate(p.data.date)} subtitle={p.data.summary || undefined} image={p.data.cover} index={i} headingLevel={3} edit={`blog/item/${p.id}`} />
+          ))}
+        </div>
+        <p class="band__more"><a class="button" href={withBase('/blog/')}>All posts →</a></p>
       </section>
     )}
 
