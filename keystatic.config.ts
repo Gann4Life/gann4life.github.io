@@ -157,11 +157,12 @@ export default config({
       schema: {
         title: titleWithSlug('URL of the post: /blog/<slug>.', ['page']),
         date: fields.date({ label: 'Date', defaultValue: { kind: 'today' }, validation: { isRequired: true } }),
-        summary: fields.text({ label: 'Summary', description: 'One line: home tile subtitle, post subheading and page description.' }),
+        summary: fields.text({ label: 'Summary', description: 'One line: post subheading and page description.' }),
         cover: fields.image({ label: 'Cover', directory: 'src/assets/blog', publicPath: '../../assets/blog/' }),
-        work: fields.array(fields.text({ label: 'Work slug' }), {
+        work: fields.array(fields.relationship({ label: 'Project', collection: 'work', validation: { isRequired: true } }), {
           label: 'Related work',
-          itemLabel: (props) => props.value || 'Slug',
+          description: 'Projects this post is about; the post is listed on their pages.',
+          itemLabel: (props) => props.value ?? 'Choose a project',
         }),
         pinned: fields.checkbox({ label: 'Pinned', description: 'Listed above all other posts on the home page and the blog list, newest pinned first.' }),
         featured: fields.checkbox({
