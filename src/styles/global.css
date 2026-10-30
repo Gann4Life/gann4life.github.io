@@ -14,6 +14,7 @@
   --font-body: "Inter Variable", system-ui, sans-serif;
   --font-display: "Space Grotesk Variable", "Inter Variable", system-ui, sans-serif;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --header-h: calc(2rem + 2.2rem + 1px);
 }
 
 @media (prefers-color-scheme: light) {
@@ -27,6 +28,12 @@
     --accent: #5b4bff;
     --accent-2: #0891b2;
     --accent-fg: #ffffff;
+  }
+}
+
+@media (max-width: 40rem) {
+  :root {
+    --header-h: calc(2rem + 2.75rem + 1px);
   }
 }
 
@@ -135,6 +142,8 @@ h2 {
 }
 
 .site-header {
+  flex-wrap: nowrap;
+  height: var(--header-h);
   position: sticky;
   top: 0;
   z-index: 5;
@@ -154,11 +163,16 @@ h2 {
 
 .site-header__nav {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.25rem;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  mask-image: linear-gradient(to right, #000 85%, transparent);
 }
 
 .site-header__nav a {
+  white-space: nowrap;
   color: var(--muted);
   text-decoration: none;
   font-weight: 500;
@@ -186,20 +200,7 @@ h2 {
 }
 
 @media (max-width: 40rem) {
-  .site-header {
-    flex-wrap: nowrap;
-  }
-
-  .site-header__nav {
-    min-width: 0;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-    mask-image: linear-gradient(to right, #000 85%, transparent);
-  }
-
   .site-header__nav a {
-    white-space: nowrap;
     min-height: 2.75rem;
     display: inline-flex;
     align-items: center;
@@ -285,11 +286,11 @@ h2 {
 .hero--banner::before {
   content: "";
   position: absolute;
-  inset: 0 calc(var(--gutter) * -1);
+  inset: calc(-1 * var(--header-h)) calc(var(--gutter) * -1) 0;
   z-index: -1;
-  background:
-    linear-gradient(to bottom, rgb(8 8 11 / 0.55), var(--bg)),
-    var(--hero-banner-image) center / cover no-repeat;
+  background: var(--hero-banner-image) center / cover no-repeat;
+  -webkit-mask-image: linear-gradient(to bottom, #000, transparent);
+  mask-image: linear-gradient(to bottom, #000, transparent);
 }
 
 .hero__id {
@@ -522,6 +523,13 @@ h2 {
 .hero__bio {
   max-width: 44rem;
   color: var(--muted);
+}
+
+.hero--banner .hero__kicker,
+.hero--banner .hero__roles,
+.hero--banner .hero__bio {
+  color: color-mix(in srgb, var(--fg) 88%, transparent);
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.7), 0 0 1.25rem rgb(0 0 0 / 0.55);
 }
 
 .pills {
