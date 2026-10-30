@@ -10,7 +10,7 @@
 
 Recorded, not specified; investigation belongs in a separate bug issue.
 
-- **2026-10-30 — `LocalImageUsedWrongly` on draft pages in dev**: after saving in Keystatic while production builds ran in parallel, the dev server threw `LocalImageUsedWrongly` on draft pages; restarting the dev server fixed it. Cause unknown (suspects, unverified: the parallel `prebuild` exclude/dedupe scripts touching files the dev server watches, or a stale content/image cache). No spec change until the cause is known.
+- **2026-10-30 — `LocalImageUsedWrongly` on draft pages in dev**: after saving in Keystatic while production builds ran in parallel, the dev server threw `LocalImageUsedWrongly` on draft pages; restarting the dev server fixed it. **Resolved (issue #77)**. Cause: `astro build` always rewrites `.astro/content-assets.mjs`, shared with the dev server; the build's draft filter (`withoutDrafts`, `src/content.config.ts`) leaves draft image imports out of it, so a running dev server reloads the map and draft covers stay strings. `.astro/data-store.json` is not shared; saving any content entry or restarting dev heals it. Fix: `npm run build` runs `scripts/build.mjs`, which keeps `.astro/content-assets.mjs` in memory, runs `astro build` and restores the file when the build ends (success, failure or Ctrl+C; not if the process is killed), exiting with the build's code; no-op when the file does not exist (CI). Draft filtering is unchanged. Trade-off: while a build runs, draft pages on a running dev server can still 500 and recover when it ends; a work entry saved during a build gets the pre-build map back until the next content save or dev restart.
 
 ## Decided
 
