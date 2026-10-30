@@ -16,7 +16,8 @@ The work is the page: embeds and images come first, links after.
 | Own WebGL build | Iframe | `webgl`, path in `public/webgl/<slug>/` or URL |
 
 **Where local media lives**
-- Images: `src/assets/` (imported through `astro:assets`).
+- Images: `src/assets/` (imported through `astro:assets`), one folder per entry: `src/assets/<slug>/` for work, `src/assets/blog/<slug>/` for posts. Keystatic and the in-site editor both upload there; the editor accepts PNG, JPEG, WebP, AVIF and GIF up to 10 MB, names files `<name>-<12 hex of SHA-256>.<ext>` and deletes a replaced or removed image only when it sits in that folder and nothing else references it ([section 1](1-stack.md) "In-site editor").
+- Gallery captions double as the images' alt text; covers are decorative (`alt=""`).
 - Files served as-is (own audio, video, PDFs): `public/media/<slug>/`, referenced as `/media/<slug>/<file>` through `withBase` ([section 3](3-pages.md)).
 - WebGL builds: `public/webgl/<slug>/`, one folder per build, left untouched by the duplicate resolver.
 - Site appearance uploads (photo, logo, favicon, banner, background): `src/assets/site/<field>/`. Appearance fields may instead hold an external `https://` URL, used directly and never downloaded: the only hotlinked media on the site ([section 2](2-content-model.md) "Site appearance"); reachability is reported by the remote URL check ([section 1](1-stack.md)).
