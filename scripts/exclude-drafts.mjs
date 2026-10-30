@@ -14,9 +14,13 @@ const git = (args, cwd) =>
 
 let TOP;
 let excludeFile;
+let linkedWorktree = false;
 try {
   TOP = git(['rev-parse', '--show-toplevel'], SITE).trim();
   excludeFile = path.resolve(TOP, git(['rev-parse', '--git-path', 'info/exclude'], TOP).trim());
+  const gitDir = path.resolve(TOP, git(['rev-parse', '--git-dir'], TOP).trim());
+  const commonDir = path.resolve(TOP, git(['rev-parse', '--git-common-dir'], TOP).trim());
+  linkedWorktree = gitDir !== commonDir;
 } catch {
   process.exit(0);
 }
@@ -160,7 +164,7 @@ if (hadBlock || blockLines.length > 0) {
   const outLines = blockLines.length > 0 ? [...kept, BEGIN, ...blockLines, END] : kept;
   next = outLines.length > 0 ? outLines.join('\n') + '\n' : '';
 }
-if (next !== existing) {
+if (next !== existing && !linkedWorktree) {
   mkdirSync(path.dirname(excludeFile), { recursive: true });
   writeFileSync(excludeFile, next);
 }
