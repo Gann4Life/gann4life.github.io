@@ -1,16 +1,13 @@
 ---
-import type { Page } from 'astro';
-
-/** Page navigation for paginated collections: first, last and pages around the current one; renders nothing for a single page. */
+/** Page navigation: first, last and pages around the current one; href(n) gives the URL of page n (base path included); compact shows arrows only. Renders nothing for a single page. */
 interface Props {
-  page: Page<unknown>;
+  current: number;
+  last: number;
+  href: (n: number) => string;
+  compact?: boolean;
 }
 
-const { page } = Astro.props;
-const { currentPage: current, lastPage: last } = page;
-
-const base = page.url.current.replace(/\/\d+\/?$/, '').replace(/\/$/, '');
-const href = (n: number) => (n === 1 ? `${base}/` : `${base}/${n}/`);
+const { current, last, href, compact } = Astro.props;
 
 const numbers: (number | '…')[] = [];
 for (let n = 1; n <= last; n++) {
@@ -20,8 +17,8 @@ for (let n = 1; n <= last; n++) {
 ---
 
 {last > 1 && (
-  <nav class="pager" aria-label="Pages">
-    {page.url.prev ? <a class="pager__step" href={page.url.prev} rel="prev">← Previous</a> : <span class="pager__step" aria-hidden="true"></span>}
+  <nav class:list={['pager', { 'pager--compact': compact }]} aria-label="Pages">
+    {current > 1 ? <a class="pager__step" href={href(current - 1)} rel="prev" aria-label={compact ? 'Previous page' : undefined}>{compact ? '←' : '← Previous'}</a> : <span class="pager__step" aria-hidden="true"></span>}
     <ol>
       {numbers.map((n) =>
         n === '…' ? (
@@ -33,6 +30,6 @@ for (let n = 1; n <= last; n++) {
         ),
       )}
     </ol>
-    {page.url.next ? <a class="pager__step" href={page.url.next} rel="next">Next →</a> : <span class="pager__step" aria-hidden="true"></span>}
+    {current < last ? <a class="pager__step" href={href(current + 1)} rel="next" aria-label={compact ? 'Next page' : undefined}>{compact ? '→' : 'Next →'}</a> : <span class="pager__step" aria-hidden="true"></span>}
   </nav>
 )}

@@ -19,7 +19,7 @@ interface Props {
   page: Page<Work>;
 }
 
-const { name, total, page } = Astro.props;
+const { name, slug, total, page } = Astro.props;
 const title = page.currentPage > 1 ? `${name} — page ${page.currentPage}` : name;
 ---
 
@@ -49,6 +49,6 @@ const title = page.currentPage > 1 ? `${name} — page ${page.currentPage}` : na
       ))}
     </div>
 
-    <Pager page={page} />
+    <Pager current={page.currentPage} last={page.lastPage} href={(n) => withBase(n === 1 ? `/work/t/${slug}/` : `/work/t/${slug}/${n}/`)} />
   </main>
 </BaseLayout>

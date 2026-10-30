@@ -768,6 +768,20 @@ h2 {
   min-width: 7rem;
 }
 
+.pager--compact {
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-wrap: nowrap;
+}
+
+.pager--compact .pager__step {
+  min-width: 0;
+}
+
+.pager--compact ol {
+  flex-wrap: nowrap;
+}
+
 @media (max-width: 40rem) {
   .pager {
     flex-wrap: wrap;
@@ -777,6 +791,16 @@ h2 {
   .pager ol {
     order: -1;
     width: 100%;
+  }
+
+  .pager--compact {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+
+  .pager--compact ol {
+    order: 0;
+    width: auto;
   }
 }
 

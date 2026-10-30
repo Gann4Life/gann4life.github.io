@@ -75,6 +75,6 @@ const title = page.currentPage > 1 ? `${category.label} — page ${page.currentP
       </div>
     )}
 
-    <Pager page={page} />
+    <Pager current={page.currentPage} last={page.lastPage} href={(n) => withBase(n === 1 ? `/work/c/${category.key}/` : `/work/c/${category.key}/${n}/`)} />
   </main>
 </BaseLayout>
