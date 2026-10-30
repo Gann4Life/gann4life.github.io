@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const SITE = fileURLToPath(new URL('..', import.meta.url));
-const BEGIN = '# >>> drafts (site/scripts/exclude-drafts.mjs) >>>';
+const BEGIN = '# >>> drafts (scripts/exclude-drafts.mjs) >>>';
 const END = '# <<< drafts <<<';
 const CODE_EXTENSIONS = new Set(['.astro', '.ts', '.tsx', '.js', '.mjs', '.md', '.mdx', '.json', '.css', '.yaml', '.yml']);
 
@@ -96,7 +96,7 @@ for (const folder of folders) {
 
 const escapeGlob = (s) => s.replace(/[\\*?[\]]/g, '\\$&');
 const draftFiles = draftEntries.map((e) => e.file);
-const folderPaths = excludedFolders.map((f) => `site/src/assets/${f}`);
+const folderPaths = excludedFolders.map((f) => `src/assets/${f}`);
 const blockLines = [
   ...draftFiles.map((f) => `/${escapeGlob(f)}`),
   ...folderPaths.map((f) => `/${escapeGlob(f)}/`),
@@ -122,14 +122,14 @@ if (next !== existing) {
   writeFileSync(excludeFile, next);
 }
 
-const tracked = git(['ls-files', '-z', '--', 'site/src/content', 'site/src/assets'], TOP)
+const tracked = git(['ls-files', '-z', '--', 'src/content', 'src/assets'], TOP)
   .split('\0')
   .filter(Boolean);
 const draftFileSet = new Set(draftFiles);
 
 console.log(`drafts: ${draftFiles.length} entries and ${excludedFolders.length} asset folders kept out of git`);
 for (const f of unreferenced) {
-  console.log(`warning: site/src/assets/${f}/ is referenced by no entry (committable; delete it or link it)`);
+  console.log(`warning: src/assets/${f}/ is referenced by no entry (committable; delete it or link it)`);
 }
 for (const t of tracked) {
   if (draftFileSet.has(t)) {
@@ -137,9 +137,9 @@ for (const t of tracked) {
   }
 }
 for (const f of excludedFolders) {
-  const prefix = `site/src/assets/${f}/`;
+  const prefix = `src/assets/${f}/`;
   if (tracked.some((t) => t.startsWith(prefix))) {
-    console.log(`tracked draft assets: site/src/assets/${f}/ -> git rm -r --cached -- "site/src/assets/${f}"`);
+    console.log(`tracked draft assets: src/assets/${f}/ -> git rm -r --cached -- "src/assets/${f}"`);
   }
 }
 
@@ -151,7 +151,7 @@ if (process.argv.includes('--staged')) {
   for (const p of staged) {
     const isEntry =
       p.endsWith('.md') &&
-      (p.startsWith('site/src/content/work/') || p.startsWith('site/src/content/blog/'));
+      (p.startsWith('src/content/work/') || p.startsWith('src/content/blog/'));
     if (isEntry) {
       let content = '';
       try {
@@ -164,7 +164,7 @@ if (process.argv.includes('--staged')) {
         continue;
       }
     }
-    if (excludedFolders.some((f) => p.startsWith(`site/src/assets/${f}/`))) blocked.push(p);
+    if (excludedFolders.some((f) => p.startsWith(`src/assets/${f}/`))) blocked.push(p);
   }
   if (blocked.length > 0) {
     const out = [

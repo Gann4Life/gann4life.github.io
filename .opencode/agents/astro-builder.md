@@ -13,30 +13,6 @@ permissions:
   - action: edit
     resource: "docs/**"
     effect: deny
-  - action: edit
-    resource: "src/App.js"
-    effect: deny
-  - action: edit
-    resource: "src/index.js"
-    effect: deny
-  - action: edit
-    resource: "src/reportWebVitals.js"
-    effect: deny
-  - action: edit
-    resource: "src/setupTests.js"
-    effect: deny
-  - action: edit
-    resource: "src/style.css"
-    effect: deny
-  - action: edit
-    resource: "src/components/*.js"
-    effect: deny
-  - action: edit
-    resource: "public/index.html"
-    effect: deny
-  - action: edit
-    resource: "public/manifest.json"
-    effect: deny
   - action: shell
     resource: "git push*"
     effect: deny
@@ -53,7 +29,7 @@ Scope
 - Keep the output static. No server routes, no SSR adapters, no third-party content APIs.
 
 Constraints
-- The v2 Create React App at the repo root is live on GitHub Pages. Never edit or delete the v2 files listed in your denied edit rules; they are the fallback until the lead confirms cutover.
+- v2 is retired (tag `archive/v2`); the Astro project lives at the repo root.
 - No `git push` and no `git commit` — the lead reviews and commits.
 - No paid services, no CDN, no image host. Binaries stay in the repo and go through `astro:assets`.
 - Do not modify `DESIGN.md` or `docs/`. Report spec drift instead.

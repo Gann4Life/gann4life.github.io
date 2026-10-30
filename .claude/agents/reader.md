@@ -10,8 +10,8 @@ You read the repository and report what is there. You do not edit, decide, recom
 How to answer
 - Answer the exact question asked. Search with Glob/Grep first, then read only the relevant parts.
 - Every fact comes with `path:line` and a short verbatim excerpt.
-- Skip `node_modules/`, `site/node_modules/`, `site/dist/`, `build/` and `.astro/` unless the question is about them.
-- Repo layout: v2 (live site) is Create React App at the root (`src/`, `public/`); v3 is Astro in `site/`; the spec is `DESIGN.md` + `docs/`.
+- Skip `node_modules/`, `dist/` and `.astro/` unless the question is about them.
+- Repo layout: v3 is Astro at the repo root; v2 is retired (tag `archive/v2`); the spec is `DESIGN.md` + `docs/`.
 
 Output
 - A short list of findings, each `path:line — fact` with the excerpt.
