@@ -1,5 +1,6 @@
 ---
 import { embedUrl, type Work } from '../lib/work';
+import { withBase } from '../lib/paths';
 
 interface Props {
   items: Work['data']['media'];
@@ -25,11 +26,11 @@ const isLocal = (src: string) => src.startsWith('/');
               allowfullscreen
             />
           ) : isLocal(item.src) && item.type === 'video' ? (
-            <video src={item.src} controls preload="metadata" />
+            <video src={withBase(item.src)} controls preload="metadata" />
           ) : isLocal(item.src) && item.type === 'audio' ? (
-            <audio src={item.src} controls preload="metadata" />
+            <audio src={withBase(item.src)} controls preload="metadata" />
           ) : (
-            <a class="button" href={item.src} target="_blank" rel="noopener">Open {item.type}</a>
+            <a class="button" href={isLocal(item.src) ? withBase(item.src) : item.src} target="_blank" rel="noopener">Open {item.type}</a>
           )}
           {item.caption && <figcaption>{item.caption}</figcaption>}
         </figure>

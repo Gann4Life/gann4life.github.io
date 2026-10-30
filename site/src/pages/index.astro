@@ -5,6 +5,7 @@ import ProfileLinks from '../components/ProfileLinks.astro';
 import EditLink from '../components/EditLink.astro';
 import { profile } from '../profile';
 import { embedUrl, getWork, groupByCategory, skills, tileMeta } from '../lib/work';
+import { withBase } from '../lib/paths';
 
 const entries = await getWork();
 const groups = groupByCategory(entries);
@@ -49,7 +50,7 @@ const skillList = skills(entries).slice(0, 12);
         <h2 class="band__title" id={`${band.id}-title`}>{band.title}</h2>
         <nav class="category-links" aria-label={band.title}>
           {band.items.map(({ category, entries: items }, i) => (
-            <a href={`/work/c/${category.key}/`} style={`--i: ${i}`}>
+            <a href={withBase(`/work/c/${category.key}/`)} style={`--i: ${i}`}>
               <span class="category-links__label">{category.label}</span>
               <span class="category-links__count">{items.length}</span>
             </a>
@@ -63,7 +64,7 @@ const skillList = skills(entries).slice(0, 12);
         <h2 class="band__title" id="featured-title">Featured</h2>
         <div class="grid">
           {featured.map((e, i) => (
-            <Tile href={`/work/${e.id}/`} title={e.data.title} eyebrow={tileMeta(e)} subtitle={e.data.position || undefined} image={e.data.cover} index={i} edit={`work/item/${e.id}`} />
+            <Tile href={withBase(`/work/${e.id}/`)} title={e.data.title} eyebrow={tileMeta(e)} subtitle={e.data.position || undefined} image={e.data.cover} index={i} edit={`work/item/${e.id}`} />
           ))}
         </div>
       </section>
@@ -74,7 +75,7 @@ const skillList = skills(entries).slice(0, 12);
         <h2 class="band__title" id="latest-title">Latest</h2>
         <div class="grid">
           {latest.map((e, i) => (
-            <Tile href={`/work/${e.id}/`} title={e.data.title} eyebrow={tileMeta(e)} subtitle={e.data.position || undefined} image={e.data.cover} index={i} edit={`work/item/${e.id}`} />
+            <Tile href={withBase(`/work/${e.id}/`)} title={e.data.title} eyebrow={tileMeta(e)} subtitle={e.data.position || undefined} image={e.data.cover} index={i} edit={`work/item/${e.id}`} />
           ))}
         </div>
       </section>
