@@ -18,6 +18,7 @@ import {
   type Work,
 } from '../../lib/work';
 import { withBase } from '../../lib/paths';
+import { profile } from '../../profile';
 
 export async function getStaticPaths() {
   const entries = await getWork();
@@ -34,6 +35,7 @@ interface Props {
 
 const { entry, all } = Astro.props;
 const { data } = entry;
+const category = categoryOf(entry);
 const { Content } = await render(entry);
 
 // usedIn works both ways (docs/2-content-model.md).
@@ -44,9 +46,10 @@ const features = all.filter((e) => e.data.usedIn.includes(entry.id));
 const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', width: 1200 })).src : undefined;
 ---
 
-<BaseLayout title={data.title} description={data.contribution} image={ogImage}>
+<BaseLayout title={data.title} description={data.contribution} image={ogImage} currentCategory={category.key}>
   <main class="page detail">
     <header class="detail__header">
+      <p class="hero__kicker"><a href={withBase('/')}>{profile.name}</a> / <a href={withBase(`/work/c/${category.key}/`)}>{category.label}</a></p>
       <p class="detail__meta">
         <span>{KIND_LABELS[data.kind]}</span>
         <span>{CONTEXT_LABELS[data.context]}</span>
@@ -144,6 +147,6 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
       </section>
     )}
 
-    <p><a href={withBase(`/work/c/${categoryOf(entry).key}/`)}>← {categoryOf(entry).label}</a></p>
+    <p><a href={withBase(`/work/c/${category.key}/`)}>← {category.label}</a></p>
   </main>
 </BaseLayout>
