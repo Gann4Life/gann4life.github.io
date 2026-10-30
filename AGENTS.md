@@ -22,7 +22,7 @@ Project instructions for OpenCode. Read this and `DESIGN.md` (the index) before 
 1. One issue, one branch: a Conventional Branch (`<type>/issue-<n>-<slug>`) cut from `dev`. `/next` creates it. Releases are a PR from `dev` to `main`.
 2. Read `docs/1-stack.md` and `docs/2-content-model.md` before writing code or content; read `docs/6-content-rules.md` before writing claims.
 3. Keep changes small and single-purpose. One Conventional Commit per coherent step (`<type>(<scope>): <description>`, scopes from the table below).
-4. Verify before committing: run `npm run build` at the repo root and, when content changed, validate frontmatter against the schema.
+4. Verify before committing: run `npm test` at the repo root (production and staging builds, dev-server smoke, script tests; reuses a dev server on localhost:4321 if one is running) and, when content changed, validate frontmatter against the schema.
 5. Commit locally. Then report what changed, what was verified, and what is still unproven.
 
 The lead and every agent follow `.claude/github-workflow.md`: branch and commit conventions, the no-comments rule, and `/issue` (or `TODO` / `ISSUE` in a user message, or new work found mid-task) becoming a new issue.
@@ -60,7 +60,7 @@ Executors never decide. A prompt without a work order gets `NEEDS ORDER`; an inc
 | Spec | `DESIGN.md` (index) + `docs/` |
 | Roadmap phases | `docs/5-phases.md`; no milestones (continuous backlog, ranked by priority labels) |
 | Decision log | `docs/8-open-decisions.md` |
-| Base branch | `dev` (staging, `/dev/`); releases `dev` → `main` (production). Both deploy through `.github/workflows/pages.yml` |
+| Base branch | `dev` (staging, `/dev/`); releases `dev` → `main` (production). Both deploy through `.github/workflows/pages.yml`; PRs to either run `.github/workflows/test.yml` |
 | Scopes | `site`, `content`, `docs`, `ci`, `agents` |
 | Remote writes allowed | **Yes** (hard rule 1): `planner` writes the backlog; the lead pushes branches and merges PRs. No force-push |
 | Agents may commit | **No**: the lead commits |
@@ -86,7 +86,7 @@ Rules of thumb
 
 ## Definition of done for a v3 step
 
-- Code builds with no errors and no new client-side JS unless the component is explicitly interactive.
+- `npm test` passes and no new client-side JS unless the component is explicitly interactive.
 - Content validates against the schema and contains no unverifiable claims.
 - `design-auditor` returns no blocking findings.
 - The change is on its issue branch off `dev`, has no root-absolute internal URLs (`docs/3-pages.md` base-path rule), and `main` still builds and deploys.
