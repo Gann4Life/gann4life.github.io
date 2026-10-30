@@ -22,7 +22,7 @@ Full-width, image-first site. On thumbnails the text only appears on hover/focus
 
 All blog routes render the same two-pane layout, fully static: no new client-side JS.
 
-- **Panes (≥ 48rem)**: left 1/3 a compact post list, right 2/3 the selected post rendered for reading (grid `minmax(0, 1fr) minmax(0, 2fr)` inside the gutters). The list pane is sticky below the header and scrolls on its own when taller than the viewport.
+- **Panes (≥ 48rem)**: left 1/4 a compact post list, right 3/4 the selected post rendered for reading (grid `minmax(0, 1fr) minmax(0, 3fr)` inside the gutters; user decision 2026-10-30, issue #106). The list pane is sticky below the header and scrolls on its own when taller than the viewport.
 - **List**: posts in list order ([section 2](2-content-model.md) "Post order"), 20 per page. Each item: title (link to `withBase('/blog/<slug>/')`), date, and markers ("Pinned", "Featured", "Draft" on the dev server). No covers, no summary. The selected post's item is highlighted and carries `aria-current="page"`. When there is more than one page, the `Pager` sits under the list: page 1 is `/blog/`, page n is `/blog/page/<n>/`.
 - **Reader**: the selected post exactly as today's post page — date (and "Draft"), title, summary, cover, body, "Related work". The home **Blog** feed renders each post with this same markup (one shared component), differing only in heading levels and the reader's box.
 - **Which post is selected**:

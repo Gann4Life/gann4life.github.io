@@ -14,11 +14,19 @@ Recorded, not specified; investigation belongs in a separate bug issue.
 
 ## Decided
 
+### 2026-10-30 — Blog split view: list pane 1/4 (issue #106)
+
+- **Decision**: on `/blog/`, `/blog/page/<n>/` and `/blog/<slug>/` at ≥ 48rem the list pane takes 1/4 and the reader 3/4 (`minmax(0, 1fr) minmax(0, 3fr)`), instead of 1/3 and 2/3.
+- **Reason**: user preference; the reader is the main content.
+- **Trade-offs**: long post titles in the list wrap onto more lines near 48rem.
+- **Amends**: "Home order, banner fade, tool pages, pinned/featured posts, blog split view" (blog split view proportions).
+- **Affects**: [section 3](3-pages.md) "Blog split view" Panes.
+
 ### 2026-10-30 — Home "Blog" feed replaces "Latest posts" tiles (issue #111)
 
 - **Decision**: (1) The home section after Tools is renamed **Blog** and becomes a feed: the first 3 posts in home order, each rendered in full with the same markup as the `/blog/` reader (date, "Draft" on dev, linked title, summary, cover, body, "Related work"); section `h2`, post titles `h3`, "Related work" `h4`; posts are `article`s separated by a horizontal rule, no box; a button-styled "All posts →" link to `withBase('/blog/')` closes the section; the whole section is omitted with no posts. (2) Home order = list order (pinned newest first, then the rest newest first; ties by slug); the "newest featured post" step is dropped. `featured` now only adds the "Featured" marker in the `/blog/` list. (3) Module boundary: the post rendering moves out of `BlogSplit.astro` into one shared component used by the `/blog/` reader and the home feed; `homeOrder` in `src/lib/blog.ts` is removed and the home uses `listOrder` (its only caller was `src/pages/index.astro`).
 - **Reason**: the user wants visitors to read posts on the home, blog-feed style, not as cards or list rows, with a button to the full blog. A home order identical to the list order is one rule instead of two; one shared post component keeps the home and the reader from drifting.
-- **Trade-offs**: the home now ships up to 3 full post bodies (text plus lazy body images and covers), so its weight grows with post length; there is no length cap or excerpt (not asked for). Post content appears on the home as well as on `/blog/` and `/blog/<slug>/`; the home keeps its own canonical. No "Pinned" marker on the home, so a pinned older post sits above newer ones without explanation (plainest option; the user can ask for the marker). Without the reader's box, body text sits directly on the page background; legibility over a profile `background` image is for `ui-ux-designer` to check.
+- **Trade-offs**: the home now ships up to 3 full post bodies (text plus lazy body images and covers), so its weight grows with post length; there is no length cap or excerpt (not asked for). Post content appears on the home as well as on `/blog/` and `/blog/<slug>/`; the home keeps its own canonical. *(Amended the same day at the user's request: the pinned post is highlighted with an accent bar and the "Pinned" marker, [section 3](3-pages.md) `/`.)* Without the reader's box, body text sits directly on the page background; legibility over a profile `background` image is for `ui-ux-designer` to check.
 - **Rejected**: keeping tiles or a compact title list (the issue body's first proposal; the user corrected it); excerpts or "read more" cuts per post (not asked for); keeping `homeOrder` as an alias of `listOrder` (dead duplicate).
 - **Amends**: "Home order, banner fade, tool pages, pinned/featured posts, blog split view" (4) home order and (5) home "Latest posts".
 - **Migration**: none. No data format change; `featured` stays a valid optional field with the same default; no version bump. The Keystatic "Featured" description must stop promising a home effect (see Follow-up).
