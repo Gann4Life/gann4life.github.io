@@ -1,6 +1,5 @@
 ---
 title: "RagAssembler2D"
-slug: ragassembler2d
 kind: software
 context: personal
 position: "Director / Designer"

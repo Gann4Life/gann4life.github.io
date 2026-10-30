@@ -1,6 +1,5 @@
 ---
 title: "Thirdym"
-slug: thirdym
 kind: game
 context: personal
 position: ""

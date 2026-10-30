@@ -1,6 +1,5 @@
 ---
 title: "ThirdymLauncher"
-slug: thirdymlauncher
 kind: software
 context: personal
 position: ""

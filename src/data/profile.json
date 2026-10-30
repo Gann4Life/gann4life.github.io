@@ -38,9 +38,8 @@
     ]
   },
   "background": {
-    "image": {
-      "upload": "../assets/site/background/background/image/upload.png"
-    }
+    "image": {},
+    "darken": 90
   },
   "chrome": {
     "logo": {

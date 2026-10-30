@@ -1,6 +1,5 @@
 ---
 title: "Beatlords"
-slug: "beatlords"
 kind: game
 context: job
 position: "2D Animator, C# Programmer, Unity Game Developer"

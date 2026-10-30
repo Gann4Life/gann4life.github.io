@@ -1,6 +1,5 @@
 ---
 title: "Proxy: from Plazma Burst 2 - Fanart"
-slug: proxy-from-plazma-burst-2-fanart
 kind: art3d
 context: personal
 position: ""
