@@ -537,6 +537,12 @@ h2 {
   margin: 1rem 0 0;
 }
 
+.home-post + .home-post {
+  margin-top: clamp(2rem, 5vw, 3.5rem);
+  padding-top: clamp(2rem, 5vw, 3.5rem);
+  border-top: 1px solid var(--line);
+}
+
 .home-chips {
   display: none;
 }
