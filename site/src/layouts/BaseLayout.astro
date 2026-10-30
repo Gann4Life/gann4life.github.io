@@ -7,6 +7,7 @@ import ProfileLinks from '../components/ProfileLinks.astro';
 import { getWork, groupByCategory } from '../lib/work';
 import { getPosts } from '../lib/blog';
 import { withBase } from '../lib/paths';
+import { DEPLOY_TARGET } from 'astro:env/server';
 
 interface Props {
   title: string;
@@ -21,6 +22,7 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
 const categories = groupByCategory(await getWork()).map((g) => g.category);
 const hasBlog = (await getPosts()).length > 0;
 const path = Astro.url.pathname;
+const staging = DEPLOY_TARGET === 'staging';
 ---
 
 <!doctype html>
@@ -28,10 +30,11 @@ const path = Astro.url.pathname;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {staging && <meta name="robots" content="noindex, nofollow" />}
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
-    <link rel="sitemap" href={withBase('/sitemap.xml')} />
+    {!staging && <link rel="sitemap" href={withBase('/sitemap.xml')} />}
     <meta name="theme-color" content="#08080b" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
