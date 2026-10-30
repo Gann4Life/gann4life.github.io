@@ -27,7 +27,7 @@ links:
   - label: "DeviantArt"
     type: "other"
     url: "https://www.deviantart.com/gann4life/art/Proxy%3A-from-Plazma-Burst-2---Fanart-868157796"
-usedIn: []
+usedIn: [thirdym]
 ---
 
 Fan art of Proxy, a character from Plazma Burst 2 by Eric Gurt. Also used as the banner of Thirdym.
