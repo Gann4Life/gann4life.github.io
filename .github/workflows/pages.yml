@@ -1,0 +1,92 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main, dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main
+
+      - name: Check out dev
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          path: dev
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build production from main
+        working-directory: main
+        env:
+          DEPLOY_TARGET: production
+        run: |
+          set -euo pipefail
+          mkdir -p ../_site
+          if [ -f package.json ] && jq -e '.dependencies.astro // .devDependencies.astro' package.json > /dev/null; then
+            npm ci
+            npm run build
+            cp -a dist/. ../_site/
+          elif [ -f index.html ]; then
+            tar --exclude=./.git --exclude=./.github -cf - . | tar -xf - -C ../_site
+          else
+            echo "::error::main is neither an Astro project nor a static site with a root index.html"
+            exit 1
+          fi
+
+      - name: Build staging from dev
+        working-directory: dev
+        env:
+          DEPLOY_TARGET: staging
+        run: |
+          set -euo pipefail
+          if ! { [ -f package.json ] && jq -e '.dependencies.astro // .devDependencies.astro' package.json > /dev/null; }; then
+            echo "::error::dev is not an Astro project; staging is only built from Astro"
+            exit 1
+          fi
+          if [ -e ../_site/dev ]; then
+            echo "::error::the production output already contains dev/, which is reserved for staging"
+            exit 1
+          fi
+          npm ci
+          npm run build
+          mkdir -p ../_site/dev
+          cp -a dist/. ../_site/dev/
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
