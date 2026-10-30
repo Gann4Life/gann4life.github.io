@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getWork, groupByCategory } from '../lib/work';
+import { getWork, groupByCategory, toolGroups } from '../lib/work';
 import { getPosts } from '../lib/blog';
 import { withBase } from '../lib/paths';
 
@@ -9,6 +9,7 @@ export const GET: APIRoute = async ({ site }) => {
   const paths = [
     '/',
     ...groupByCategory(work).map((g) => `/work/c/${g.category.key}/`),
+    ...toolGroups(work).map((g) => `/work/t/${g.slug}/`),
     ...work.map((e) => `/work/${e.id}/`),
     ...(posts.length > 0 ? ['/blog/', ...posts.map((p) => `/blog/${p.id}/`)] : []),
   ];

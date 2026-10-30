@@ -876,6 +876,31 @@ h2 {
   font-size: 0.85rem;
 }
 
+.tags--links li {
+  padding: 0;
+  border: 0;
+}
+
+.tags--links a {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.tags--links a:hover {
+  border-color: var(--accent);
+}
+
+@media (pointer: coarse) {
+  .tags--links a {
+    min-height: 2.75rem;
+    padding-inline: 1rem;
+  }
+}
 .link-buttons {
   list-style: none;
   padding: 0;

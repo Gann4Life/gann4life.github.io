@@ -14,6 +14,7 @@ import {
   STATUS_LABELS,
   categoryOf,
   getWork,
+  toolSlug,
   year,
   type Work,
 } from '../../lib/work';
@@ -128,7 +129,7 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
     {data.tools.length > 0 && (
       <section class="detail__section">
         <h2>Tools</h2>
-        <ul class="tags">{data.tools.map((tool) => <li>{tool}</li>)}</ul>
+        <ul class="tags tags--links">{data.tools.map((tool) => <li><a href={withBase(`/work/t/${toolSlug(tool)}/`)}>{tool}</a></li>)}</ul>
       </section>
     )}
 
