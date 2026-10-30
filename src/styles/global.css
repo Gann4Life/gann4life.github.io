@@ -684,6 +684,17 @@ h2 {
   transform: none;
 }
 
+.tile--draft > * {
+  filter: grayscale(1);
+  opacity: 0.4;
+}
+
+.tile--draft:hover > *,
+.tile--draft:focus-visible > * {
+  filter: none;
+  opacity: 1;
+}
+
 @media (hover: hover) {
   .tile:not(.tile--plain)::after,
   .tile:not(.tile--plain) .tile__text {

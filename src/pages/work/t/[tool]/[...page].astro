@@ -45,6 +45,7 @@ const title = page.currentPage > 1 ? `${name} — page ${page.currentPage}` : na
           index={i}
           headingLevel={2}
           edit={`work/item/${entry.id}`}
+          draft={entry.data.draft}
         />
       ))}
     </div>
