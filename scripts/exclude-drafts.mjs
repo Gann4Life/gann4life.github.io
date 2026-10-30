@@ -7,9 +7,10 @@ const SITE = fileURLToPath(new URL('..', import.meta.url));
 const BEGIN = '# >>> drafts (scripts/exclude-drafts.mjs) >>>';
 const END = '# <<< drafts <<<';
 const CODE_EXTENSIONS = new Set(['.astro', '.ts', '.tsx', '.js', '.mjs', '.md', '.mdx', '.json', '.css', '.yaml', '.yml']);
+const NOT_SLUG_FOLDERS = new Set(['blog', 'shared', 'site']);
 
 const git = (args, cwd) =>
-  execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+  execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 1 << 28 });
 
 let TOP;
 let excludeFile;
@@ -23,57 +24,79 @@ try {
 const posix = (p) => p.split(path.sep).join('/');
 const repoPath = (abs) => posix(path.relative(TOP, abs));
 
+const readValue = (line) => {
+  let value = line.slice(line.indexOf(':') + 1);
+  const comment = value.indexOf(' #');
+  if (comment !== -1) value = value.slice(0, comment);
+  value = value.trim();
+  if (value.length >= 2) {
+    const first = value[0];
+    if ((first === '"' || first === "'") && value[value.length - 1] === first) value = value.slice(1, -1);
+  }
+  return value;
+};
+
 const parse = (raw, fallbackSlug) => {
   const text = raw.replace(/^﻿/, '').replace(/\r\n/g, '\n');
   const lines = text.split('\n');
-  let block = '';
+  let draft = false;
+  let slug = '';
   if (lines[0] === '---') {
     const end = lines.indexOf('---', 1);
-    if (end !== -1) block = lines.slice(1, end).join('\n');
+    if (end !== -1) {
+      for (const line of lines.slice(1, end)) {
+        if (line.startsWith('draft:')) draft = readValue(line).toLowerCase() === 'true';
+        else if (line.startsWith('slug:')) slug = readValue(line);
+      }
+    }
   }
-  const draft = /^draft:\s*(true|True|TRUE)\s*(#.*)?$/m.test(block);
-  const slugMatch = block.match(/^slug:\s*["']?([^"'#\s]+)["']?\s*(#.*)?$/m);
-  return { text, draft, slug: slugMatch ? slugMatch[1] : fallbackSlug };
+  return { text, draft, slug: slug || fallbackSlug };
 };
 
-const listDir = (dir) => {
+const listFiles = (dir) => {
   try {
-    return readdirSync(dir, { recursive: true });
+    return readdirSync(dir, { recursive: true, withFileTypes: true })
+      .filter((d) => d.isFile())
+      .map((d) => path.join(d.parentPath ?? d.path, d.name));
   } catch {
     return [];
   }
 };
 
 const contentRoots = ['work', 'blog'].map((name) => path.join(SITE, 'src', 'content', name));
+const assetsRoot = path.join(SITE, 'src', 'assets');
+const mediaRoot = path.join(SITE, 'public', 'media');
+const srcDir = path.join(SITE, 'src');
+const under = (abs, root) => abs.startsWith(root + path.sep);
 
 const entries = [];
 for (const root of contentRoots) {
-  for (const rel of listDir(root)) {
-    if (!rel.endsWith('.md')) continue;
-    const abs = path.join(root, rel);
-    const parsed = parse(readFileSync(abs, 'utf8'), path.basename(rel, '.md'));
+  for (const abs of listFiles(root)) {
+    if (!abs.endsWith('.md')) continue;
+    const parsed = parse(readFileSync(abs, 'utf8'), path.basename(abs, '.md'));
     entries.push({ file: repoPath(abs), ...parsed });
   }
 }
 
-const assetsDir = path.join(SITE, 'src', 'assets');
-let folders = [];
-try {
-  folders = readdirSync(assetsDir, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
-    .map((d) => d.name);
-} catch {
-  folders = [];
-}
+const assetFiles = [];
+const addAssets = (root, prefix, repoPrefix) => {
+  for (const abs of listFiles(root)) {
+    const rel = posix(path.relative(root, abs));
+    const slash = rel.indexOf('/');
+    assetFiles.push({
+      repo: `${repoPrefix}/${rel}`,
+      needle: `${prefix}/${rel}`,
+      folder: slash === -1 ? null : rel.slice(0, slash),
+    });
+  }
+};
+addAssets(assetsRoot, 'assets', 'src/assets');
+addAssets(mediaRoot, 'media', 'public/media');
 
-const srcDir = path.join(SITE, 'src');
 const otherTexts = [];
-for (const rel of listDir(srcDir)) {
-  const abs = path.join(srcDir, rel);
-  const norm = posix(rel);
-  if (norm === 'assets' || norm.startsWith('assets/')) continue;
-  if (contentRoots.some((root) => abs === root || abs.startsWith(root + path.sep))) continue;
-  if (!CODE_EXTENSIONS.has(path.extname(rel).toLowerCase())) continue;
+for (const abs of listFiles(srcDir)) {
+  if (under(abs, assetsRoot) || contentRoots.some((root) => under(abs, root))) continue;
+  if (!CODE_EXTENSIONS.has(path.extname(abs).toLowerCase())) continue;
   try {
     otherTexts.push(readFileSync(abs, 'utf8'));
   } catch {
@@ -81,26 +104,46 @@ for (const rel of listDir(srcDir)) {
   }
 }
 
+const isBoundaryBefore = (c) => c === '/' || c === "'" || c === '"' || c === '(' || /\s/.test(c);
+const references = (text, needle) => {
+  let from = 0;
+  for (;;) {
+    const i = text.indexOf(needle, from);
+    if (i === -1) return false;
+    const before = i > 0 ? text[i - 1] : '';
+    const after = text[i + needle.length];
+    if (before !== '' && isBoundaryBefore(before) && (after === undefined || !/[A-Za-z0-9._-]/.test(after))) {
+      return true;
+    }
+    from = i + 1;
+  }
+};
+
+const entryReferences = (e, f) =>
+  references(e.text, f.needle) ||
+  (f.folder !== null && f.folder === e.slug && !NOT_SLUG_FOLDERS.has(f.folder));
+
 const draftEntries = entries.filter((e) => e.draft);
-const excludedFolders = [];
+const publishedEntries = entries.filter((e) => !e.draft);
+const excludedAssets = [];
 const unreferenced = [];
-for (const folder of folders) {
-  const needle = `assets/${folder}/`;
-  const refs = entries.filter((e) => e.slug === folder || e.text.includes(needle));
+for (const f of assetFiles) {
+  const draftRef = draftEntries.some((e) => entryReferences(e, f));
   const publishedRef =
-    refs.some((e) => !e.draft) || otherTexts.some((t) => t.includes(needle));
-  if (publishedRef) continue;
-  if (refs.length > 0) excludedFolders.push(folder);
-  else unreferenced.push(folder);
+    publishedEntries.some((e) => entryReferences(e, f)) || otherTexts.some((t) => references(t, f.needle));
+  if (draftRef && !publishedRef) excludedAssets.push(f.repo);
+  else if (!draftRef && !publishedRef) unreferenced.push(f.repo);
 }
 
-const escapeGlob = (s) => s.replace(/[\\*?[\]]/g, '\\$&');
+const escapeGlob = (p) => {
+  let s = p.replace(/[\\*?[]/g, '\\$&');
+  if (s.startsWith('!') || s.startsWith('#')) s = '\\' + s;
+  return s.replace(/ +$/, (m) => '\\ '.repeat(m.length));
+};
 const draftFiles = draftEntries.map((e) => e.file);
-const folderPaths = excludedFolders.map((f) => `src/assets/${f}`);
-const blockLines = [
-  ...draftFiles.map((f) => `/${escapeGlob(f)}`),
-  ...folderPaths.map((f) => `/${escapeGlob(f)}/`),
-].sort((a, b) => a.localeCompare(b));
+const blockLines = [...new Set([...draftFiles, ...excludedAssets].map((p) => `/${escapeGlob(p)}`))].sort((a, b) =>
+  a.localeCompare(b),
+);
 
 const existing = existsSync(excludeFile) ? readFileSync(excludeFile, 'utf8') : '';
 const existingLines = existing.split('\n');
@@ -122,24 +165,24 @@ if (next !== existing) {
   writeFileSync(excludeFile, next);
 }
 
-const tracked = git(['ls-files', '-z', '--', 'src/content', 'src/assets'], TOP)
+const tracked = git(['ls-files', '-z', '--', 'src/content', 'src/assets', 'public/media'], TOP)
   .split('\0')
   .filter(Boolean);
 const draftFileSet = new Set(draftFiles);
+const excludedAssetSet = new Set(excludedAssets);
 
-console.log(`drafts: ${draftFiles.length} entries and ${excludedFolders.length} asset folders kept out of git`);
+console.log(`drafts: ${draftFiles.length} entries and ${excludedAssets.length} asset files kept out of git`);
 for (const f of unreferenced) {
-  console.log(`warning: src/assets/${f}/ is referenced by no entry (committable; delete it or link it)`);
+  console.log(`WARNING: ${f} is referenced by nothing (committable; delete it or link it)`);
 }
 for (const t of tracked) {
   if (draftFileSet.has(t)) {
     console.log(`tracked draft: ${t} -> git rm --cached -- "${t}"`);
   }
 }
-for (const f of excludedFolders) {
-  const prefix = `src/assets/${f}/`;
-  if (tracked.some((t) => t.startsWith(prefix))) {
-    console.log(`tracked draft assets: src/assets/${f}/ -> git rm -r --cached -- "src/assets/${f}"`);
+for (const t of tracked) {
+  if (excludedAssetSet.has(t)) {
+    console.log(`tracked draft asset: ${t} -> git rm --cached -- "${t}"`);
   }
 }
 
@@ -164,13 +207,13 @@ if (process.argv.includes('--staged')) {
         continue;
       }
     }
-    if (excludedFolders.some((f) => p.startsWith(`src/assets/${f}/`))) blocked.push(p);
+    if (excludedAssetSet.has(p)) blocked.push(p);
   }
   if (blocked.length > 0) {
     const out = [
       `pre-commit: ${blocked.length} draft file(s) staged. Drafts stay out of git (docs/2-content-model.md, "Drafts stay out of git").`,
       ...blocked.map((p) => `  ${p}    unstage: git restore --staged -- "${p}"`),
-      'To publish an entry, set draft: false; its asset folder becomes committable with it.',
+      'To publish an entry, set draft: false; the asset files it references become committable with it.',
     ];
     process.stderr.write(out.join('\n') + '\n');
     process.exit(1);
