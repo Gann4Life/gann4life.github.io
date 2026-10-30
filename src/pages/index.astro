@@ -122,8 +122,8 @@ const bannerSrc =
       <section class="band" aria-labelledby="blog-title">
         <h2 class="band__title" id="blog-title">Blog</h2>
         {homePosts.map((p) => (
-          <article class="home-post">
-            <PostArticle post={p} level={3} link sizes="(max-width: 56rem) 100vw, 56rem" />
+          <article class:list={['home-post', { 'home-post--pinned': p.data.pinned }]}>
+            <PostArticle post={p} level={3} link pinnedMark sizes="(max-width: 56rem) 100vw, 56rem" />
           </article>
         ))}
         <p class="band__more"><a class="button" href={withBase('/blog/')}>All posts →</a></p>
