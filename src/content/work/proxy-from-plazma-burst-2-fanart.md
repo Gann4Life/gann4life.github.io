@@ -20,7 +20,7 @@ started: 2021-01-24
 featured: false
 draft: false
 tools: ["DAZ 3D", "Iray"]
-cover: ../../assets/thirdym/banner.png
+cover: ../../assets/shared/82ed58f0594dba18.png
 gallery: []
 media: []
 links:
