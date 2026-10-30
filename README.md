@@ -3,9 +3,7 @@
 Static rebuild of the portfolio. `DESIGN.md` at the repo root indexes the spec in `docs/`; this
 README only covers running the app.
 
-The v2 Create React App still lives at the repo root and is still what deploys
-to <https://gann4life.github.io> until cutover. This directory is independent:
-it has its own `package.json`, lockfile, and build output.
+The Astro project lives at the repository root. `dev` deploys to staging at <https://gann4life.github.io/dev/>; `main` deploys to production at <https://gann4life.github.io>, which shows a static maintenance page until the v3 cutover. v2 (Create React App) is retired and archived as the tag `archive/v2`.
 
 ## Setup
 
@@ -13,7 +11,7 @@ Once per clone, from the repo root: `git config core.hooksPath .githooks`. The p
 
 ## Commands
 
-Run from `site/`:
+Run from the repository root:
 
 | Command | Purpose |
 |---|---|
@@ -22,13 +20,13 @@ Run from `site/`:
 | `npm run sync` | Pull everything from the profiles in `src/data/profile.json` as draft entries and fill in missing covers (re-run anytime) |
 | `npm run add -- <url> [<url> ...]` | Import specific works (e.g. SoundCloud tracks) as draft entries |
 | `npm run drafts` | Refresh the list of drafts kept out of git; also runs before dev and build |
-| `npm run build` | Static build into `site/dist/` (drafts excluded) |
+| `npm run build` | Static build into `dist/` (drafts excluded); with `DEPLOY_TARGET=staging` it builds for `/dev/` |
 | `npm run preview` | Serve the built output locally |
 
 ## Layout
 
 ```
-site/
+./
 ├─ astro.config.mjs        # static output, site URL, dev-only Keystatic
 ├─ keystatic.config.ts     # admin fields for `work`, mirrors the Zod schema
 ├─ src/
@@ -39,6 +37,8 @@ site/
 │  ├─ layouts/             # page shells
 │  ├─ pages/               # routes
 │  └─ styles/              # plain CSS
+├─ public/                 # copied as-is: robots.txt, favicon.svg, service-worker.js
+├─ scripts/                # npm scripts (sync, add, exclude-drafts)
 └─ dist/                   # build output (gitignored)
 ```
 
@@ -57,6 +57,4 @@ Markdown file, or `public/` for unprocessed files). No hotlinked media.
 
 ## Deploy
 
-`.github/workflows/pages.yml` builds `site/` and publishes `site/dist` with the
-official GitHub Pages actions. It is dormant (`workflow_dispatch` only) so it
-cannot publish over v2; the push-to-`main` trigger is added at cutover.
+`.github/workflows/pages.yml` runs on every push to `main` or `dev`. It checks out both branches and builds each: a root `package.json` listing `astro` is built with `npm ci && npm run build`; otherwise a root `index.html` is published as-is (the maintenance page on `main` until cutover). `main` goes to the site root, `dev` to `/dev/` (not indexed). If either build fails, nothing is deployed. `public/service-worker.js` removes the worker v2 used to register; v3 never registers one. Details: `docs/1-stack.md`.
