@@ -70,6 +70,7 @@ const title = page.currentPage > 1 ? `${category.label} — page ${page.currentP
             index={i}
             headingLevel={2}
             edit={`work/item/${entry.id}`}
+            draft={entry.data.draft}
           />
         ))}
       </div>
