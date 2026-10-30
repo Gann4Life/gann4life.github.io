@@ -17,13 +17,13 @@ export async function getWork(): Promise<Work[]> {
  */
 // `hobby` categories are shown apart from professional work on the home page.
 export const CATEGORIES = [
-  { key: 'games', label: 'Games', kinds: ['game'], hobby: false },
-  { key: 'animation', label: 'Animation', kinds: ['animation'], hobby: false },
-  { key: 'software', label: 'Software', kinds: ['software', 'app', 'web'], hobby: false },
-  { key: 'music', label: 'Music', kinds: ['music'], hobby: true },
-  { key: 'art', label: 'Art', kinds: ['art2d', 'art3d'], hobby: true },
-  { key: 'other', label: 'Other', kinds: ['other'], hobby: false },
-] as const satisfies readonly { key: string; label: string; kinds: readonly Work['data']['kind'][]; hobby: boolean }[];
+  { key: 'games', label: 'Games', kinds: ['game'], hobby: false, noun: ['game', 'games'] },
+  { key: 'animation', label: 'Animation', kinds: ['animation'], hobby: false, noun: ['animation', 'animations'] },
+  { key: 'software', label: 'Software', kinds: ['software', 'app', 'web'], hobby: false, noun: ['project', 'projects'] },
+  { key: 'music', label: 'Music', kinds: ['music'], hobby: true, noun: ['release', 'releases'] },
+  { key: 'art', label: 'Art', kinds: ['art2d', 'art3d'], hobby: true, noun: ['piece', 'pieces'] },
+  { key: 'other', label: 'Other', kinds: ['other'], hobby: false, noun: ['item', 'items'] },
+] as const satisfies readonly { key: string; label: string; kinds: readonly Work['data']['kind'][]; hobby: boolean; noun: readonly [string, string] }[];
 
 export type Category = (typeof CATEGORIES)[number];
 
