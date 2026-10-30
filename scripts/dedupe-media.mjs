@@ -38,7 +38,7 @@ const sha = (repo) => createHash('sha256').update(readFileSync(abs(repo))).diges
 const scanned = [];
 for (const tree of TREES) {
   for (const file of listFiles(tree.root)) {
-    if (statSync(abs(file)).size === 0) continue;
+    if (file.startsWith('src/assets/site/') || statSync(abs(file)).size === 0) continue;
     scanned.push({ file, tree, rel: file.slice(tree.root.length + 1), hash: sha(file) });
   }
 }
