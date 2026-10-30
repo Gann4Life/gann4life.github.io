@@ -7,6 +7,10 @@ The v2 Create React App still lives at the repo root and is still what deploys
 to <https://gann4life.github.io> until cutover. This directory is independent:
 it has its own `package.json`, lockfile, and build output.
 
+## Setup
+
+Once per clone, from the repo root: `git config core.hooksPath .githooks`. The pre-commit hook keeps draft entries and their assets out of git (docs/2-content-model.md, "Drafts stay out of git").
+
 ## Commands
 
 Run from `site/`:
@@ -17,6 +21,7 @@ Run from `site/`:
 | `npm run dev` | Dev server at <http://localhost:4321>, admin at <http://localhost:4321/keystatic> |
 | `npm run sync` | Pull everything from the profiles in `src/data/profile.json` as draft entries and fill in missing covers (re-run anytime) |
 | `npm run add -- <url> [<url> ...]` | Import specific works (e.g. SoundCloud tracks) as draft entries |
+| `npm run drafts` | Refresh the list of drafts kept out of git; also runs before dev and build |
 | `npm run build` | Static build into `site/dist/` (drafts excluded) |
 | `npm run preview` | Serve the built output locally |
 

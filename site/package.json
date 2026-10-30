@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "drafts": "node scripts/exclude-drafts.mjs",
+    "predev": "node scripts/exclude-drafts.mjs",
+    "prebuild": "node scripts/exclude-drafts.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "add": "node scripts/add.mjs",
