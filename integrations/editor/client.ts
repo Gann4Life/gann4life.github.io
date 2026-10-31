@@ -535,7 +535,7 @@ function start() {
         const section = el.tagName === 'SECTION';
         const heading = el.querySelector('h2')?.textContent ?? editable[0].label;
         if (section) host.append(h('p', { class: 'ed-heading', text: heading }));
-        const compact = el.matches('h1, p, span, ul.tags');
+        const compact = el.matches('h1, p, span, time, ul.tags');
         for (const f of editable) {
           const ctl = create(f, section ? editable.length > 1 : !compact);
           host.append(ctl.el);

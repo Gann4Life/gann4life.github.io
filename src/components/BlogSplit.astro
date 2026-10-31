@@ -4,6 +4,7 @@ import PostArticle from './PostArticle.astro';
 import { profile } from '../profile';
 import { formatDate, type Post } from '../lib/blog';
 import { withBase } from '../lib/paths';
+import { editHooks } from '../lib/edit-hooks';
 
 /** Blog split view (docs/3-pages.md): list pane + reader for the selected post; mode 'index' for /blog/ and /blog/page/<n>/, 'post' for /blog/<slug>/. */
 interface Props {
@@ -41,9 +42,9 @@ const { mode, posts, selected, current, last } = Astro.props;
       </nav>
       <Pager compact current={current} last={last} href={(n) => withBase(n === 1 ? '/blog/' : `/blog/page/${n}/`)} />
     </aside>
-    <article class="blog__reader">
+    <article class="blog__reader" {...(mode === 'post' ? editHooks.entry('blog', selected.id) : {})}>
       {mode === 'post' && <p class="blog__back"><a href={withBase('/blog/')}>← All posts</a></p>}
-      <PostArticle post={selected} level={mode === 'post' ? 1 : 2} link={mode === 'index'} />
+      <PostArticle post={selected} level={mode === 'post' ? 1 : 2} link={mode === 'index'} editable={mode === 'post'} />
     </article>
   </div>
 </main>
