@@ -40,5 +40,5 @@ const Heading = headingLevel === 2 ? 'h2' : 'h3';
       {subtitle && <p class="tile__subtitle">{subtitle}</p>}
     </div>
   </a>
-  {edit && <EditLink path={`collection/${edit}`} class="edit-link--tile" />}
+  {edit && <EditLink collection="work" id={edit} class="edit-link--tile" />}
 </div>

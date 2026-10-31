@@ -1,6 +1,6 @@
-import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { handleRequest, MAX_BODY_BYTES } from './file.mjs';
+import { MAX_REQUEST_BYTES } from './assets.mjs';
+import { handleRequest } from './file.mjs';
 
 const readLimited = (req) =>
   new Promise((resolve, reject) => {
@@ -10,7 +10,7 @@ const readLimited = (req) =>
     req.on('data', (chunk) => {
       if (failed) return;
       size += chunk.length;
-      if (size > MAX_BODY_BYTES) {
+      if (size > MAX_REQUEST_BYTES) {
         failed = true;
         reject(Object.assign(new Error('Body too large'), { code: 'TOO_LARGE' }));
         return;
@@ -21,27 +21,29 @@ const readLimited = (req) =>
     req.on('error', reject);
   });
 
-export default function workEditor() {
+export default function editor() {
   return {
-    name: 'work-editor',
+    name: 'editor',
     hooks: {
-      'astro:config:setup': ({ command, config, updateConfig }) => {
+      'astro:config:setup': ({ command, config, updateConfig, injectScript }) => {
         if (command !== 'dev') return;
+        injectScript('page', "import '/integrations/editor/client.ts';");
         const root = fileURLToPath(config.root);
         const trimmed = String(config.base ?? '/').replace(/^\/+|\/+$/g, '');
         const base = trimmed ? `/${trimmed}/` : '/';
-        const workDir = path.join(root, 'src', 'content', 'work');
         updateConfig({
           vite: {
             plugins: [
               {
-                name: 'work-editor-endpoint',
+                name: 'editor-endpoint',
                 apply: 'serve',
                 configureServer(server) {
-                  const loadSchema = async () => {
+                  const loadRegistry = async () => {
                     const { z } = await server.ssrLoadModule('astro/zod');
-                    const { workSchema } = await server.ssrLoadModule('/src/lib/work-schema.ts');
-                    return workSchema(() => z.string());
+                    const { COLLECTIONS } = await server.ssrLoadModule('/src/lib/content-fields.ts');
+                    const { schemaFor } = await server.ssrLoadModule('/src/lib/content-schema.ts');
+                    const { toolSlug } = await server.ssrLoadModule('/src/lib/slug.ts');
+                    return { collections: COLLECTIONS, schemaFor: (name) => schemaFor(name, () => z.string()), toolSlug };
                   };
                   server.middlewares.use(async (req, res, next) => {
                     let result;
@@ -54,10 +56,10 @@ export default function workEditor() {
                           headers: req.headers,
                           readBody: () => readLimited(req),
                         },
-                        { workDir, base, loadSchema },
+                        { root, base, loadRegistry },
                       );
                     } catch (err) {
-                      console.error('[work-editor]', err);
+                      console.error('[editor]', err);
                       result = { status: 500, body: { error: 'Unexpected error.' }, headers: {} };
                     }
                     if (!result) return next();

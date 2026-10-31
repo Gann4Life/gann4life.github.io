@@ -18,7 +18,7 @@ Full-width, image-first site. On thumbnails the text only appears on hover/focus
 - `/service-worker.js` — self-unregistering worker that removes v2's; never registered by v3 ([section 1](1-stack.md) "Retired v2 service worker").
 - `/keystatic` — CMS (dev server only, not linked publicly).
 - `__editor/<collection>/<id>` under the base — JSON endpoint of the in-site editor, dev server only, not a page and never built ([section 1](1-stack.md) "In-site editor").
-- No other top-level paths: other repos publish under this domain (e.g. `/RagAssembler2D/`), so v3 must not create routes that shadow them. The work slugs `c`, `t`, `site` and `all` are reserved (`t` for tool pages; `all` for the all-work page; `site` because `src/assets/site/` holds the appearance images), and the post slug `page` (blog list pagination). `/dev/` is reserved for the staging build ([section 1](1-stack.md)), so no repo of this account may be named `dev` with Pages enabled.
+- No other top-level paths: other repos publish under this domain (e.g. `/RagAssembler2D/`), so v3 must not create routes that shadow them. The work slugs `c`, `t`, `site`, `all`, `blog` and `shared` are reserved (`t` for tool pages; `all` for the all-work page; `site` because `src/assets/site/` holds the appearance images; `blog` and `shared` because `src/assets/blog/` and `src/assets/shared/` are not slug folders, decision 2026-10-31), and the post slug `page` (blog list pagination). `/dev/` is reserved for the staging build ([section 1](1-stack.md)), so no repo of this account may be named `dev` with Pages enabled.
 
 **Blog split view** (user decision 2026-10-30)
 
@@ -55,7 +55,7 @@ All blog routes render the same two-pane layout, fully static: no new client-sid
 - **Sheet sections in the side column**: link buttons and tool tags wrap within the column; credit and related lists keep their bullets and indentation.
 - **Lightbox**: unchanged, CSS-only (`:target`), and it must still cover the whole viewport above the sticky site header from the side column. So no element between the page and the lightbox (the layout grid, its column wrappers, the gallery) may establish a containing block for fixed descendants or a stacking context: no `transform`, `filter`, `backdrop-filter`, `perspective`, `contain`, `container-type`, `will-change`, opacity below 1, `position: sticky`/`fixed`, a positioned element with a `z-index`, or the load animation (`rise`), on any of them.
 
-**Edit mode (dev server only)** (issue #136, redesigned 2026-10-30; specified, not built; mechanics in [section 1](1-stack.md) "In-site editor")
+**Edit mode (dev server only)** (issue #136, redesigned 2026-10-30; built, #152 to #156; mechanics in [section 1](1-stack.md) "In-site editor")
 
 On the dev server, a work entry's page (`/work/<slug>`) and a post's page (`/blog/<slug>/`) switch into edit mode: the page itself is the form, so every field is edited where it is shown, and the fields the page does not show are edited in a panel. Production and staging builds are unchanged and contain none of it. The public layout does not change for the editor; the exact look of the controls, the bar and the panel is for `ui-ux-designer` to propose within these rules.
 

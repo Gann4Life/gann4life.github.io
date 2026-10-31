@@ -1,5 +1,8 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
-import { LINK_LABELS } from '../vocab';
+import { CONTEXT_LABELS, KIND_LABELS, LINK_LABELS } from '../vocab.ts';
+export { KIND_LABELS, CONTEXT_LABELS, ROLE_LABELS, STATUS_LABELS } from '../vocab.ts';
+import { toolSlug } from './slug.ts';
+export { toolSlug } from './slug.ts';
 
 export type Work = CollectionEntry<'work'>;
 type Link = Work['data']['links'][number];
@@ -13,18 +16,6 @@ export async function getWork(): Promise<Work[]> {
   return entries;
 }
 
-/** URL slug of a tool name (docs/2-content-model.md "Tool pages"); may be empty. */
-export function toolSlug(name: string): string {
-  return name
-    .normalize('NFKD')
-    .replace(/\p{M}/gu, '')
-    .toLowerCase()
-    .replace(/#/g, ' sharp ')
-    .replace(/\+/g, ' plus ')
-    .replace(/&/g, ' and ')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
 
 function assertToolSlugs(entries: Work[]): void {
   const spellings = new Map<string, Map<string, string[]>>();
@@ -112,45 +103,6 @@ export const linkText = (link: Link) => link.label || LINK_LABELS[link.type];
 
 /** Start year, read in UTC (dates are stored as UTC midnight). */
 export const year = (entry: Work) => entry.data.started.getUTCFullYear();
-
-export const KIND_LABELS: Record<Work['data']['kind'], string> = {
-  software: 'Software',
-  game: 'Game',
-  app: 'App',
-  web: 'Web',
-  art2d: '2D art',
-  art3d: '3D',
-  animation: 'Animation',
-  music: 'Music',
-  other: 'Other',
-};
-
-export const CONTEXT_LABELS: Record<Work['data']['context'], string> = {
-  personal: 'Personal',
-  commission: 'Commission',
-  client: 'Client',
-  job: 'Job',
-  jam: 'Game jam',
-  study: 'Study',
-};
-
-export const ROLE_LABELS: Record<Work['data']['roles'][number], string> = {
-  programmer: 'Programmer',
-  animator: 'Animator',
-  artist: 'Artist',
-  director: 'Director',
-  designer: 'Designer',
-  'spec-author': 'Spec author',
-  'technical-direction': 'Technical direction',
-  maintainer: 'Maintainer',
-  musician: 'Musician',
-};
-
-export const STATUS_LABELS: Record<Work['data']['status'], string> = {
-  released: 'Released',
-  'in-development': 'In development',
-  archived: 'Archived',
-};
 
 /** Site-wide skills: tools of hand-made and ai-assisted entries only, most used first. */
 export function skills(entries: Work[]): string[] {

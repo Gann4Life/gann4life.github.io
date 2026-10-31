@@ -5,14 +5,15 @@ import { withBase } from '../lib/paths';
 interface Props {
   items: Work['data']['media'];
   title: string;
+  hooks?: Record<string, string>;
 }
 
-const { items, title } = Astro.props;
+const { items, title, hooks = {} } = Astro.props;
 const isLocal = (src: string) => src.startsWith('/') && !src.startsWith('//');
 ---
 
 {items.length > 0 && (
-  <section class="media-list" aria-label="Media">
+  <section class="media-list" aria-label="Media" {...hooks}>
     {items.map((item) => {
       const embed = embedUrl(item.type, item.src);
       return (

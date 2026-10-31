@@ -5,6 +5,7 @@ import EditLink from './EditLink.astro';
 import { formatDate, type Post } from '../lib/blog';
 import { getWork } from '../lib/work';
 import { withBase } from '../lib/paths';
+import { editHooks } from '../lib/edit-hooks';
 
 /** A post rendered in full, shared by the blog reader and the home Blog feed (docs/3-pages.md). */
 interface Props {
@@ -13,9 +14,11 @@ interface Props {
   link: boolean;
   pinnedMark?: boolean;
   sizes?: string;
+  editable?: boolean;
 }
 
-const { post, level, link, pinnedMark = false, sizes = '(max-width: 48rem) 100vw, 60vw' } = Astro.props;
+const { post, level, link, pinnedMark = false, sizes = '(max-width: 48rem) 100vw, 60vw', editable = false } = Astro.props;
+const hook = (...names: string[]) => (editable ? editHooks.field(...names) : {});
 const { data } = post;
 const { Content } = await render(post);
 const related = (await getWork()).filter((e) => data.work.includes(e.id));
@@ -23,19 +26,20 @@ const TitleHeading = `h${level}` as 'h1' | 'h2' | 'h3';
 const RelatedHeading = `h${level + 1}` as 'h2' | 'h3' | 'h4';
 ---
 
-<EditLink path={`collection/blog/item/${post.id}`} />
+{editable ? <EditLink inPlace /> : <EditLink collection="blog" id={post.id} />}
 <p class="detail__meta">
-  <time datetime={data.date.toISOString()}>{formatDate(data.date)}</time>
+  <time datetime={data.date.toISOString()} {...hook('date')}>{formatDate(data.date)}</time>
   {pinnedMark && data.pinned && <span class="mark mark--pinned">Pinned</span>}
   {data.draft && <span class="draft-note">Draft</span>}
 </p>
-<TitleHeading class="blog__post-title">
+<TitleHeading class="blog__post-title" {...hook('title')}>
   {link ? <a href={withBase(`/blog/${post.id}/`)}>{data.title}</a> : data.title}
 </TitleHeading>
-{data.summary && <p class="detail__position">{data.summary}</p>}
+{data.summary && <p class="detail__position" {...hook('summary')}>{data.summary}</p>}
 {data.cover && (
   <Picture
     class="detail__cover"
+    {...hook('cover')}
     src={data.cover}
     formats={['avif', 'webp']}
     widths={[640, 1280, 1920]}
@@ -43,11 +47,11 @@ const RelatedHeading = `h${level + 1}` as 'h2' | 'h3' | 'h4';
     alt=""
   />
 )}
-<div class="prose">
+<div class="prose" {...hook('body')}>
   <Content />
 </div>
 {related.length > 0 && (
-  <section class="detail__section">
+  <section class="detail__section" {...hook('work')}>
     <RelatedHeading>Related work</RelatedHeading>
     <ul class="related">
       {related.map((e) => <li><a href={withBase(`/work/${e.id}/`)}>{e.data.title}</a></li>)}
