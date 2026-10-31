@@ -11,8 +11,9 @@ type FieldDef = {
   required?: boolean;
   default?: unknown;
 };
-type Loaded = { id: string; hash: string; values: Record<string, unknown>; body: string; form: { fields: FieldDef[] } };
+type Loaded = { id: string; hash: string; values: Record<string, unknown>; body: string; form: { dir: string; fields: FieldDef[] } };
 type Path = (string | number)[];
+type Pending = { token: string; file: File };
 type Ctl = {
   el: HTMLElement;
   get(): unknown;
@@ -21,11 +22,30 @@ type Ctl = {
   clear(): void;
   lock(on: boolean): void;
   focus(): void;
+  uploads(): Pending[];
 };
-type Ctx = { labeled: boolean; onChange: () => void };
+type Ctx = { labeled: boolean; onChange: () => void; dir: string };
 
 const BASE = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
-const SCALARS = ['text', 'longtext', 'markdown', 'url', 'date'];
+const SCALARS = ['text', 'longtext', 'markdown', 'url', 'date', 'image'];
+const ACCEPT = 'image/png,image/jpeg,image/webp,image/avif,image/gif';
+
+const newToken = (): string => {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const bytes = crypto.getRandomValues(new Uint8Array(8));
+  return Array.from(bytes, (b) => chars[b % chars.length]).join('');
+};
+
+const toBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(',')[1] ?? '');
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+
+const previewUrl = (dir: string, value: string): string =>
+  `${BASE}${new URL(value, `http://local/${dir}/`).pathname.slice(1)}`;
 
 let uid = 0;
 const nextId = (prefix: string) => `${prefix}-${++uid}`;
@@ -46,9 +66,6 @@ function h<K extends keyof HTMLElementTagNameMap>(
   for (const kid of kids) if (kid) node.append(kid);
   return node;
 }
-
-const isImageish = (field: FieldDef): boolean =>
-  field.type === 'image' || (field.type === 'list' && (field.fields ?? []).some(isImageish));
 
 function norm(field: FieldDef, value: unknown): any {
   switch (field.type) {
@@ -101,6 +118,7 @@ function makeCtl(field: FieldDef, value: unknown, ctx: Ctx, forceLabel?: boolean
   let locker: (on: boolean) => void = () => {};
   let itemError: (path: Path, message: string) => boolean = () => false;
   let clearInner: () => void = () => {};
+  let uploadsOf: () => Pending[] = () => [];
   const labeled = forceLabel ?? ctx.labeled;
   const baseDescribed = () => primary?.getAttribute('aria-describedby') ?? '';
 
@@ -177,6 +195,139 @@ function makeCtl(field: FieldDef, value: unknown, ctx: Ctx, forceLabel?: boolean
     requestAnimationFrame(fit);
     getter = () => area.value;
     locker = (on) => (area.readOnly = on);
+    if (field.type === 'markdown') {
+      const picked = new Map<string, File>();
+      const fileInput = h('input', { type: 'file', accept: ACCEPT, hidden: true, tabIndex: -1 });
+      const insertBtn = h('button', { type: 'button', class: 'ed-btn ed-insert__open', text: 'Insert image' });
+      insertBtn.setAttribute('aria-label', 'Insert image into the body');
+      const preview = h('img', { class: 'ed-img__thumb', alt: '' });
+      const altId = nextId('ed-alt');
+      const altInput = h('input', { class: 'ed-in', type: 'text', id: altId, placeholder: 'Describe the image (alt text)…' });
+      altInput.setAttribute('aria-label', 'Alt text of the image');
+      const okBtn = h('button', { type: 'button', class: 'ed-btn', text: 'Insert' });
+      const cancelBtn = h('button', { type: 'button', class: 'ed-btn', text: 'Cancel' });
+      const prompt = h('div', { class: 'ed-insert__prompt', hidden: true }, preview, altInput, okBtn, cancelBtn);
+      let pending: File | null = null;
+      let at = 0;
+      const close = () => {
+        pending = null;
+        prompt.hidden = true;
+        if (preview.src.startsWith('blob:')) URL.revokeObjectURL(preview.src);
+        preview.removeAttribute('src');
+        altInput.value = '';
+      };
+      insertBtn.addEventListener('click', () => {
+        at = area.selectionStart ?? area.value.length;
+        fileInput.click();
+      });
+      fileInput.addEventListener('change', () => {
+        const file = fileInput.files?.[0];
+        fileInput.value = '';
+        if (!file) return;
+        close();
+        pending = file;
+        preview.src = URL.createObjectURL(file);
+        prompt.hidden = false;
+        altInput.focus();
+      });
+      const confirm = () => {
+        if (!pending) return;
+        const token = newToken();
+        picked.set(token, pending);
+        const alt = altInput.value.replace(/[\[\]\r\n]+/g, ' ').trim();
+        const mark = `![${alt}](upload:${token})`;
+        area.value = `${area.value.slice(0, at)}${mark}${area.value.slice(at)}`;
+        const end = at + mark.length;
+        area.setSelectionRange(end, end);
+        close();
+        area.dispatchEvent(new Event('input'));
+        area.focus();
+      };
+      okBtn.addEventListener('click', confirm);
+      cancelBtn.addEventListener('click', () => {
+        close();
+        insertBtn.focus();
+      });
+      altInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          confirm();
+        } else if (e.key === 'Escape') {
+          e.stopPropagation();
+          close();
+          insertBtn.focus();
+        }
+      });
+      wrap.append(h('div', { class: 'ed-insert' }, insertBtn, fileInput), prompt);
+      uploadsOf = () =>
+        [...picked.entries()].filter(([token]) => area.value.includes(`](upload:${token})`)).map(([token, file]) => ({ token, file }));
+      const lockArea = locker;
+      locker = (on) => {
+        lockArea(on);
+        insertBtn.disabled = on;
+        okBtn.disabled = on;
+        altInput.readOnly = on;
+      };
+    }
+  } else if (field.type === 'image') {
+    type Cur = { path: string } | { token: string; file: File; url: string } | null;
+    let cur: Cur = orig ? { path: String(orig) } : null;
+    const fileInput = h('input', { type: 'file', accept: ACCEPT, hidden: true, tabIndex: -1 });
+    const thumb = h('img', { class: 'ed-img__thumb', alt: '' });
+    const none = h('span', { class: 'ed-img__none', text: 'No image' });
+    const pick = h('button', { type: 'button', class: 'ed-btn' });
+    const drop = h('button', { type: 'button', class: 'ed-btn', text: 'Remove' });
+    const box = h('div', { class: 'ed-img' }, thumb, none, h('div', { class: 'ed-img__actions' }, pick, drop), fileInput);
+    const release = () => {
+      if (cur && 'url' in cur) URL.revokeObjectURL(cur.url);
+    };
+    const render = () => {
+      thumb.hidden = !cur;
+      none.hidden = Boolean(cur);
+      if (cur) thumb.src = 'url' in cur ? cur.url : previewUrl(ctx.dir, cur.path);
+      pick.textContent = cur ? 'Replace' : 'Add image';
+      pick.setAttribute('aria-label', `${cur ? 'Replace' : 'Add'} ${field.label}`);
+      drop.hidden = !cur;
+      drop.setAttribute('aria-label', `Remove ${field.label}`);
+    };
+    thumb.addEventListener('error', () => {
+      none.textContent = 'Image not found';
+      none.hidden = false;
+      thumb.hidden = true;
+    });
+    thumb.addEventListener('load', () => {
+      none.textContent = 'No image';
+      none.hidden = true;
+    });
+    pick.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files?.[0];
+      fileInput.value = '';
+      if (!file) return;
+      release();
+      cur = { token: newToken(), file, url: URL.createObjectURL(file) };
+      render();
+      touch();
+    });
+    drop.addEventListener('click', () => {
+      release();
+      cur = null;
+      render();
+      touch();
+      pick.focus();
+    });
+    render();
+    primary = pick;
+    addLabel();
+    wrap.append(box);
+    describe(pick, field, wrap);
+    pick.setAttribute('aria-label', `${cur ? 'Replace' : 'Add'} ${field.label}`);
+    getter = () => (!cur ? '' : 'path' in cur ? cur.path : { upload: cur.token });
+    locker = (on) => {
+      pick.disabled = on;
+      drop.disabled = on;
+    };
+    uploadsOf = () => (cur && 'token' in cur ? [{ token: cur.token, file: cur.file }] : []);
   } else if (field.type === 'boolean') {
     const box = h('input', { class: 'ed-in', type: 'checkbox', checked: Boolean(orig) });
     primary = box;
@@ -282,7 +433,7 @@ function makeCtl(field: FieldDef, value: unknown, ctx: Ctx, forceLabel?: boolean
     };
   } else if (field.type === 'list') {
     type Item = { el: HTMLElement; ctls: Ctl[]; names: string[]; buttons: HTMLButtonElement[] };
-    const subs = (field.fields ?? []).filter((f) => !isImageish(f));
+    const subs = field.fields ?? [];
     const host = h('div', { class: 'ed-list' });
     const empty = h('p', { class: 'ed-empty', text: 'No items.' });
     const items: Item[] = [];
@@ -305,7 +456,7 @@ function makeCtl(field: FieldDef, value: unknown, ctx: Ctx, forceLabel?: boolean
       host.replaceChildren(...(items.length ? items.map((i) => i.el) : [empty]));
     };
     const make = (data: Record<string, unknown>): Item => {
-      const ctls = subs.map((s) => makeCtl(s, data[s.name], { labeled: true, onChange: () => { unflag(item); touch(); } }));
+      const ctls = subs.map((s) => makeCtl(s, data[s.name], { labeled: true, dir: ctx.dir, onChange: () => { unflag(item); touch(); } }));
       const up = h('button', { type: 'button', class: 'ed-btn ed-icon', text: '↑' });
       const down = h('button', { type: 'button', class: 'ed-btn ed-icon', text: '↓' });
       const del = h('button', { type: 'button', class: 'ed-btn ed-icon', text: '✕' });
@@ -378,6 +529,7 @@ function makeCtl(field: FieldDef, value: unknown, ctx: Ctx, forceLabel?: boolean
       return true;
     };
     clearInner = () => items.forEach((i) => i.ctls.forEach((c) => c.clear()));
+    uploadsOf = () => items.flatMap((item) => item.ctls.flatMap((c) => c.uploads()));
   }
 
   const ctl: Ctl = {
@@ -394,6 +546,7 @@ function makeCtl(field: FieldDef, value: unknown, ctx: Ctx, forceLabel?: boolean
       clear();
     },
     lock: (on) => locker(on),
+    uploads: () => uploadsOf(),
     focus: () => (primary instanceof HTMLElement && field.type !== 'list' ? primary : wrap.querySelector<HTMLElement>('input,select,textarea,button'))?.focus(),
   };
   return ctl;
@@ -419,12 +572,13 @@ function start() {
   }
   let entered = false;
   open?.addEventListener('click', () => enter());
-  if (wants || sessionStorage.getItem(storeKey) === 'on') enter();
+  const resume = sessionStorage.getItem(storeKey) === 'on';
+  if (resume) window.setTimeout(() => sessionStorage.removeItem(storeKey), 4000);
+  if (wants || resume) enter();
 
   function enter() {
     if (entered) return;
     entered = true;
-    sessionStorage.setItem(storeKey, 'on');
     document.documentElement.classList.add('is-editing');
     const keystaticUrl = `${BASE}keystatic/collection/${collection}/item/${id}`;
     const status = h('span', { class: 'ed-status', role: 'status', 'aria-live': 'polite', text: 'Loading…' });
@@ -511,7 +665,7 @@ function start() {
       root!.querySelectorAll<HTMLElement>('[data-edit-field]').forEach((el) =>
         (el.dataset.editField ?? '').split(' ').forEach((n) => hookedNames.add(n)),
       );
-      const ctx: Ctx = { labeled: true, onChange: () => refresh() };
+      const ctx: Ctx = { labeled: true, dir: data.form.dir, onChange: () => refresh() };
       let warn: HTMLElement | null = null;
       const draftCtl = () => ctls.get('draft');
       const contribCtl = () => ctls.get('contribution');
@@ -523,14 +677,10 @@ function start() {
         return ctl;
       };
 
-      const keyNote = (label: string) =>
-        h('p', { class: 'ed-note' }, `${label.split(' (')[0]}: images change in `, h('a', { href: keystaticUrl, target: '_blank', rel: 'noopener', text: 'Keystatic ↗' }));
-
       root!.querySelectorAll<HTMLElement>('[data-edit-field]').forEach((el) => {
-        const names = (el.dataset.editField ?? '').split(' ').map((n) => byName.get(n)).filter((f): f is FieldDef => Boolean(f));
-        const editable = names.filter((f) => !isImageish(f));
-        names.filter(isImageish).forEach((f) => (el.closest('picture') ?? el).before(keyNote(f.label)));
+        const editable = (el.dataset.editField ?? '').split(' ').map((n) => byName.get(n)).filter((f): f is FieldDef => Boolean(f));
         if (editable.length === 0) return;
+        const anchor = el.closest('picture') ?? el;
         const host = h(el.tagName === 'SPAN' ? 'span' : 'div', { class: `ed-inplace ed-in-${el.tagName.toLowerCase()}` });
         const section = el.tagName === 'SECTION';
         const heading = el.querySelector('h2')?.textContent ?? editable[0].label;
@@ -547,12 +697,12 @@ function start() {
             }
           }
         }
-        el.classList.add('ed-hide');
-        el.after(host);
+        anchor.classList.add('ed-hide');
+        anchor.after(host);
         if (el.matches('.badge, .detail__meta span')) host.classList.add('ed-inline');
       });
 
-      const panelFields = fields.filter((f) => !hookedNames.has(f.name) && !isImageish(f) && f.type !== 'image');
+      const panelFields = fields.filter((f) => !hookedNames.has(f.name));
       let panel: HTMLElement | null = null;
       if (panelFields.length) {
         const bools = panelFields.filter((f) => f.type === 'boolean');
@@ -634,6 +784,12 @@ function start() {
         setStatus('Saving…', 'saving');
         let res: Response;
         try {
+          const pending = allCtls().flatMap(([, ctl]) => ctl.uploads());
+          if (pending.length) {
+            body.uploads = await Promise.all(
+              pending.map(async ({ token, file }) => ({ token, name: file.name, data: await toBase64(file) })),
+            );
+          }
           res = await fetch(`${BASE}__editor/${collection}/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },

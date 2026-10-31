@@ -416,6 +416,79 @@ html.is-editing {
   }
 }
 
+.ed-img {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.ed-img__thumb {
+  display: block;
+  width: 5rem;
+  height: 3.5rem;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+  background: var(--card);
+}
+
+.ed-img__thumb[hidden],
+.ed-img__none[hidden],
+.ed-img [hidden],
+.ed-insert [hidden],
+.ed-insert__prompt[hidden] {
+  display: none;
+}
+
+.ed-img__none {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 5rem;
+  height: 3.5rem;
+  border: 1px dashed var(--ed);
+  border-radius: 0.4rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.ed-img__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.ed-field[data-mod] > .ed-img {
+  border-left: 3px solid var(--ed);
+  padding-left: 0.5rem;
+}
+
+.ed-insert {
+  margin-top: 0.4rem;
+}
+
+.ed-insert__prompt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.ed-insert__prompt .ed-in {
+  flex: 1 1 14rem;
+  width: auto;
+}
+
+@container (min-width: 36rem) {
+  .ed-item__fields:has(.ed-t-image) {
+    grid-template-columns: minmax(12rem, auto) 1fr;
+  }
+}
+
 .ed-error,
 .ed-alert {
   margin: 0.25rem 0 0;

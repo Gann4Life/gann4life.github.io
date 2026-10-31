@@ -1,6 +1,6 @@
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -9,6 +9,8 @@ const ROOT = path.resolve(import.meta.dirname, '..');
 const editor = await import(pathToFileURL(path.join(ROOT, 'integrations', 'editor', 'file.mjs')).href);
 const { COLLECTIONS } = await import('../src/lib/content-fields.ts');
 const { load } = await import('js-yaml');
+const { toolSlug } = await import('../src/lib/slug.ts');
+const assets = await import(pathToFileURL(path.join(ROOT, 'integrations', 'editor', 'assets.mjs')).href);
 
 const WORK = COLLECTIONS.work;
 const BLOG = COLLECTIONS.blog;
@@ -103,7 +105,7 @@ const blogSchema = {
   },
 };
 
-const registry = { collections: COLLECTIONS, schemaFor: (name) => (name === 'blog' ? blogSchema : workSchema) };
+const registry = { collections: COLLECTIONS, schemaFor: (name) => (name === 'blog' ? blogSchema : workSchema), toolSlug };
 
 let dir;
 let workDir;
@@ -238,7 +240,7 @@ test('updates: unknown shapes, fields and properties are 400', () => {
   bad({ hash: '', set: {} });
   bad({ hash: 'h', set: [] });
   bad({ hash: 'h', set: {}, extra: 1 }, WORK, 'Unknown property "extra".');
-  bad({ hash: 'h', set: {}, uploads: [] }, WORK, 'Unknown property "uploads".');
+  bad({ hash: 'h', set: {}, uploads: 'x' }, WORK, '"uploads" must be an array.');
   bad({ hash: 'h', set: { slug: 'x' } }, WORK, 'Field "slug" is not editable here.');
   bad({ hash: 'h', set: { nope: 'x' } }, WORK, 'Field "nope" is not editable here.');
   bad({ hash: 'h', set: { body: 'x' } }, WORK, 'Field "body" is not editable here.');
@@ -650,7 +652,7 @@ test('PUT failures write nothing', async () => {
   assert.equal(unknown.status, 400);
   const badDate = await call('PUT', '/__editor/work/guarded', { body: { hash, set: { started: '2026-13-01' } } });
   assert.equal(badDate.status, 400);
-  const uploads = await call('PUT', '/__editor/work/guarded', { body: { hash, set: {}, uploads: [] } });
+  const uploads = await call('PUT', '/__editor/work/guarded', { body: { hash, set: {}, uploads: 'x' } });
   assert.equal(uploads.status, 400);
   const malformed = await call('PUT', '/__editor/work/guarded', { body: '{' });
   assert.equal(malformed.status, 400);
@@ -691,4 +693,264 @@ test('only paths under the base are answered', async () => {
   assert.equal(await call('GET', '/other/path'), null);
   assert.equal(await call('GET', '/__editor/work/get-me', { base: '/dev/' }), null);
   assert.equal((await call('GET', '/dev/__editor/work/get-me', { base: '/dev/' })).status, 200);
+});
+
+const PNG_SIG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+const JPG_SIG = Buffer.from([0xff, 0xd8, 0xff, 0xe0]);
+const png = (tag) => Buffer.concat([PNG_SIG, Buffer.from(`png-${tag}`)]);
+const jpg = (tag) => Buffer.concat([JPG_SIG, Buffer.from(`jpg-${tag}`)]);
+const upload = (token, name, bytes) => ({ token, name, data: bytes.toString('base64') });
+
+const assetsDir = () => path.join(dir, 'src', 'assets');
+const files = (sub = '') => {
+  const out = [];
+  const walk = (folder, prefix) => {
+    let names = [];
+    try {
+      names = readdirSync(folder, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of names) {
+      if (entry.isDirectory()) {
+        out.push(`${prefix}${entry.name}/`);
+        walk(path.join(folder, entry.name), `${prefix}${entry.name}/`);
+      } else out.push(`${prefix}${entry.name}`);
+    }
+  };
+  walk(path.join(assetsDir(), sub), '');
+  return out.sort();
+};
+const putAsset = (rel, bytes) => {
+  const file = path.join(assetsDir(), rel);
+  mkdirSync(path.dirname(file), { recursive: true });
+  writeFileSync(file, bytes);
+};
+const readAsset = (rel) => readFileSync(path.join(assetsDir(), rel));
+const withImages = (cover, gallery) => {
+  let text = KEYSTATIC_ENTRY;
+  if (gallery.length) text = text.replace('gallery: []', `gallery:\n${gallery.map((g) => `  - image: ${g}\n`).join('')}`);
+  return cover ? text.replace('usedIn: []', `cover: ${cover}\nusedIn: []`) : text;
+};
+const saveWith = async (id, set, extra = {}, collection = 'work') => {
+  const hash = (await call('GET', `/__editor/${collection}/${id}`)).body.hash;
+  return call('PUT', `/__editor/${collection}/${id}`, { body: { hash, set, ...extra } });
+};
+
+test('sniffType recognises the five types and refuses SVG, text and empty bytes', () => {
+  assert.equal(assets.sniffType(png('a')), 'png');
+  assert.equal(assets.sniffType(jpg('a')), 'jpg');
+  assert.equal(assets.sniffType(Buffer.from('GIF87a....')), 'gif');
+  assert.equal(assets.sniffType(Buffer.from('GIF89a....')), 'gif');
+  assert.equal(assets.sniffType(Buffer.concat([Buffer.from('RIFF'), Buffer.alloc(4), Buffer.from('WEBPVP8 ')])), 'webp');
+  assert.equal(assets.sniffType(Buffer.concat([Buffer.alloc(4), Buffer.from('ftypavif')])), 'avif');
+  assert.equal(assets.sniffType(Buffer.concat([Buffer.alloc(4), Buffer.from('ftypavis')])), 'avif');
+  assert.equal(assets.sniffType(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"></svg>')), null);
+  assert.equal(assets.sniffType(Buffer.from('just text')), null);
+  assert.equal(assets.sniffType(Buffer.alloc(0)), null);
+});
+
+test('body image stems follow the slug rule, cut at 40 characters, with an image fallback', () => {
+  assert.equal(assets.bodyStem('My Cool Pic.PNG', toolSlug), 'my-cool-pic');
+  assert.equal(assets.bodyStem(`${'x'.repeat(60)}.png`, toolSlug), 'x'.repeat(40));
+  assert.equal(assets.bodyStem(`${'a'.repeat(39)} b.png`, toolSlug), 'a'.repeat(39));
+  assert.equal(assets.bodyStem('日本.png', toolSlug), 'image');
+});
+
+test('uploads: type and size limits answer 415 and 413 and write nothing', async () => {
+  put('limits.md', KEYSTATIC_ENTRY);
+  const svg = await saveWith('limits', { cover: { upload: 'a' } }, { uploads: [upload('a', 'logo.svg', Buffer.from('<svg></svg>'))] });
+  assert.equal(svg.status, 415);
+  assert.match(svg.body.error, /logo\.svg.*PNG, JPEG, WebP, AVIF or GIF/);
+  const big = Buffer.concat([PNG_SIG, Buffer.alloc(10 * 1024 * 1024 - 7)]);
+  assert.equal(big.length, 10 * 1024 * 1024 + 1);
+  const over = await saveWith('limits', { cover: { upload: 'a' } }, { uploads: [upload('a', 'big.png', big)] });
+  assert.equal(over.status, 413);
+  assert.match(over.body.error, /big\.png.*10 MB/);
+  assert.equal(read('limits.md'), KEYSTATIC_ENTRY);
+  assert.deepEqual(files('limits'), []);
+});
+
+test('uploads: unknown and unused tokens are 400, a schema failure writes no image', async () => {
+  put('tokens.md', KEYSTATIC_ENTRY);
+  const unknown = await saveWith('tokens', { cover: { upload: 'zz' } }, { uploads: [] });
+  assert.equal(unknown.status, 400);
+  assert.equal(unknown.body.error, 'Unknown upload token.');
+  const unknownBody = await saveWith('tokens', {}, { body: '![](upload:zz)', uploads: [] });
+  assert.equal(unknownBody.status, 400);
+  const unused = await saveWith('tokens', {}, { uploads: [upload('u1', 'a.png', png('u'))] });
+  assert.equal(unused.status, 400);
+  assert.equal(unused.body.error, 'Unused upload "u1".');
+  put('rejected.md', KEYSTATIC_ENTRY.replace('  - director\n', '  - programmer\n'));
+  const invalid = await saveWith('rejected', { cover: { upload: 'c' } }, { uploads: [upload('c', 'a.png', png('c'))] });
+  assert.equal(invalid.status, 422);
+  assert.deepEqual(files('rejected'), []);
+  assert.equal(read('tokens.md'), KEYSTATIC_ENTRY);
+});
+
+test('a cover upload lands as cover.<detected ext> in the entry folder and a replaced cover is deleted', async () => {
+  put('cover-up.md', KEYSTATIC_ENTRY);
+  const first = await saveWith('cover-up', { cover: { upload: 'c1' } }, { uploads: [upload('c1', 'Photo.JPEG', png('c'))] });
+  assert.equal(first.status, 200);
+  assert.match(read('cover-up.md'), /^cover: \.\.\/\.\.\/assets\/cover-up\/cover\.png$/m);
+  assert.deepEqual(files('cover-up'), ['cover.png']);
+  assert.deepEqual(readAsset('cover-up/cover.png'), png('c'));
+  assert.equal(noTemp(path.join(assetsDir(), 'cover-up')), true);
+
+  const same = await saveWith('cover-up', { title: 'Renamed' });
+  assert.equal(same.status, 200);
+  assert.deepEqual(files('cover-up'), ['cover.png']);
+
+  const replaced = await saveWith('cover-up', { cover: { upload: 'c2' } }, { uploads: [upload('c2', 'x.png', jpg('c'))] });
+  assert.equal(replaced.status, 200);
+  assert.match(read('cover-up.md'), /^cover: \.\.\/\.\.\/assets\/cover-up\/cover\.jpg$/m);
+  assert.deepEqual(files('cover-up'), ['cover.jpg']);
+
+  const removed = await saveWith('cover-up', { cover: null });
+  assert.equal(removed.status, 200);
+  assert.doesNotMatch(read('cover-up.md'), /^cover:/m);
+  assert.deepEqual(files('cover-up'), []);
+});
+
+test('gallery uploads land as gallery/<i>/image.<ext>', async () => {
+  put('gal-up.md', KEYSTATIC_ENTRY);
+  const res = await saveWith(
+    'gal-up',
+    { gallery: [{ image: { upload: 'g1' }, caption: 'One' }, { image: { upload: 'g2' } }] },
+    { uploads: [upload('g1', 'a.png', png('1')), upload('g2', 'b.png', jpg('2'))] },
+  );
+  assert.equal(res.status, 200);
+  assert.match(read('gal-up.md'), /gallery:\n {2}- image: \.\.\/\.\.\/assets\/gal-up\/gallery\/0\/image\.png\n {4}caption: One\n {2}- image: \.\.\/\.\.\/assets\/gal-up\/gallery\/1\/image\.jpg\n/);
+  assert.deepEqual(files('gal-up'), ['gallery/', 'gallery/0/', 'gallery/0/image.png', 'gallery/1/', 'gallery/1/image.jpg']);
+});
+
+test('reordering [A,B] to [B,A] leaves gallery/0 = B and gallery/1 = A', async () => {
+  const link = (i) => `../../assets/reorder/gallery/${i}/image.png`;
+  putAsset('reorder/gallery/0/image.png', png('A'));
+  putAsset('reorder/gallery/1/image.png', png('B'));
+  put('reorder.md', withImages(null, [link(0), link(1)]));
+  const res = await saveWith('reorder', { gallery: [{ image: link(1) }, { image: link(0) }] });
+  assert.equal(res.status, 200);
+  assert.deepEqual(readAsset('reorder/gallery/0/image.png'), png('B'));
+  assert.deepEqual(readAsset('reorder/gallery/1/image.png'), png('A'));
+  assert.match(read('reorder.md'), new RegExp(`- image: ${link(0).replace(/\./g, '\\.')}\\n {2}- image: ${link(1).replace(/\./g, '\\.')}\\n`));
+  assert.deepEqual(files('reorder'), ['gallery/', 'gallery/0/', 'gallery/0/image.png', 'gallery/1/', 'gallery/1/image.png']);
+});
+
+test('removing item 0 of 3 leaves two folders and no gallery/2', async () => {
+  const link = (i) => `../../assets/remove3/gallery/${i}/image.png`;
+  ['A', 'B', 'C'].forEach((tag, i) => putAsset(`remove3/gallery/${i}/image.png`, png(tag)));
+  put('remove3.md', withImages(null, [link(0), link(1), link(2)]));
+  const res = await saveWith('remove3', { gallery: [{ image: link(1) }, { image: link(2) }] });
+  assert.equal(res.status, 200);
+  assert.deepEqual(readAsset('remove3/gallery/0/image.png'), png('B'));
+  assert.deepEqual(readAsset('remove3/gallery/1/image.png'), png('C'));
+  assert.deepEqual(files('remove3'), ['gallery/', 'gallery/0/', 'gallery/0/image.png', 'gallery/1/', 'gallery/1/image.png']);
+});
+
+test('a cover pointing at shared/ ends at <id>/cover.<ext> and shared/ keeps its file', async () => {
+  putAsset('shared/x.png', png('S'));
+  put('from-shared.md', withImages('../../assets/shared/x.png', []));
+  const res = await saveWith('from-shared', { title: 'Moved' });
+  assert.equal(res.status, 200);
+  assert.match(read('from-shared.md'), /^cover: \.\.\/\.\.\/assets\/from-shared\/cover\.png$/m);
+  assert.deepEqual(readAsset('from-shared/cover.png'), png('S'));
+  assert.deepEqual(readAsset('shared/x.png'), png('S'));
+
+  putAsset('shared/y.png', png('Y'));
+  put('shared-cover.md', withImages('../../assets/shared/y.png', []));
+  const replaced = await saveWith('shared-cover', { cover: { upload: 'n' } }, { uploads: [upload('n', 'n.png', png('N'))] });
+  assert.equal(replaced.status, 200);
+  assert.deepEqual(readAsset('shared/y.png'), png('Y'), 'a file in shared/ is never deleted');
+  assert.deepEqual(readAsset('shared-cover/cover.png'), png('N'));
+});
+
+test('a save with no image change writes no image file', async () => {
+  putAsset('no-img/cover.png', png('K'));
+  putAsset('no-img/gallery/0/image.png', png('G'));
+  put('no-img.md', withImages('../../assets/no-img/cover.png', ['../../assets/no-img/gallery/0/image.png']));
+  const stamp = () => ['no-img/cover.png', 'no-img/gallery/0/image.png'].map((rel) => statSync(path.join(assetsDir(), rel)).mtimeMs);
+  const before = stamp();
+  const listing = files('no-img');
+  const res = await saveWith('no-img', { title: 'Only the title' });
+  assert.equal(res.status, 200);
+  assert.deepEqual(stamp(), before);
+  assert.deepEqual(files('no-img'), listing);
+});
+
+test('a replaced image is kept when another file references it', async () => {
+  putAsset('kept/cover.png', png('K'));
+  put('kept.md', withImages('../../assets/kept/cover.png', []));
+  put('kept-ref.md', withImages('../../assets/kept/cover.png', []));
+  const res = await saveWith('kept', { cover: { upload: 'k' } }, { uploads: [upload('k', 'k.png', jpg('K'))] });
+  assert.equal(res.status, 200);
+  assert.deepEqual(files('kept'), ['cover.jpg', 'cover.png']);
+});
+
+test('if the entry write fails every target gets its previous bytes back and new files are removed', async () => {
+  putAsset('rollback/cover.png', png('before'));
+  const original = withImages('../../assets/rollback/cover.png', []);
+  put('rollback.md', original);
+  const hash = (await call('GET', '/__editor/work/rollback')).body.hash;
+  const res = await editor.handleRequest(
+    {
+      method: 'PUT',
+      url: '/__editor/work/rollback',
+      remoteAddress: '127.0.0.1',
+      headers: { host: 'localhost:4321', ...sameOrigin },
+      readBody: async () =>
+        JSON.stringify({
+          hash,
+          set: { cover: { upload: 'a' }, gallery: [{ image: { upload: 'b' } }] },
+          uploads: [upload('a', 'a.png', png('after')), upload('b', 'b.png', png('new'))],
+        }),
+    },
+    {
+      root: dir,
+      base: '/',
+      loadRegistry: async () => registry,
+      write: async () => {
+        throw new editor.HttpError(500, 'Could not write the file.');
+      },
+    },
+  );
+  assert.equal(res.status, 500);
+  assert.deepEqual(readAsset('rollback/cover.png'), png('before'));
+  assert.deepEqual(files('rollback'), ['cover.png']);
+  assert.equal(read('rollback.md'), original);
+});
+
+test('a post: cover and body image land in src/assets/blog/<id>/, body names get -2 on a clash and reuse on equal bytes', async () => {
+  putPost('post-img.md', BLOG_ENTRY);
+  const first = await saveWith(
+    'post-img',
+    { cover: { upload: 'c' } },
+    { body: 'Text\n\n![first](upload:b1)\n', uploads: [upload('c', 'c.png', png('cover')), upload('b1', 'Hello World.png', png('one'))] },
+    'blog',
+  );
+  assert.equal(first.status, 200);
+  assert.match(readPost('post-img.md'), /^cover: \.\.\/\.\.\/assets\/blog\/post-img\/cover\.png$/m);
+  assert.match(readPost('post-img.md'), /!\[first\]\(\.\.\/\.\.\/assets\/blog\/post-img\/hello-world\.png\)/);
+  assert.deepEqual(files('blog/post-img'), ['cover.png', 'hello-world.png']);
+
+  const body = () => readPost('post-img.md').split('\n---\n')[1];
+  const second = await saveWith(
+    'post-img',
+    {},
+    { body: `${body()}\n![second](upload:b2)\n![cover](upload:b4)\n`, uploads: [upload('b2', 'Hello World.png', png('two')), upload('b4', 'cover.png', png('other'))] },
+    'blog',
+  );
+  assert.equal(second.status, 200);
+  assert.deepEqual(files('blog/post-img'), ['cover-2.png', 'cover.png', 'hello-world-2.png', 'hello-world.png']);
+
+  const third = await saveWith('post-img', {}, { body: `${body()}\n![again](upload:b3)\n`, uploads: [upload('b3', 'Hello World.png', png('one'))] }, 'blog');
+  assert.equal(third.status, 200);
+  assert.deepEqual(files('blog/post-img'), ['cover-2.png', 'cover.png', 'hello-world-2.png', 'hello-world.png']);
+  assert.match(body(), /!\[again\]\(\.\.\/\.\.\/assets\/blog\/post-img\/hello-world\.png\)/);
+
+  const trimmed = body().replace(/!\[second\]\([^)]*\)\n?/, '');
+  const fourth = await saveWith('post-img', {}, { body: trimmed }, 'blog');
+  assert.equal(fourth.status, 200);
+  assert.deepEqual(files('blog/post-img'), ['cover-2.png', 'cover.png', 'hello-world.png']);
+  assert.equal(noTemp(path.join(assetsDir(), 'blog', 'post-img')), true);
 });

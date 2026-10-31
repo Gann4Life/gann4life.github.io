@@ -154,5 +154,6 @@ test('the editor endpoint saves through the real schema', { skip }, async () => 
     assert.ok(refusal.issues.some((issue) => issue.path[0] === 'roles'), JSON.stringify(refusal.issues));
   } finally {
     rmSync(target, { force: true });
+    rmSync(path.join(ROOT, 'src', 'assets', id), { recursive: true, force: true });
   }
 });

@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url';
-import { handleRequest, MAX_BODY_BYTES } from './file.mjs';
+import { MAX_REQUEST_BYTES } from './assets.mjs';
+import { handleRequest } from './file.mjs';
 
 const readLimited = (req) =>
   new Promise((resolve, reject) => {
@@ -9,7 +10,7 @@ const readLimited = (req) =>
     req.on('data', (chunk) => {
       if (failed) return;
       size += chunk.length;
-      if (size > MAX_BODY_BYTES) {
+      if (size > MAX_REQUEST_BYTES) {
         failed = true;
         reject(Object.assign(new Error('Body too large'), { code: 'TOO_LARGE' }));
         return;
@@ -41,7 +42,8 @@ export default function editor() {
                     const { z } = await server.ssrLoadModule('astro/zod');
                     const { COLLECTIONS } = await server.ssrLoadModule('/src/lib/content-fields.ts');
                     const { schemaFor } = await server.ssrLoadModule('/src/lib/content-schema.ts');
-                    return { collections: COLLECTIONS, schemaFor: (name) => schemaFor(name, () => z.string()) };
+                    const { toolSlug } = await server.ssrLoadModule('/src/lib/slug.ts');
+                    return { collections: COLLECTIONS, schemaFor: (name) => schemaFor(name, () => z.string()), toolSlug };
                   };
                   server.middlewares.use(async (req, res, next) => {
                     let result;

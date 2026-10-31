@@ -2,8 +2,19 @@ import { createHash, randomUUID } from 'node:crypto';
 import { readdir, readFile, realpath, rename, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { dump, load } from 'js-yaml';
+import { readValue } from '../../scripts/exclude-drafts.mjs';
+import {
+  decodeUploads,
+  deleteReplaced,
+  HttpError,
+  planImages,
+  rollbackImages,
+  TOKEN_PATTERN,
+  uploadTokens,
+  writeImages,
+} from './assets.mjs';
 
-export const MAX_BODY_BYTES = 1024 * 1024;
+export { HttpError };
 export const ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const REMOVABLE_EMPTY = new Set(['text', 'url', 'longtext']);
@@ -11,14 +22,6 @@ const EMPTY_VALUES = { tags: () => [], refs: () => [], list: () => [], boolean: 
 
 const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
 const HOST_PATTERN = /^(?:localhost|127\.0\.0\.1|\[::1\])(?::\d{1,5})?$/i;
-
-export class HttpError extends Error {
-  constructor(status, message, extra = {}) {
-    super(message);
-    this.status = status;
-    this.extra = extra;
-  }
-}
 
 export const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 
@@ -53,18 +56,6 @@ export function explicitSlug(raw) {
   if (!parts) return '';
   const line = parts.front.split('\n').find((l) => l.startsWith('slug:'));
   return line ? readValue(line) : '';
-}
-
-function readValue(line) {
-  let value = line.slice(line.indexOf(':') + 1);
-  const comment = value.indexOf(' #');
-  if (comment !== -1) value = value.slice(0, comment);
-  value = value.trim();
-  if (value.length >= 2) {
-    const first = value[0];
-    if ((first === '"' || first === "'") && value[value.length - 1] === first) value = value.slice(1, -1);
-  }
-  return value;
 }
 
 export async function resolveEntry(workDir, id) {
@@ -178,7 +169,10 @@ export function checkValue(field, value, path = field.name) {
         if (!value.trim()) throw bad(path, 'cannot be empty.');
         return value;
       }
-      if (isPlainObject(value) && typeof value.upload === 'string') throw new HttpError(400, 'Unknown upload token.');
+      if (isPlainObject(value) && typeof value.upload === 'string' && Object.keys(value).length === 1) {
+        if (!TOKEN_PATTERN.test(value.upload)) throw bad(path, 'has a malformed upload token.');
+        return { upload: value.upload };
+      }
       throw bad(path, 'must be an image path.');
     default:
       throw bad(path, 'cannot be edited here.');
@@ -188,7 +182,7 @@ export function checkValue(field, value, path = field.name) {
 export function parseUpdate(payload, def) {
   if (!isPlainObject(payload)) throw new HttpError(400, 'Body must be a JSON object.');
   for (const key of Object.keys(payload)) {
-    if (!['hash', 'set', 'body'].includes(key)) throw new HttpError(400, `Unknown property "${key}".`);
+    if (!['hash', 'set', 'body', 'uploads'].includes(key)) throw new HttpError(400, `Unknown property "${key}".`);
   }
   if (typeof payload.hash !== 'string' || !payload.hash) throw new HttpError(400, '"hash" must be a string.');
   if (!isPlainObject(payload.set)) throw new HttpError(400, '"set" must be an object.');
@@ -199,7 +193,11 @@ export function parseUpdate(payload, def) {
     set[key] = checkValue(field, value, key);
   }
   if (payload.body !== undefined && typeof payload.body !== 'string') throw new HttpError(400, '"body" must be a string.');
-  return { hash: payload.hash, set, body: payload.body };
+  const uploads = payload.uploads === undefined ? new Map() : decodeUploads(payload.uploads);
+  for (const token of uploadTokens(set)) {
+    if (!uploads.has(token)) throw new HttpError(400, 'Unknown upload token.');
+  }
+  return { hash: payload.hash, set, body: payload.body, uploads };
 }
 
 export function imagePaths(fields, values) {
@@ -397,7 +395,7 @@ function parseTarget(rest) {
   }
 }
 
-export async function handleRequest(req, { root, base, loadRegistry }) {
+export async function handleRequest(req, { root, base, loadRegistry, write }) {
   const prefix = `${base}__editor/`;
   const pathname = String(req.url ?? '').split(/[?#]/)[0];
   if (!pathname.startsWith(prefix)) return null;
@@ -432,7 +430,7 @@ export async function handleRequest(req, { root, base, loadRegistry }) {
       const raw = await req.readBody();
       payload = JSON.parse(raw);
     } catch (err) {
-      if (err?.code === 'TOO_LARGE') return respond(413, { error: 'Body over 1 MB.' }, { connection: 'close' });
+      if (err?.code === 'TOO_LARGE') return respond(413, { error: 'Request over 64 MB.' }, { connection: 'close' });
       return respond(400, { error: 'Malformed JSON.' });
     }
     const update = parseUpdate(payload, def);
@@ -445,11 +443,28 @@ export async function handleRequest(req, { root, base, loadRegistry }) {
       if (!parts) throw new HttpError(422, 'The file has no leading --- block.');
       const data = readFrontmatter(parts.front);
       checkImages(def, update.set, data);
-      const merged = mergeEntry(data, update.set, def);
-      const issues = schemaIssues(registry.schemaFor(collection), merged);
+      const plan = await planImages({
+        root,
+        def,
+        id,
+        entryFile: entry.file,
+        before: { data, body: parts.body },
+        merged: mergeEntry(data, update.set, def),
+        body: normalizeBody(update.body ?? parts.body),
+        uploads: update.uploads,
+        slug: registry.toolSlug,
+      });
+      const issues = schemaIssues(registry.schemaFor(collection), plan.merged);
       if (issues.length) return respond(422, { error: 'The entry does not pass the schema.', issues });
-      const text = serializeEntry(merged, normalizeBody(update.body ?? parts.body));
-      await writeEntry(entry.file, text);
+      const text = serializeEntry(plan.merged, normalizeBody(plan.body));
+      const undo = await writeImages(plan);
+      try {
+        await (write ?? writeEntry)(entry.file, text);
+      } catch (err) {
+        await rollbackImages(undo);
+        throw err;
+      }
+      await deleteReplaced(plan);
       return respond(200, { hash: sha256(Buffer.from(text, 'utf8')) });
     });
   } catch (err) {

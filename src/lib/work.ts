@@ -1,6 +1,8 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { CONTEXT_LABELS, KIND_LABELS, LINK_LABELS } from '../vocab.ts';
 export { KIND_LABELS, CONTEXT_LABELS, ROLE_LABELS, STATUS_LABELS } from '../vocab.ts';
+import { toolSlug } from './slug.ts';
+export { toolSlug } from './slug.ts';
 
 export type Work = CollectionEntry<'work'>;
 type Link = Work['data']['links'][number];
@@ -14,18 +16,6 @@ export async function getWork(): Promise<Work[]> {
   return entries;
 }
 
-/** URL slug of a tool name (docs/2-content-model.md "Tool pages"); may be empty. */
-export function toolSlug(name: string): string {
-  return name
-    .normalize('NFKD')
-    .replace(/\p{M}/gu, '')
-    .toLowerCase()
-    .replace(/#/g, ' sharp ')
-    .replace(/\+/g, ' plus ')
-    .replace(/&/g, ' and ')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
 
 function assertToolSlugs(entries: Work[]): void {
   const spellings = new Map<string, Map<string, string[]>>();
