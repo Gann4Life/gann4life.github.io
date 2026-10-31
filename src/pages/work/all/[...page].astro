@@ -42,7 +42,7 @@ const title = page.currentPage > 1 ? `All work — page ${page.currentPage}` : '
           image={entry.data.cover}
           index={i}
           headingLevel={2}
-          edit={`work/item/${entry.id}`}
+          edit={entry.id}
           draft={entry.data.draft}
         />
       ))}

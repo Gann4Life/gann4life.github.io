@@ -44,7 +44,7 @@ const title = page.currentPage > 1 ? `${name} — page ${page.currentPage}` : na
           image={entry.data.cover}
           index={i}
           headingLevel={2}
-          edit={`work/item/${entry.id}`}
+          edit={entry.id}
           draft={entry.data.draft}
         />
       ))}

@@ -20,6 +20,7 @@ import {
 } from '../../lib/work';
 import { formatDate, getPosts, listOrder } from '../../lib/blog';
 import { withBase } from '../../lib/paths';
+import { editHooks } from '../../lib/edit-hooks';
 import { profile } from '../../profile';
 
 export async function getStaticPaths() {
@@ -58,30 +59,31 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
 ---
 
 <BaseLayout title={data.title} description={data.contribution} image={ogImage} currentCategory={category.key}>
-  <main class="page detail">
+  <main class="page detail" {...editHooks.entry('work', entry.id)}>
     <header class="detail__header">
       <p class="hero__kicker"><a href={withBase('/')}>{profile.name}</a> / <a href={withBase(`/work/c/${category.key}/`)}>{category.label}</a></p>
       <p class="detail__meta">
-        <span>{KIND_LABELS[data.kind]}</span>
-        <span>{CONTEXT_LABELS[data.context]}</span>
-        <span>{year(entry)}</span>
-        <span>{STATUS_LABELS[data.status]}</span>
-        <span>{data.team === 'solo' ? 'Solo' : 'Team'}</span>
+        <span {...editHooks.field('kind')}>{KIND_LABELS[data.kind]}</span>
+        <span {...editHooks.field('context')}>{CONTEXT_LABELS[data.context]}</span>
+        <span {...editHooks.field('started')}>{year(entry)}</span>
+        <span {...editHooks.field('status')}>{STATUS_LABELS[data.status]}</span>
+        <span {...editHooks.field('team')}>{data.team === 'solo' ? 'Solo' : 'Team'}</span>
       </p>
-      <EditLink path={`collection/work/item/${entry.id}`} />
+      <EditLink inPlace />
       {data.draft && <p class="draft-note">Draft — visible on the dev server only.</p>}
       {import.meta.env.DEV && !data.draft && !data.contribution.trim() && (
         <p class="draft-note">"What I did" is empty — fill it in or tick Draft; until then the build leaves this entry out.</p>
       )}
-      <h1>{data.title}</h1>
-      {data.position && <p class="detail__position">{data.position}</p>}
-      <AuthorshipBadge authorship={data.authorship} explain />
+      <h1 {...editHooks.field('title')}>{data.title}</h1>
+      {data.position && <p class="detail__position" {...editHooks.field('position')}>{data.position}</p>}
+      <AuthorshipBadge authorship={data.authorship} explain hooks={editHooks.field('authorship')} />
     </header>
 
-    <Media items={data.media} title={data.title} />
+    <Media items={data.media} title={data.title} hooks={editHooks.field('media')} />
     {data.media.length === 0 && data.cover && (
       <Picture
         class="detail__cover"
+        {...editHooks.field('cover')}
         src={data.cover}
         formats={['avif', 'webp']}
         widths={[640, 1280, 1920]}
@@ -94,21 +96,21 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
     {data.contribution && (
       <section class="detail__section">
         <h2>What I did</h2>
-        <p>{data.contribution}</p>
+        <p {...editHooks.field('contribution')}>{data.contribution}</p>
         {data.roles.length > 0 && (
-          <ul class="tags" aria-label="Roles">
+          <ul class="tags" aria-label="Roles" {...editHooks.field('roles')}>
             {data.roles.map((role) => <li>{ROLE_LABELS[role]}</li>)}
           </ul>
         )}
       </section>
     )}
 
-    <article class="detail__body prose">
+    <article class="detail__body prose" {...editHooks.field('body')}>
       <Content />
     </article>
 
     {data.origin === 'fork' && (
-      <section class="detail__section fork">
+      <section class="detail__section fork" {...editHooks.field('origin', 'upstream')}>
         <h2>Fork</h2>
         <p>
           Fork of <a href={data.upstream} target="_blank" rel="noopener">{data.upstream.replace(/^https?:\/\//, '')}</a>.
@@ -120,21 +122,21 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
     {hasAside && (
     <div class="detail__aside">
     {data.links.length > 0 && (
-      <section class="detail__section">
+      <section class="detail__section" {...editHooks.field('links')}>
         <h2>Links</h2>
         <LinkButtons links={data.links} />
       </section>
     )}
 
     {data.tools.length > 0 && (
-      <section class="detail__section">
+      <section class="detail__section" {...editHooks.field('tools')}>
         <h2>Tools</h2>
         <ul class="tags tags--links">{data.tools.map((tool) => <li><a href={withBase(`/work/t/${toolSlug(tool)}/`)}>{tool}</a></li>)}</ul>
       </section>
     )}
 
     {data.credits.length > 0 && (
-      <section class="detail__section">
+      <section class="detail__section" {...editHooks.field('credits')}>
         <h2>Credits</h2>
         <ul class="credits">
           {data.credits.map((c) => (
@@ -148,7 +150,7 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
     )}
 
     {(usedIn.length > 0 || features.length > 0) && (
-      <section class="detail__section">
+      <section class="detail__section" {...(usedIn.length > 0 ? editHooks.field('usedIn') : {})}>
         <h2>Related</h2>
         <ul class="related">
           {usedIn.map((e) => <li>Used in <a href={withBase(`/work/${e.id}/`)}>{e.data.title}</a></li>)}
@@ -162,7 +164,7 @@ const ogImage = data.cover ? (await getImage({ src: data.cover, format: 'png', w
       </section>
     )}
 
-    <Gallery slug={entry.id} items={data.gallery} />
+    <Gallery slug={entry.id} items={data.gallery} hooks={editHooks.field('gallery')} />
     {posts.length > 0 && (
       <section class="detail__section detail__posts">
         <h2>Posts about this project</h2>

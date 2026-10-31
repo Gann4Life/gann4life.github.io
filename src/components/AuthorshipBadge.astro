@@ -7,9 +7,10 @@ type Authorship = CollectionEntry<'work'>['data']['authorship'];
 interface Props {
   authorship?: Authorship | null;
   explain?: boolean;
+  hooks?: Record<string, string>;
 }
 
-const { authorship, explain = false } = Astro.props;
+const { authorship, explain = false, hooks = {} } = Astro.props;
 
 const LABELS: Partial<Record<Authorship, string>> = {
   'ai-assisted': 'AI-assisted',
@@ -24,5 +25,5 @@ const NOTES: Partial<Record<Authorship, string>> = {
 const label = authorship ? LABELS[authorship] : undefined;
 ---
 
-{label && <span class="badge" data-authorship={authorship}>{label}</span>}
+{label && <span class="badge" data-authorship={authorship} {...hooks}>{label}</span>}
 {explain && label && <p class="authorship-note">{NOTES[authorship!]}</p>}

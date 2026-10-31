@@ -52,7 +52,7 @@ const title = page.currentPage > 1 ? `${category.label} — page ${page.currentP
               <span class="muted">{tileMeta(e, { showKind: false })}{e.data.draft ? ' · Draft' : ''}</span>
             </a>
             <iframe src={player(e)!} title={e.data.title} loading="lazy" allow="autoplay; encrypted-media" />
-            <EditLink path={`collection/work/item/${e.id}`} />
+            <EditLink collection="work" id={e.id} />
           </li>
         ))}
       </ul>
@@ -69,7 +69,7 @@ const title = page.currentPage > 1 ? `${category.label} — page ${page.currentP
             image={entry.data.cover}
             index={i}
             headingLevel={2}
-            edit={`work/item/${entry.id}`}
+            edit={entry.id}
             draft={entry.data.draft}
           />
         ))}

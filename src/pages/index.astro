@@ -43,7 +43,7 @@ const bannerSrc =
     >
       <div class="hero__text">
         <p class="hero__kicker">Portfolio</p>
-        <EditLink path="singleton/profile" label="Edit profile" />
+        <EditLink keystatic="singleton/profile" label="Edit profile in Keystatic" />
         {photo ? (
           <div class="hero__id">
             {photo.kind === 'asset' ? (
@@ -94,7 +94,7 @@ const bannerSrc =
         <h2 class="band__title" id="featured-title">Featured</h2>
         <div class="grid">
           {featured.map((e, i) => (
-            <Tile href={withBase(`/work/${e.id}/`)} title={e.data.title} eyebrow={tileMeta(e)} subtitle={e.data.position || undefined} image={e.data.cover} index={i} edit={`work/item/${e.id}`} draft={e.data.draft} />
+            <Tile href={withBase(`/work/${e.id}/`)} title={e.data.title} eyebrow={tileMeta(e)} subtitle={e.data.position || undefined} image={e.data.cover} index={i} edit={e.id} draft={e.data.draft} />
           ))}
         </div>
       </section>
@@ -105,7 +105,7 @@ const bannerSrc =
         <h2 class="band__title" id="latest-title">Latest</h2>
         <div class="grid">
           {latest.map((e, i) => (
-            <Tile href={withBase(`/work/${e.id}/`)} title={e.data.title} eyebrow={tileMeta(e)} subtitle={e.data.position || undefined} image={e.data.cover} index={i} edit={`work/item/${e.id}`} draft={e.data.draft} />
+            <Tile href={withBase(`/work/${e.id}/`)} title={e.data.title} eyebrow={tileMeta(e)} subtitle={e.data.position || undefined} image={e.data.cover} index={i} edit={e.id} draft={e.data.draft} />
           ))}
         </div>
         <p class="band__more"><a class="button" href={withBase('/work/all/')}>View all →</a></p>

@@ -24,8 +24,9 @@ export default function editor() {
   return {
     name: 'editor',
     hooks: {
-      'astro:config:setup': ({ command, config, updateConfig }) => {
+      'astro:config:setup': ({ command, config, updateConfig, injectScript }) => {
         if (command !== 'dev') return;
+        injectScript('page', "import '/integrations/editor/client.ts';");
         const root = fileURLToPath(config.root);
         const trimmed = String(config.base ?? '/').replace(/^\/+|\/+$/g, '');
         const base = trimmed ? `/${trimmed}/` : '/';

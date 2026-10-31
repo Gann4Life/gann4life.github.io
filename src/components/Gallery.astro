@@ -6,9 +6,10 @@ import type { Work } from '../lib/work';
 interface Props {
   slug: string;
   items: Work['data']['gallery'];
+  hooks?: Record<string, string>;
 }
 
-const { slug, items } = Astro.props;
+const { slug, items, hooks = {} } = Astro.props;
 
 const full = await Promise.all(
   items.map((item) => getImage({ src: item.image, format: 'webp', width: Math.min(item.image.width, 1920) })),
@@ -16,7 +17,7 @@ const full = await Promise.all(
 ---
 
 {items.length > 0 && (
-  <section class="gallery" id="gallery" aria-label="Gallery">
+  <section class="gallery" id="gallery" aria-label="Gallery" {...hooks}>
     <ul class="gallery__grid">
       {items.map((item, i) => (
         <li>

@@ -1,18 +1,33 @@
 ---
 import { withBase } from '../lib/paths';
-/** Dev-only "Edit" link into Keystatic; production builds contain no trace of it. path is the route after /keystatic/, e.g. "collection/work/item/beatlords". */
+/** Dev-only "Edit" control; production builds contain no trace of it. keystatic is the route after /keystatic/ and opens Keystatic in a new tab; inPlace renders the button that turns edit mode on in the current page; otherwise it links to the item's own page with ?edit. */
 interface Props {
-  path: string;
+  collection?: 'work' | 'blog';
+  id?: string;
+  inPlace?: boolean;
+  keystatic?: string;
   label?: string;
   class?: string;
 }
 
-const { path, label = 'Edit', class: className } = Astro.props;
+const { collection, id, inPlace = false, keystatic, label = 'Edit', class: className } = Astro.props;
 ---
 
 {import.meta.env.DEV && (
-  <a class:list={['edit-link', className]} href={withBase(`/keystatic/${path}`)} target="_blank" rel="noopener" title={`${label} in Keystatic`}>
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.21a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" /></svg>
-    <span>{label}</span>
-  </a>
+  keystatic ? (
+    <a class:list={['edit-link', className]} href={withBase(`/keystatic/${keystatic}`)} target="_blank" rel="noopener" title={label}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.21a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" /></svg>
+      <span>{label}</span>
+    </a>
+  ) : inPlace ? (
+    <button type="button" class:list={['edit-link', className]} data-edit-open>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.21a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" /></svg>
+      <span>{label}</span>
+    </button>
+  ) : (
+    <a class:list={['edit-link', className]} href={withBase(`/${collection}/${id}/?edit`)}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.21a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" /></svg>
+      <span>{label}</span>
+    </a>
+  )
 )}

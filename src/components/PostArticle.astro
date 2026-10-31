@@ -23,7 +23,7 @@ const TitleHeading = `h${level}` as 'h1' | 'h2' | 'h3';
 const RelatedHeading = `h${level + 1}` as 'h2' | 'h3' | 'h4';
 ---
 
-<EditLink path={`collection/blog/item/${post.id}`} />
+<EditLink keystatic={`collection/blog/item/${post.id}`} />
 <p class="detail__meta">
   <time datetime={data.date.toISOString()}>{formatDate(data.date)}</time>
   {pinnedMark && data.pinned && <span class="mark mark--pinned">Pinned</span>}
