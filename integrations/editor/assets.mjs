@@ -8,7 +8,7 @@ export const MAX_REQUEST_BYTES = 64 * 1024 * 1024;
 export const TOKEN_PATTERN = /^[a-z0-9]{1,16}$/;
 
 const UPLOAD_LINK = /\]\(upload:([a-z0-9]{1,16})\)/g;
-const BODY_LINK = /\]\(([^)\s]+)(?:\s[^)]*)?\)/g;
+const BODY_LINK = /!\[[^\]]*\]\(([^)\s]+)(?:\s[^)]*)?\)/g;
 const NAME_LIMIT = 40;
 const RENAME_RETRYABLE = new Set(['EPERM', 'EBUSY', 'EACCES']);
 
@@ -27,7 +27,6 @@ const inside = (child, parent) => {
   return rel !== '' && !rel.startsWith('..') && !path.isAbsolute(rel);
 };
 
-/** Image type from the first bytes: 'png' | 'jpg' | 'webp' | 'avif' | 'gif', or null (SVG included). */
 export function sniffType(bytes) {
   const b = Buffer.from(bytes);
   const at = (offset, text) => b.length >= offset + text.length && b.toString('latin1', offset, offset + text.length) === text;
@@ -39,7 +38,6 @@ export function sniffType(bytes) {
   return null;
 }
 
-/** File-name stem of a body image: the given name without its extension through the slug function, cut to 40 characters, `image` when empty. */
 export function bodyStem(givenName, slug) {
   const base = String(givenName).split(/[\\/]/).pop();
   const dot = base.lastIndexOf('.');
@@ -47,7 +45,6 @@ export function bodyStem(givenName, slug) {
   return slug(bare).slice(0, NAME_LIMIT).replace(/-+$/, '') || 'image';
 }
 
-/** Decodes `[{ token, name, data }]` into a map token -> `{ name, bytes, ext }`; 400, 413 or 415 on bad input. */
 export function decodeUploads(uploads) {
   if (!Array.isArray(uploads)) throw new HttpError(400, '"uploads" must be an array.');
   const files = new Map();
@@ -72,7 +69,6 @@ export function decodeUploads(uploads) {
   return files;
 }
 
-/** Every upload token a `set` object uses (top-level image values and list items). */
 export function uploadTokens(set) {
   const found = [];
   const walk = (value) => {
@@ -86,7 +82,6 @@ export function uploadTokens(set) {
   return found;
 }
 
-/** Relative image links `](<path>)` in a Markdown body (not http(s):, upload:, data:, or protocol-relative). */
 export function bodyImageLinks(body) {
   const found = [];
   for (const match of String(body).matchAll(BODY_LINK)) {
@@ -121,7 +116,6 @@ function slotsOf(def, data) {
   return slots.filter((slot) => slot.obj[slot.key] !== undefined && slot.obj[slot.key] !== null);
 }
 
-/** Every image path an entry references, as written: top-level and list-item `image` fields, then body image links. */
 export function imagePaths(data, body, def) {
   const paths = [];
   for (const slot of slotsOf(def, data)) {
@@ -147,11 +141,6 @@ async function realOrNull(file) {
   }
 }
 
-/**
- * Plans every image of a save without touching the disk: replaces upload values and `upload:` links with final
- * relative paths, gives each image field its Keystatic target (`<field>.<ext>`, `<field>/<i>/<sub>.<ext>`), picks
- * body image names (`-2`, `-3` on a clash) and lists the files to write and the paths to consider for deletion.
- */
 export async function planImages({ root, def, id, entryFile, before, merged, body, uploads, slug }) {
   const entryDir = path.join(root, def.dir);
   const assetsRoot = path.join(root, def.assets);
@@ -162,6 +151,13 @@ export async function planImages({ root, def, id, entryFile, before, merged, bod
   const used = new Set();
   const writes = [];
   const fieldTargets = new Set();
+  const resolveLink = (value) => path.resolve(entryDir, value);
+  const beforePaths = imagePaths(before.data, before.body, def).map(resolveLink);
+  const reservedStems = new Set(
+    def.fields
+      .filter((field) => field.type === 'image' || (field.type === 'list' && (field.fields ?? []).some((sub) => sub.type === 'image')))
+      .map((field) => field.name),
+  );
 
   const resolveSource = async (value) => {
     const abs = path.resolve(entryDir, value);
@@ -215,8 +211,9 @@ export async function planImages({ root, def, id, entryFile, before, merged, bod
     used.add(token);
     const stem = bodyStem(upload.name, slug);
     for (let n = 1; ; n++) {
-      const candidate = path.join(folder, `${n === 1 ? stem : `${stem}-${n}`}.${upload.ext}`);
-      if (fieldTargets.has(candidate)) continue;
+      const candidateStem = n === 1 ? stem : `${stem}-${n}`;
+      const candidate = path.join(folder, `${candidateStem}.${upload.ext}`);
+      if (reservedStems.has(candidateStem) || fieldTargets.has(candidate)) continue;
       const taken = assigned.get(candidate);
       if (taken) {
         if (!taken.equals(upload.bytes)) continue;
@@ -236,8 +233,6 @@ export async function planImages({ root, def, id, entryFile, before, merged, bod
   }
   const finalBody = String(body).replace(UPLOAD_LINK, (_, token) => `](${bodyLinks.get(token)})`);
 
-  const resolveLink = (value) => path.resolve(entryDir, value);
-  const beforePaths = imagePaths(before.data, before.body, def).map(resolveLink);
   const afterSet = new Set(imagePaths(merged, finalBody, def).map(resolveLink));
   const candidates = [...new Set(beforePaths)].filter((abs) => !afterSet.has(abs));
 
@@ -270,14 +265,12 @@ async function makeDirs(dir, created) {
   created.push(dir);
 }
 
-/** Restores what `writeImages` changed: previous bytes back, created files and folders removed. */
 export async function rollbackImages(undo) {
   for (const { target, prior } of undo.overwritten) await writeAtomic(target, prior).catch(() => {});
   for (const file of undo.created) await unlink(file).catch(() => {});
   for (const dir of [...undo.dirs].reverse()) await rmdir(dir).catch(() => {});
 }
 
-/** Writes the planned files (temp file, then rename); on any failure rolls back and throws 500. Returns the undo record. */
 export async function writeImages(plan) {
   const undo = { overwritten: [], created: [], dirs: [] };
   if (plan.writes.length === 0) return undo;
@@ -327,10 +320,6 @@ async function referencingTexts(plan) {
   return texts;
 }
 
-/**
- * Deletes each image the entry referenced before and no longer does, only when it sits inside the entry's own
- * asset folder and no other text file references it; removes the folders that leaves empty (never the entry folder).
- */
 export async function deleteReplaced(plan) {
   if (plan.candidates.length === 0) return [];
   const realFolder = await realOrNull(plan.folder);

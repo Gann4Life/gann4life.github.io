@@ -71,7 +71,7 @@ const work = {
   label: 'Work',
   dir: 'src/content/work',
   assets: 'src/assets',
-  reserved: ['c', 't', 'site', 'all'],
+  reserved: ['c', 't', 'site', 'all', 'blog', 'shared'],
   columns: ['kind', 'draft', 'status'],
   refine: (entry: any, issue: (path: string, message: string) => void) => {
     if (entry.authorship === 'ai-built') {

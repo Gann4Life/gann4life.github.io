@@ -57,13 +57,13 @@ test('every enum and tags field has options; every refs field targets a collecti
 });
 
 test('reserved slugs per collection', () => {
-  assert.deepEqual([...COLLECTIONS.work.reserved], ['c', 't', 'site', 'all']);
+  assert.deepEqual([...COLLECTIONS.work.reserved], ['c', 't', 'site', 'all', 'blog', 'shared']);
   assert.deepEqual([...COLLECTIONS.blog.reserved], ['page']);
 });
 
 test('the work schema rejects reserved slugs and accepts a minimal entry', () => {
   const schema = schemaFor('work', image);
-  for (const slug of ['all', 'c', 't', 'site']) {
+  for (const slug of ['all', 'c', 't', 'site', 'blog', 'shared']) {
     const result = schema.safeParse({ ...minimalWork, slug });
     assert.equal(result.success, false, `slug "${slug}" must be rejected`);
     assert.ok(issuePaths(result).includes('slug'));

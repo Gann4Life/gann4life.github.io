@@ -7,7 +7,7 @@ import { getWork } from '../lib/work';
 import { withBase } from '../lib/paths';
 import { editHooks } from '../lib/edit-hooks';
 
-/** A post rendered in full, shared by the blog reader and the home Blog feed (docs/3-pages.md). editable (the post's own page only) turns on the in-site editor: an in-place Edit button and the field hooks; otherwise Edit links to the post's page with ?edit and there are no hooks. */
+/** A post rendered in full, shared by the blog reader and the home Blog feed (docs/3-pages.md). */
 interface Props {
   post: Post;
   level: 1 | 2 | 3;

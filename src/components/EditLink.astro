@@ -1,6 +1,6 @@
 ---
 import { withBase } from '../lib/paths';
-/** Dev-only "Edit" control; production builds contain no trace of it. keystatic is the route after /keystatic/ and opens Keystatic in a new tab; inPlace renders the button that turns edit mode on in the current page; otherwise it links to the item's own page with ?edit. */
+/** Dev-only "Edit" link into Keystatic; production builds contain no trace of it. path is the route after /keystatic/, e.g. "collection/work/item/beatlords". */
 interface Props {
   collection?: 'work' | 'blog';
   id?: string;

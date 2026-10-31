@@ -920,6 +920,36 @@ test('if the entry write fails every target gets its previous bytes back and new
   assert.equal(read('rollback.md'), original);
 });
 
+test('a title-only save moves a gallery image to its Keystatic name and deletes the old file', async () => {
+  putAsset('moved-gal/shot.png', png('S'));
+  put('moved-gal.md', withImages(null, ['../../assets/moved-gal/shot.png']));
+  const res = await saveWith('moved-gal', { title: 'Only the title' });
+  assert.equal(res.status, 200);
+  assert.deepEqual(readAsset('moved-gal/gallery/0/image.png'), png('S'));
+  assert.deepEqual(files('moved-gal'), ['gallery/', 'gallery/0/', 'gallery/0/image.png']);
+  assert.match(read('moved-gal.md'), /- image: \.\.\/\.\.\/assets\/moved-gal\/gallery\/0\/image\.png\n/);
+});
+
+test('a body image never takes the name of an image field, even when the field is empty', async () => {
+  put('reserved-stem.md', KEYSTATIC_ENTRY);
+  const res = await saveWith(
+    'reserved-stem',
+    {},
+    { body: 'Text\n\n![a](upload:b1)\n![b](upload:b2)\n', uploads: [upload('b1', 'cover.jpg', jpg('1')), upload('b2', 'gallery.png', png('2'))] },
+  );
+  assert.equal(res.status, 200);
+  assert.deepEqual(files('reserved-stem'), ['cover-2.jpg', 'gallery-2.png']);
+});
+
+test('removing a non-image link does not delete the file it points to', async () => {
+  putAsset('keep-doc/notes.pdf', Buffer.from('%PDF-1.4'));
+  putAsset('keep-doc/pic.png', png('P'));
+  put('keep-doc.md', `${KEYSTATIC_ENTRY}\nSee [notes](../../assets/keep-doc/notes.pdf) and ![pic](../../assets/keep-doc/pic.png)\n`);
+  const res = await saveWith('keep-doc', {}, { body: 'Nothing left.\n' });
+  assert.equal(res.status, 200);
+  assert.deepEqual(files('keep-doc'), ['notes.pdf']);
+});
+
 test('a post: cover and body image land in src/assets/blog/<id>/, body names get -2 on a clash and reuse on equal bytes', async () => {
   putPost('post-img.md', BLOG_ENTRY);
   const first = await saveWith(

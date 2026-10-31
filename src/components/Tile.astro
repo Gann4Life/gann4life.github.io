@@ -3,7 +3,7 @@ import { Picture } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import EditLink from './EditLink.astro';
 
-/** 4:3 tile with text over the image, cropped to fill; typographic without an image. index staggers the cascade animation; headingLevel follows the page outline (2 under an h1, 3 under an h2); edit (dev only) is the work id, e.g. "beatlords", and shows an Edit link to its page in edit mode; draft dims the tile (drafts only reach the dev server). */
+/** 4:3 tile with text over the image, cropped to fill; typographic without an image. index staggers the cascade animation; headingLevel follows the page outline (2 under an h1, 3 under an h2); edit (dev only) is the Keystatic item, e.g. "work/item/beatlords"; draft dims the tile (drafts only reach the dev server). */
 interface Props {
   href: string;
   title: string;

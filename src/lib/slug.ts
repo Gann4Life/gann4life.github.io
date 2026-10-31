@@ -1,4 +1,3 @@
-/** URL slug of a tool name (docs/2-content-model.md "Tool pages"); may be empty. */
 export function toolSlug(name: string): string {
   return name
     .normalize('NFKD')
